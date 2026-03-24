@@ -63,15 +63,17 @@ def run_breakout(ticker="TSLA", interval="1day", display="1-day", periods="100",
         emit_error(str(e), output_json)
         return
 
-    current = float(hist["Close"].iloc[-1])
+    current_raw = float(hist["Close"].iloc[-1])
     highs = [float(v) for v in hist["High"].tolist()]
     lows = [float(v) for v in hist["Low"].tolist()]
 
+    current = round(current_raw, 2)
+
     highs_unique = sorted(set(highs), reverse=True)
-    upper_resistances = [h for h in highs_unique if h > current][:2]
+    upper_resistances = [round(h, 2) for h in highs_unique if h > current_raw][:2]
 
     lows_unique = sorted(set(lows))
-    lower_supports = [l for l in lows_unique if l < current][-2:][::-1]
+    lower_supports = [round(l, 2) for l in lows_unique if l < current_raw][-2:][::-1]
 
     dist_to_upper = upper_resistances[0] - current if upper_resistances else float("inf")
     dist_to_lower = current - lower_supports[0] if lower_supports else float("inf")
