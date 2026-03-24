@@ -85,7 +85,7 @@ def compute_output(ticker, interval, display, periods, values, source):
     highs = [float(d.get('high', 0)) for d in values if d.get('high') is not None]
     lows = [float(d.get('low', 0)) for d in values if d.get('low') is not None]
 
-    highs_unique = sorted(set(highs), reverse=True)
+    highs_unique = sorted(set(highs))
     upper_resistances = [h for h in highs_unique if h > current][:2]
 
     lows_unique = sorted(set(lows))
