@@ -83,14 +83,14 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         .clock-face { position: relative; width: 400px; height: 400px; border: 1px dashed #333; border-radius: 50%; }
         .center-ticker { 
             width: 100px; height: 100px; 
-            border: 2px solid var(--accent-blue); 
-            box-shadow: 0 0 15px var(--accent-blue);
+            border: 2px solid #666; 
+            box-shadow: 0 0 10px rgba(255,255,255,0.08);
             border-radius: 50%; 
             display: flex; flex-direction: column; 
             justify-content: center; align-items: center; 
             font-weight: 700; font-size: 11px; 
             position: absolute; top: 150px; left: 150px; 
-            background: rgba(0, 243, 255, 0.8);
+            background: rgba(0,0,0,0.88);
             z-index: 10;
         }
         .indicator { 
