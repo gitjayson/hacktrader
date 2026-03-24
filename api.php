@@ -7,7 +7,8 @@ $pipelineDir = 'pipelines';
 if (!is_dir($pipelineDir)) {
     mkdir($pipelineDir, 0755, true);
 }
-$pipeline = "$pipelineDir/$ticker.json";
+$cacheKey = preg_replace('/[^A-Z0-9_-]/', '_', strtoupper($ticker) . '_' . strtolower($period) . '_' . (int)$lookback);
+$pipeline = "$pipelineDir/$cacheKey.json";
 $maxCacheAgeSeconds = 30;
 
 function respond_json($payload, $statusCode = 200) {
