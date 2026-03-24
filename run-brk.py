@@ -295,15 +295,16 @@ except Exception as e:
 
 
 def run_breakout(ticker='TSLA', interval='1day', display='1-day', periods='100', output_json='false'):
-    values, source, td_error = fetch_twelvedata(ticker, interval, periods)
+    values, source, yf_error = fetch_yfinance(ticker, interval, periods)
+    td_error = None
     backend_error = None
 
     if values is None:
-        values, source, yf_error = fetch_yfinance(ticker, interval, periods)
+        values, source, td_error = fetch_twelvedata(ticker, interval, periods)
         if values is None:
             backend_error = {
-                'twelvedata': td_error,
                 'yfinance': yf_error,
+                'twelvedata': td_error,
             }
 
     if values is None:
@@ -321,8 +322,8 @@ def run_breakout(ticker='TSLA', interval='1day', display='1-day', periods='100',
         return
 
     output = compute_output(ticker, interval, display, periods, values, source)
-    if td_error and source == 'yfinance':
-        output['fallback_reason'] = td_error
+    if yf_error and source == 'twelvedata':
+        output['fallback_reason'] = yf_error
 
     if output_json == 'true':
         print(json.dumps(output, indent=2))
