@@ -480,9 +480,22 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         }
 
         function updateFocusPanel(data, indicatorSummary = null) {
-            document.getElementById('focusPriceBox').textContent = `$${formatPrice(data.focus_price ?? data.current_price)}`;
+            const focusPriceBox = document.getElementById('focusPriceBox');
+            const focusTimeBox = document.getElementById('focusTimeBox');
+            const dayVolumeValue = document.getElementById('dayVolumeValue');
+            const dayVolumeSubtext = document.getElementById('dayVolumeSubtext');
+            const dayVolumeRatio = document.getElementById('dayVolumeRatio');
+            const barVolumeSubtext = document.getElementById('barVolumeSubtext');
+            const indicatorBiasValue = document.getElementById('indicatorBiasValue');
+            const indicatorBiasSubtext = document.getElementById('indicatorBiasSubtext');
+
+            if (focusPriceBox) {
+                focusPriceBox.textContent = `$${formatPrice(data.focus_price ?? data.current_price)}`;
+            }
             const timeText = data.quote_time_eastern ? `${data.quote_time_eastern} ${data.quote_timezone || 'ET'}` : 'Time unavailable';
-            document.getElementById('focusTimeBox').textContent = timeText;
+            if (focusTimeBox) {
+                focusTimeBox.textContent = timeText;
+            }
 
             const upper = data.upper_resistances || [];
             const lower = data.lower_supports || [];
@@ -492,15 +505,15 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             setPriceBox('support2', lower[1], 'support');
 
             const volume = data.volume || {};
-            document.getElementById('dayVolumeValue').textContent = formatVolume(volume.current_day);
-            document.getElementById('dayVolumeSubtext').textContent = `Expected ${formatVolume(volume.expected_day)} today`;
-            document.getElementById('dayVolumeRatio').textContent = formatRatio(volume.day_ratio);
-            document.getElementById('barVolumeSubtext').textContent = `Bar ${formatVolume(volume.current_bar)} vs exp ${formatVolume(volume.expected_bar)} (${formatRatio(volume.bar_ratio)})`;
+            if (dayVolumeValue) dayVolumeValue.textContent = formatVolume(volume.current_day);
+            if (dayVolumeSubtext) dayVolumeSubtext.textContent = `Expected ${formatVolume(volume.expected_day)} today`;
+            if (dayVolumeRatio) dayVolumeRatio.textContent = formatRatio(volume.day_ratio);
+            if (barVolumeSubtext) barVolumeSubtext.textContent = `Bar ${formatVolume(volume.current_bar)} vs exp ${formatVolume(volume.expected_bar)} (${formatRatio(volume.bar_ratio)})`;
 
             if (indicatorSummary) {
                 const total = indicatorSummary.up + indicatorSummary.down + indicatorSummary.neutral;
-                document.getElementById('indicatorBiasValue').innerHTML = `<span style="color: var(--accent-green)">${indicatorSummary.up} ↑</span> / <span style="color: var(--accent-red)">${indicatorSummary.down} ↓</span>`;
-                document.getElementById('indicatorBiasSubtext').textContent = `${total} processed · ${indicatorSummary.neutral} neutral/inside tolerance`;
+                if (indicatorBiasValue) indicatorBiasValue.innerHTML = `<span style="color: var(--accent-green)">${indicatorSummary.up} ↑</span> / <span style="color: var(--accent-red)">${indicatorSummary.down} ↓</span>`;
+                if (indicatorBiasSubtext) indicatorBiasSubtext.textContent = `${total} processed · ${indicatorSummary.neutral} neutral/inside tolerance`;
             }
         }
 
