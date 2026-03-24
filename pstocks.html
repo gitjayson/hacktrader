@@ -7,31 +7,39 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --bg-0: #07111f;
-            --bg-1: #0b1728;
-            --panel: rgba(10, 18, 33, 0.72);
-            --panel-strong: rgba(14, 24, 42, 0.92);
-            --tile: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
-            --tile-border: rgba(255,255,255,0.12);
+            --bg-0: #050b16;
+            --bg-1: #091321;
+            --bg-2: #0d1b2d;
+            --panel: rgba(8, 15, 28, 0.72);
+            --panel-strong: rgba(10, 18, 34, 0.92);
+            --tile: linear-gradient(180deg, rgba(255,255,255,0.085), rgba(255,255,255,0.03));
+            --tile-border: rgba(255,255,255,0.11);
             --text: #f5f8ff;
-            --muted: #8ea3c2;
+            --muted: #8ba1c4;
             --accent: #66e3ff;
             --accent-2: #7c5cff;
-            --success: #5af7b0;
-            --shadow: 0 20px 60px rgba(0,0,0,0.45);
-            --glow: 0 0 0 1px rgba(102, 227, 255, 0.08), 0 0 32px rgba(102, 227, 255, 0.14);
+            --success: #57f7b2;
+            --danger: #ff7398;
+            --amber: #ffc96b;
+            --shadow: 0 24px 70px rgba(0,0,0,0.5);
+            --glow: 0 0 0 1px rgba(102, 227, 255, 0.08), 0 0 36px rgba(102, 227, 255, 0.13);
         }
 
         * {
             box-sizing: border-box;
         }
 
+        html {
+            color-scheme: dark;
+        }
+
         body {
             font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             background:
-                radial-gradient(circle at top left, rgba(124, 92, 255, 0.18), transparent 30%),
-                radial-gradient(circle at top right, rgba(102, 227, 255, 0.16), transparent 26%),
-                linear-gradient(160deg, var(--bg-0), var(--bg-1) 58%, #081423 100%);
+                radial-gradient(circle at top left, rgba(124, 92, 255, 0.17), transparent 28%),
+                radial-gradient(circle at top right, rgba(102, 227, 255, 0.14), transparent 24%),
+                radial-gradient(circle at 50% 120%, rgba(87, 247, 178, 0.08), transparent 30%),
+                linear-gradient(160deg, var(--bg-0), var(--bg-1) 56%, var(--bg-2) 100%);
             color: var(--text);
             margin: 0;
             min-height: 100vh;
@@ -39,31 +47,40 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            overflow-x: hidden;
         }
 
-        body::before {
+        body::before,
+        body::after {
             content: "";
             position: fixed;
             inset: 0;
             pointer-events: none;
+        }
+
+        body::before {
             background:
-                linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
-            background-size: 48px 48px;
+                linear-gradient(rgba(255,255,255,0.024) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.024) 1px, transparent 1px);
+            background-size: 44px 44px;
             mask-image: radial-gradient(circle at center, black 45%, transparent 90%);
-            opacity: 0.35;
+            opacity: 0.34;
+        }
+
+        body::after {
+            background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent 25%, transparent 75%, rgba(255,255,255,0.015));
         }
 
         .container {
             width: 100%;
-            max-width: 1080px;
-            background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+            max-width: 1120px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.02));
             border: 1px solid rgba(255,255,255,0.10);
-            border-radius: 28px;
+            border-radius: 30px;
             padding: 28px;
             box-shadow: var(--shadow);
-            backdrop-filter: blur(20px) saturate(140%);
-            -webkit-backdrop-filter: blur(20px) saturate(140%);
+            backdrop-filter: blur(22px) saturate(150%);
+            -webkit-backdrop-filter: blur(22px) saturate(150%);
             position: relative;
             overflow: hidden;
         }
@@ -72,22 +89,56 @@
             content: "";
             position: absolute;
             inset: 0;
-            background: radial-gradient(circle at top center, rgba(102, 227, 255, 0.09), transparent 40%);
+            background:
+                radial-gradient(circle at top center, rgba(102, 227, 255, 0.10), transparent 34%),
+                linear-gradient(120deg, transparent 18%, rgba(255,255,255,0.03) 28%, transparent 38%);
             pointer-events: none;
         }
 
+        .header-row {
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.04);
+            color: var(--muted);
+            font-size: 0.72rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .eyebrow-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            box-shadow: 0 0 14px rgba(87, 247, 178, 0.65);
+        }
+
         h1 {
-            text-align: center;
-            margin: 0 0 22px;
-            font-size: clamp(2rem, 3vw, 3rem);
-            letter-spacing: -0.03em;
+            margin: 0;
+            font-size: clamp(2rem, 3.2vw, 3.25rem);
+            line-height: 0.98;
+            letter-spacing: -0.045em;
             color: #f7fbff;
-            text-shadow: 0 0 24px rgba(102, 227, 255, 0.16);
+            text-shadow: 0 0 24px rgba(102, 227, 255, 0.14);
         }
 
         .title-subtle {
             display: block;
-            margin-top: 8px;
+            margin-top: 10px;
             font-size: 0.92rem;
             font-weight: 500;
             letter-spacing: 0.22em;
@@ -95,11 +146,25 @@
             color: var(--muted);
         }
 
+        .status-pill {
+            flex-shrink: 0;
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #cfe3ff;
+            font-size: 0.82rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+        }
+
         .search-container {
             display: grid;
             grid-template-columns: minmax(220px, 1fr) 140px auto auto;
             gap: 12px;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
 
         input[type="text"],
@@ -132,7 +197,7 @@
             border-radius: 16px;
             cursor: pointer;
             font-size: 15px;
-            font-weight: 700;
+            font-weight: 800;
             color: #06111d;
             background: linear-gradient(135deg, var(--accent), #b6f3ff);
             box-shadow: 0 10px 30px rgba(102, 227, 255, 0.18);
@@ -163,10 +228,11 @@
 
         .info-box {
             position: relative;
+            min-height: 176px;
             background: var(--tile);
             border: 1px solid var(--tile-border);
             padding: 18px 18px 16px;
-            border-radius: 22px;
+            border-radius: 24px;
             text-align: left;
             overflow: hidden;
             backdrop-filter: blur(14px);
@@ -187,68 +253,227 @@
             content: "";
             position: absolute;
             top: -35%;
-            right: -20%;
-            width: 130px;
-            height: 130px;
+            right: -22%;
+            width: 150px;
+            height: 150px;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(102, 227, 255, 0.16), transparent 68%);
+            background: radial-gradient(circle, rgba(102, 227, 255, 0.17), transparent 68%);
             pointer-events: none;
         }
 
         .info-box:hover {
-            transform: translateY(-4px);
-            border-color: rgba(102, 227, 255, 0.28);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.28), 0 0 0 1px rgba(102, 227, 255, 0.14), 0 0 36px rgba(102, 227, 255, 0.16);
+            transform: translateY(-5px);
+            border-color: rgba(102, 227, 255, 0.30);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.28), 0 0 0 1px rgba(102, 227, 255, 0.14), 0 0 38px rgba(102, 227, 255, 0.18);
+        }
+
+        .tile-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .tile-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        .tile-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.06);
+            color: #dff6ff;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
         }
 
         .info-box h3 {
-            margin: 0 0 12px;
+            margin: 0;
             font-size: 0.76rem;
             font-weight: 700;
             letter-spacing: 0.14em;
             text-transform: uppercase;
             color: var(--muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tile-badge {
+            padding: 6px 9px;
+            border-radius: 999px;
+            font-size: 0.64rem;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #dff6ff;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .tile-value-row {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 8px;
         }
 
         .info-box p {
             margin: 0;
-            font-size: clamp(1.2rem, 2vw, 1.8rem);
-            line-height: 1.1;
-            font-weight: 800;
-            letter-spacing: -0.03em;
+            font-size: clamp(1.26rem, 2vw, 1.88rem);
+            line-height: 1.05;
+            font-weight: 850;
+            letter-spacing: -0.04em;
             color: #ffffff;
         }
 
-        .info-box .tile-accent {
+        .delta-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 10px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.04);
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        .delta-indicator.up {
+            color: var(--success);
+            border-color: rgba(87, 247, 178, 0.2);
+            background: rgba(87, 247, 178, 0.08);
+        }
+
+        .delta-indicator.down {
+            color: var(--danger);
+            border-color: rgba(255, 115, 152, 0.2);
+            background: rgba(255, 115, 152, 0.08);
+        }
+
+        .delta-indicator.flat {
+            color: var(--amber);
+            border-color: rgba(255, 201, 107, 0.2);
+            background: rgba(255, 201, 107, 0.08);
+        }
+
+        .tile-subtext {
+            margin-top: 6px;
+            font-size: 0.8rem;
+            color: #96a9c8;
+            letter-spacing: 0.01em;
+        }
+
+        .sparkline-wrap {
+            position: absolute;
+            left: 16px;
+            right: 16px;
+            bottom: 18px;
+            height: 54px;
+            border-radius: 14px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
+            border: 1px solid rgba(255,255,255,0.06);
+            padding: 6px 8px;
+        }
+
+        .sparkline-wrap canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .tile-accent {
             position: absolute;
             left: 18px;
-            bottom: 12px;
-            width: 34px;
-            height: 4px;
+            top: 18px;
+            width: 4px;
+            height: 36px;
             border-radius: 999px;
-            background: linear-gradient(90deg, var(--accent), var(--accent-2));
-            opacity: 0.9;
+            background: linear-gradient(180deg, var(--accent), var(--accent-2));
+            opacity: 0.85;
         }
 
         .chart-shell {
             background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.025));
             border: 1px solid rgba(255,255,255,0.10);
-            border-radius: 26px;
+            border-radius: 28px;
             padding: 18px;
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
         }
 
+        .chart-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .chart-title {
+            font-size: 0.86rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            font-weight: 800;
+        }
+
+        .chart-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .chip {
+            padding: 8px 10px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #cfe3ff;
+            font-size: 0.74rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
         .chart-container {
             position: relative;
-            height: 430px;
+            height: 440px;
             width: 100%;
             background: var(--panel);
             border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 20px;
+            border-radius: 22px;
             padding: 12px;
+            overflow: hidden;
+        }
+
+        .chart-container::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at top right, rgba(102,227,255,0.08), transparent 30%);
+            pointer-events: none;
         }
 
         @media (max-width: 900px) {
+            .header-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
             .search-container {
                 grid-template-columns: 1fr 120px;
             }
@@ -284,10 +509,19 @@
 </head>
 <body>
     <div class="container">
-        <h1>
-            📈 Stock Price Tracker
-            <span class="title-subtle">Premium market glance</span>
-        </h1>
+        <div class="header-row">
+            <div>
+                <div class="eyebrow">
+                    <span class="eyebrow-dot"></span>
+                    Live Market Surface
+                </div>
+                <h1>
+                    📈 Stock Price Tracker
+                    <span class="title-subtle">Luxury terminal / premium FUI</span>
+                </h1>
+            </div>
+            <div class="status-pill" id="statusPill">Ready</div>
+        </div>
         
         <div class="search-container">
             <input type="text" id="symbolInput" placeholder="Enter stock symbol (e.g., AAPL, MSFT)" value="AAPL">
@@ -298,28 +532,82 @@
 
         <div class="stock-info" id="stockInfo">
             <div class="info-box">
-                <h3>Current Price</h3>
-                <p id="currentPrice">--</p>
                 <span class="tile-accent"></span>
+                <div class="tile-top">
+                    <div class="tile-kicker">
+                        <span class="tile-icon">$</span>
+                        <h3>Current Price</h3>
+                    </div>
+                    <span class="tile-badge">Spot</span>
+                </div>
+                <div class="tile-value-row">
+                    <p id="currentPrice">--</p>
+                    <span class="delta-indicator flat" id="currentSignal">Live</span>
+                </div>
+                <div class="tile-subtext" id="currentSubtext">Latest traded price</div>
+                <div class="sparkline-wrap"><canvas id="sparkCurrent"></canvas></div>
             </div>
+
             <div class="info-box">
-                <h3>Change</h3>
-                <p id="change">--</p>
                 <span class="tile-accent"></span>
+                <div class="tile-top">
+                    <div class="tile-kicker">
+                        <span class="tile-icon">↕</span>
+                        <h3>Change</h3>
+                    </div>
+                    <span class="tile-badge">Delta</span>
+                </div>
+                <div class="tile-value-row">
+                    <p id="change">--</p>
+                    <span class="delta-indicator flat" id="changeSignal">Flat</span>
+                </div>
+                <div class="tile-subtext" id="changeSubtext">Session move vs prev close</div>
+                <div class="sparkline-wrap"><canvas id="sparkChange"></canvas></div>
             </div>
+
             <div class="info-box">
-                <h3>High (52-wk)</h3>
-                <p id="high52">--</p>
                 <span class="tile-accent"></span>
+                <div class="tile-top">
+                    <div class="tile-kicker">
+                        <span class="tile-icon">▲</span>
+                        <h3>High (52-wk)</h3>
+                    </div>
+                    <span class="tile-badge">Range</span>
+                </div>
+                <div class="tile-value-row">
+                    <p id="high52">--</p>
+                    <span class="delta-indicator flat" id="highSignal">Peak</span>
+                </div>
+                <div class="tile-subtext" id="highSubtext">Upper annual reference</div>
+                <div class="sparkline-wrap"><canvas id="sparkHigh"></canvas></div>
             </div>
+
             <div class="info-box">
-                <h3>Low (52-wk)</h3>
-                <p id="low52">--</p>
                 <span class="tile-accent"></span>
+                <div class="tile-top">
+                    <div class="tile-kicker">
+                        <span class="tile-icon">▼</span>
+                        <h3>Low (52-wk)</h3>
+                    </div>
+                    <span class="tile-badge">Floor</span>
+                </div>
+                <div class="tile-value-row">
+                    <p id="low52">--</p>
+                    <span class="delta-indicator flat" id="lowSignal">Base</span>
+                </div>
+                <div class="tile-subtext" id="lowSubtext">Lower annual reference</div>
+                <div class="sparkline-wrap"><canvas id="sparkLow"></canvas></div>
             </div>
         </div>
 
         <div class="chart-shell">
+            <div class="chart-topbar">
+                <div class="chart-title">Primary price curve</div>
+                <div class="chart-meta">
+                    <span class="chip" id="symbolChip">AAPL</span>
+                    <span class="chip" id="lookbackChip">100 bars</span>
+                </div>
+            </div>
             <div class="chart-container">
                 <canvas id="stockChart"></canvas>
             </div>
@@ -328,11 +616,12 @@
 
     <script>
         let stockChart = null;
+        const sparkCharts = {};
         
         // Default data for AAPL
         const defaultData = {
-            labels: ['2026-03-12', '2026-03-11', '2026-03-10', '2026-03-09', '2026-03-06', '2026-03-05'],
-            prices: [255.76, 260.81, 260.83, 259.88, 257.46, 260.29]
+            labels: ['2026-03-05', '2026-03-06', '2026-03-09', '2026-03-10', '2026-03-11', '2026-03-12'],
+            prices: [260.29, 257.46, 259.88, 260.83, 260.81, 255.76]
         };
 
         // Change this to your DreamHost URL when deployed
@@ -342,6 +631,7 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             createChart(defaultData);
+            seedDefaultTiles();
             
             // Allow Enter key to trigger search
             document.getElementById('symbolInput').addEventListener('keypress', function(e) {
@@ -351,6 +641,27 @@
             });
         });
 
+        function setStatus(text) {
+            document.getElementById('statusPill').textContent = text;
+        }
+
+        function createGradient(ctx, c1, c2, alphaTop = 0.3) {
+            const gradient = ctx.createLinearGradient(0, 0, 0, 420);
+            gradient.addColorStop(0, hexToRgba(c1, alphaTop));
+            gradient.addColorStop(0.45, hexToRgba(c2, 0.14));
+            gradient.addColorStop(1, hexToRgba(c1, 0.02));
+            return gradient;
+        }
+
+        function hexToRgba(hex, alpha) {
+            const cleaned = hex.replace('#', '');
+            const bigint = parseInt(cleaned, 16);
+            const r = (bigint >> 16) & 255;
+            const g = (bigint >> 8) & 255;
+            const b = bigint & 255;
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+
         function createChart(data) {
             const ctx = document.getElementById('stockChart').getContext('2d');
             
@@ -358,10 +669,7 @@
                 stockChart.destroy();
             }
             
-            const gradient = ctx.createLinearGradient(0, 0, 0, 420);
-            gradient.addColorStop(0, 'rgba(102, 227, 255, 0.36)');
-            gradient.addColorStop(0.5, 'rgba(124, 92, 255, 0.16)');
-            gradient.addColorStop(1, 'rgba(102, 227, 255, 0.02)');
+            const gradient = createGradient(ctx, '#66e3ff', '#7c5cff', 0.36);
 
             stockChart = new Chart(ctx, {
                 type: 'line',
@@ -429,60 +737,220 @@
             });
         }
 
-        async function loadStockData() {
-            const symbol = document.getElementById('symbolInput').value.toUpperCase();
-            const lookback = document.getElementById('lookbackInput').value || 100;
-            
-            if (!symbol) {
-                alert("Please enter a stock symbol!");
+        function createSparkline(id, values, color = '#66e3ff') {
+            const canvas = document.getElementById(id);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            if (sparkCharts[id]) {
+                sparkCharts[id].destroy();
+            }
+
+            const gradient = ctx.createLinearGradient(0, 0, 0, 60);
+            gradient.addColorStop(0, hexToRgba(color, 0.28));
+            gradient.addColorStop(1, hexToRgba(color, 0.01));
+
+            sparkCharts[id] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: values.map((_, i) => i + 1),
+                    datasets: [{
+                        data: values,
+                        borderColor: color,
+                        backgroundColor: gradient,
+                        borderWidth: 2,
+                        fill: true,
+                        pointRadius: 0,
+                        tension: 0.42
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 650,
+                        easing: 'easeOutQuart'
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    },
+                    scales: {
+                        x: { display: false },
+                        y: { display: false }
+                    },
+                    elements: {
+                        line: { capBezierPoints: true }
+                    }
+                }
+            });
+        }
+
+        function animateValue(el, target, options = {}) {
+            const {
+                prefix = '',
+                suffix = '',
+                decimals = 2,
+                duration = 700,
+                formatter = null
+            } = options;
+
+            if (!el || Number.isNaN(target)) {
+                if (el) el.textContent = `${prefix}${target}${suffix}`;
                 return;
             }
 
+            const startText = (el.dataset.value || '0').replace(/,/g, '');
+            const start = parseFloat(startText) || 0;
+            const startTime = performance.now();
+
+            function frame(now) {
+                const progress = Math.min((now - startTime) / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                const value = start + (target - start) * eased;
+
+                if (formatter) {
+                    el.textContent = formatter(value);
+                } else {
+                    el.textContent = `${prefix}${value.toFixed(decimals)}${suffix}`;
+                }
+
+                if (progress < 1) {
+                    requestAnimationFrame(frame);
+                } else {
+                    el.dataset.value = String(target);
+                }
+            }
+
+            requestAnimationFrame(frame);
+        }
+
+        function updateSignal(id, direction, label) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.className = `delta-indicator ${direction}`;
+            const icon = direction === 'up' ? '▲' : direction === 'down' ? '▼' : '•';
+            el.textContent = `${icon} ${label}`;
+        }
+
+        function seedDefaultTiles() {
+            const prices = defaultData.prices;
+            const current = prices[prices.length - 1];
+            const previous = prices[prices.length - 2];
+            const delta = current - previous;
+            const percent = (delta / previous) * 100;
+
+            animateValue(document.getElementById('currentPrice'), current, { prefix: '$' });
+            animateValue(document.getElementById('change'), delta, {
+                formatter: (v) => `${v >= 0 ? '+' : ''}$${v.toFixed(2)} (${((v / previous) * 100).toFixed(2)}%)`
+            });
+            animateValue(document.getElementById('high52'), Math.max(...prices), { prefix: '$' });
+            animateValue(document.getElementById('low52'), Math.min(...prices), { prefix: '$' });
+
+            updateSignal('currentSignal', 'flat', 'Live');
+            updateSignal('changeSignal', delta > 0 ? 'up' : delta < 0 ? 'down' : 'flat', `${percent > 0 ? '+' : ''}${percent.toFixed(2)}%`);
+            updateSignal('highSignal', 'up', 'Peak');
+            updateSignal('lowSignal', 'flat', 'Base');
+
+            document.getElementById('currentSubtext').textContent = 'Latest traded price';
+            document.getElementById('changeSubtext').textContent = 'Session move vs prev close';
+            document.getElementById('highSubtext').textContent = 'Upper annual reference';
+            document.getElementById('lowSubtext').textContent = 'Lower annual reference';
+
+            createSparkline('sparkCurrent', prices, '#66e3ff');
+            createSparkline('sparkChange', prices.map((p, i, arr) => i === 0 ? 0 : p - arr[i - 1]), delta >= 0 ? '#57f7b2' : '#ff7398');
+            createSparkline('sparkHigh', prices.map((_, i) => Math.max(...prices.slice(0, i + 1))), '#7c5cff');
+            createSparkline('sparkLow', prices.map((_, i) => Math.min(...prices.slice(0, i + 1))), '#ffc96b');
+        }
+
+        function setChips(symbol, lookback) {
+            document.getElementById('symbolChip').textContent = symbol;
+            document.getElementById('lookbackChip').textContent = `${lookback} bars`;
+        }
+
+        async function loadStockData() {
+            const symbol = document.getElementById('symbolInput').value.toUpperCase().trim();
+            const lookback = parseInt(document.getElementById('lookbackInput').value || '100', 10);
+            
+            if (!symbol) {
+                alert('Please enter a stock symbol!');
+                return;
+            }
+
+            setStatus(`Loading ${symbol}...`);
+            setChips(symbol, lookback);
+
             try {
-                // Fetch quote data
                 const quoteResponse = await fetch(`${API_URL}/quote?symbol=${symbol}`);
                 const quoteData = await quoteResponse.json();
                 
                 if (!quoteResponse.ok) {
-                    throw new Error(quoteData.error || "Stock not found");
+                    throw new Error(quoteData.error || 'Stock not found');
                 }
                 
-                // Fetch time series data with dynamic outputsize
                 const timeSeriesResponse = await fetch(`${API_URL}/time_series?symbol=${symbol}&interval=1day&outputsize=${lookback}`);
                 const data = await timeSeriesResponse.json();
                 
-                if (!timeSeriesResponse.ok) {
-                    throw new Error(data.error || "Stock not found");
+                if (!timeSeriesResponse.ok || !data.values?.length) {
+                    throw new Error(data.error || 'Price history unavailable');
                 }
                 
-                // Process price data
                 const prices = data.values.slice(0, lookback).reverse();
-                
-                // Prepare chart data
-                const chartData = {
-                    labels: prices.map(p => p.datetime),
-                    prices: prices.map(p => parseFloat(p.close))
-                };
-                
-                // Update stock info
+                const closes = prices.map(p => parseFloat(p.close));
                 const currentPrice = parseFloat(quoteData.current_price || quoteData.close);
                 const prevClose = parseFloat(quoteData.previous_close);
                 const change = currentPrice - prevClose;
-                const percentChange = ((change / prevClose) * 100).toFixed(2);
-                
-                document.getElementById('currentPrice').textContent = `$${currentPrice.toFixed(2)}`;
-                document.getElementById('change').innerHTML = `$${change.toFixed(2)} (${percentChange}%)`;
-                document.getElementById('change').style.color = change >= 0 ? '#5af7b0' : '#ff7b9c';
-                document.getElementById('high52').textContent = `$${quoteData['fifty_two_week']?.high || 'N/A'}`;
-                document.getElementById('low52').textContent = `$${quoteData['fifty_two_week']?.low || 'N/A'}`;
-                
-                // Update chart
+                const percentChange = ((change / prevClose) * 100);
+                const high52 = parseFloat(quoteData['fifty_two_week']?.high);
+                const low52 = parseFloat(quoteData['fifty_two_week']?.low);
+
+                const chartData = {
+                    labels: prices.map(p => p.datetime),
+                    prices: closes
+                };
+
+                animateValue(document.getElementById('currentPrice'), currentPrice, { prefix: '$' });
+                animateValue(document.getElementById('change'), change, {
+                    formatter: (v) => `${v >= 0 ? '+' : ''}$${v.toFixed(2)} (${((v / prevClose) * 100).toFixed(2)}%)`
+                });
+
+                if (!Number.isNaN(high52)) {
+                    animateValue(document.getElementById('high52'), high52, { prefix: '$' });
+                } else {
+                    document.getElementById('high52').textContent = 'N/A';
+                }
+
+                if (!Number.isNaN(low52)) {
+                    animateValue(document.getElementById('low52'), low52, { prefix: '$' });
+                } else {
+                    document.getElementById('low52').textContent = 'N/A';
+                }
+
+                const direction = change > 0 ? 'up' : change < 0 ? 'down' : 'flat';
+                updateSignal('currentSignal', direction, direction === 'up' ? 'Bid Up' : direction === 'down' ? 'Soft' : 'Live');
+                updateSignal('changeSignal', direction, `${percentChange > 0 ? '+' : ''}${percentChange.toFixed(2)}%`);
+                updateSignal('highSignal', 'up', 'Peak');
+                updateSignal('lowSignal', 'flat', 'Base');
+
+                document.getElementById('change').style.color = change >= 0 ? '#57f7b2' : '#ff7398';
+                document.getElementById('currentSubtext').textContent = `${quoteData.name || symbol} · ${quoteData.exchange || 'Market'}`;
+                document.getElementById('changeSubtext').textContent = `Move vs prev close $${prevClose.toFixed(2)}`;
+                document.getElementById('highSubtext').textContent = !Number.isNaN(high52) ? `Distance ${(high52 - currentPrice).toFixed(2)} from spot` : '52-week high unavailable';
+                document.getElementById('lowSubtext').textContent = !Number.isNaN(low52) ? `Distance ${(currentPrice - low52).toFixed(2)} above floor` : '52-week low unavailable';
+
+                createSparkline('sparkCurrent', closes.slice(-24), '#66e3ff');
+                createSparkline('sparkChange', closes.slice(1).map((p, i) => p - closes[i]), change >= 0 ? '#57f7b2' : '#ff7398');
+                createSparkline('sparkHigh', closes.map((_, i) => Math.max(...closes.slice(0, i + 1))).slice(-24), '#7c5cff');
+                createSparkline('sparkLow', closes.map((_, i) => Math.min(...closes.slice(0, i + 1))).slice(-24), '#ffc96b');
+
                 createChart(chartData);
-                
+                setStatus(`Live · ${symbol}`);
             } catch (error) {
+                setStatus('Error');
                 alert(`Error: ${error.message}`);
             }
         }
     </script>
 </body>
 </html>
+
