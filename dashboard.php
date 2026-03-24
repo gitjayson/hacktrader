@@ -154,6 +154,22 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             return parts.join(' | ');
         }
 
+        function formatPrice(value) {
+            const num = Number(value);
+            if (!Number.isFinite(num)) return '--';
+            return num.toFixed(2);
+        }
+
+        function buildTickerMarkup(symbol, data) {
+            return `${symbol}<br>$${formatPrice(data.current_price)}<br><span style='color: var(--accent-blue)'>+${data.probabilities.up}%</span> | <span style='color: var(--accent-red)'>-${data.probabilities.down}%</span>`;
+        }
+
+        function applyTickerState(el, data, tolerance) {
+            el.classList.remove('green', 'red');
+            if (data.probabilities.up > tolerance) el.classList.add('green');
+            else if (data.probabilities.down > tolerance) el.classList.add('red');
+        }
+
         function setTickerDisplay(el, symbol, data, tolerance) {
             el.className = el.id === 'focus' ? 'center-ticker' : 'indicator';
             if (!data || data.error || !data.probabilities) {
@@ -161,9 +177,8 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 return;
             }
 
-            el.innerHTML = `${symbol}<br>$${data.current_price}<br><span style='color: var(--accent-blue)'>+${data.probabilities.up}%</span> | <span style='color: var(--accent-red)'>-${data.probabilities.down}%</span>`;
-            if (data.probabilities.up > tolerance) el.classList.add('green');
-            else if (data.probabilities.down > tolerance) el.classList.add('red');
+            el.innerHTML = buildTickerMarkup(symbol, data);
+            applyTickerState(el, data, tolerance);
         }
 
         async function fetchTickerData(ticker, period, lookback) {
@@ -180,6 +195,43 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             document.getElementById('period').value = '5m';
             document.getElementById('lookback').value = '100';
             updateDashboard();
+        }
+
+        function computeLineColor(data, relation, tolerance) {
+            const upwardTrend = data.probabilities.up >= tolerance;
+            const downwardTrend = data.probabilities.down >= tolerance;
+
+            if (relation === 'positive') {
+                if (upwardTrend) return '#27ae60';
+                if (downwardTrend) return '#c0392b';
+                return '#444444';
+            }
+
+            if (relation === 'negative') {
+                if (downwardTrend) return '#27ae60';
+                if (upwardTrend) return '#c0392b';
+                return '#444444';
+            }
+
+            return '#444444';
+        }
+
+        function drawOrUpdateLine(lineId, x, y, lineColor) {
+            const lines = document.getElementById('lines');
+            let line = document.getElementById(lineId);
+            if (!line) {
+                line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('id', lineId);
+                line.setAttribute('x1', '200');
+                line.setAttribute('y1', '200');
+                line.setAttribute('x2', 200 + x);
+                line.setAttribute('y2', 200 + y);
+                lines.appendChild(line);
+            }
+            line.setAttribute('stroke', lineColor);
+            line.setAttribute('stroke-width', lineColor === '#444444' ? '1' : '2');
+            if (lineColor === '#444444') line.setAttribute('stroke-dasharray', '4,4');
+            else line.removeAttribute('stroke-dasharray');
         }
 
         async function updateDashboard(newTicker = null) {
@@ -199,9 +251,6 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             focus.innerHTML = `${ticker}<br>SCANNING`;
             showBanner('');
 
-            document.querySelectorAll('.indicator').forEach(e => e.remove());
-            document.getElementById('lines').innerHTML = '';
-
             let currentFocus = null;
             try {
                 currentFocus = await fetchTickerData(ticker, period, lookback);
@@ -217,6 +266,37 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             try {
                 const corrRes = await fetch(`correlate.php?ticker=${ticker}`);
                 const indicators = await corrRes.json();
+                const activeSymbols = new Set(indicators.map(ind => ind.symbol));
+
+                document.querySelectorAll('.indicator').forEach(el => {
+                    if (!activeSymbols.has(el.dataset.symbol)) {
+                        const lineId = `line-${el.dataset.symbol}`;
+                        document.getElementById(lineId)?.remove();
+                        el.remove();
+                    }
+                });
+
+                indicators.forEach((indObj, i) => {
+                    const ind = indObj.symbol;
+                    const angle = (i / indicators.length) * 2 * Math.PI;
+                    const x = Math.cos(angle) * 180;
+                    const y = Math.sin(angle) * 180;
+                    let el = document.querySelector(`.indicator[data-symbol="${ind}"]`);
+
+                    if (!el) {
+                        el = document.createElement('div');
+                        el.className = 'indicator';
+                        el.style.cursor = 'pointer';
+                        el.setAttribute('title', ind);
+                        el.dataset.symbol = ind;
+                        el.onclick = () => updateDashboard(ind);
+                        el.innerHTML = `${ind}<br>...`;
+                        clock.appendChild(el);
+                    }
+
+                    el.style.left = `calc(50% + ${x}px - 40px)`;
+                    el.style.top = `calc(50% + ${y}px - 40px)`;
+                });
 
                 const promises = indicators.map(async (indObj, i) => {
                     const ind = indObj.symbol;
@@ -224,50 +304,22 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                     const angle = (i / indicators.length) * 2 * Math.PI;
                     const x = Math.cos(angle) * 180;
                     const y = Math.sin(angle) * 180;
-                    const el = document.createElement('div');
-                    el.className = 'indicator';
-                    el.style.left = `calc(50% + ${x}px - 40px)`;
-                    el.style.top = `calc(50% + ${y}px - 40px)`;
-                    el.style.cursor = 'pointer';
-                    el.setAttribute('title', ind);
-                    el.innerHTML = `${ind}<br>...`;
-                    el.onclick = () => updateDashboard(ind);
-                    clock.appendChild(el);
+                    const el = document.querySelector(`.indicator[data-symbol="${ind}"]`);
+                    const lineId = `line-${ind}`;
 
                     try {
                         const data = await fetchTickerData(ind, period, lookback);
-                        setTickerDisplay(el, ind, data, tolerance);
+                        const nextHtml = buildTickerMarkup(ind, data);
+                        const lineColor = computeLineColor(data, relation, tolerance);
 
-                        let upwardTrend = data.probabilities.up >= tolerance;
-                        let downwardTrend = data.probabilities.down >= tolerance;
-                        let lineColor = null;
-
-                        if (relation == 'positive') {
-                            if (upwardTrend) lineColor = '#27ae60';
-                            else if (downwardTrend) lineColor = '#c0392b';
-                            else lineColor = '#444444';
-                        } else if (relation == 'negative') {
-                            if (downwardTrend) lineColor = '#27ae60';
-                            else if (upwardTrend) lineColor = '#c0392b';
-                            else lineColor = '#444444';
-                        }
-
-                        if (lineColor) {
-                            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                            line.setAttribute('x1', '200');
-                            line.setAttribute('y1', '200');
-                            line.setAttribute('x2', 200 + x);
-                            line.setAttribute('y2', 200 + y);
-                            line.setAttribute('stroke', lineColor);
-                            line.setAttribute('stroke-width', lineColor === '#444444' ? '1' : '2');
-                            if (lineColor === '#444444') line.setAttribute('stroke-dasharray', '4,4');
-                            document.getElementById('lines').appendChild(line);
-
-                            if (lineColor == '#27ae60') el.classList.add('green');
-                            else if (lineColor == '#c0392b') el.classList.add('red');
-                        }
+                        el.innerHTML = nextHtml;
+                        el.className = 'indicator';
+                        applyTickerState(el, data, tolerance);
+                        drawOrUpdateLine(lineId, x, y, lineColor);
                     } catch (e) {
-                        el.innerHTML = `${ind}<br>DATA ERR`;
+                        if (!el.innerHTML || el.innerHTML.includes('<br>...')) {
+                            el.innerHTML = `${ind}<br>DATA ERR`;
+                        }
                     }
                 });
                 await Promise.all(promises);
