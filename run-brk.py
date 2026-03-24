@@ -243,18 +243,24 @@ try:
         raise SystemExit(0)
 
     rows = []
-    for _, row in df.iterrows():
+    for idx, row in df.iterrows():
         high = row.get('High')
         low = row.get('Low')
         close = row.get('Close')
         if high is None or low is None or close is None:
             continue
         volume = row.get('Volume')
+        dt_value = None
+        try:
+            dt_value = idx.isoformat()
+        except Exception:
+            dt_value = str(idx)
         rows.append({
             'high': float(high),
             'low': float(low),
             'close': float(close),
             'volume': float(volume) if volume is not None else None,
+            'datetime': dt_value,
         })
 
     if not rows:
