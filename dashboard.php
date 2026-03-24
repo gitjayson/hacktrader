@@ -201,29 +201,28 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             text-transform: uppercase;
             margin-bottom: 8px;
         }
-        .focus-arc {
+        .side-rail {
             position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 520px;
+            right: 8px;
+            top: 52px;
+            width: 172px;
             display: flex;
-            gap: 14px;
-            justify-content: center;
+            flex-direction: column;
+            gap: 10px;
             pointer-events: none;
         }
-        .focus-arc.top { top: -18px; }
-        .focus-arc.bottom { bottom: 168px; }
         .focus-stack {
             display: contents;
         }
         .price-box {
-            width: 190px;
+            width: 100%;
             border: 1px solid var(--panel-border);
-            padding: 10px 14px;
+            padding: 8px 10px;
             background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.015) 100%);
             clip-path: polygon(8% 0, 92% 0, 100% 50%, 92% 100%, 8% 100%, 0 50%);
             backdrop-filter: blur(4px);
             box-shadow: inset 0 0 20px rgba(255,255,255,0.03);
+            box-sizing: border-box;
         }
         .price-box.focus {
             border-color: rgba(0,243,255,0.5);
@@ -236,21 +235,21 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             border-color: rgba(255,180,0,0.42);
         }
         .price-label {
-            font-size: 10px;
+            font-size: 9px;
             color: #8f8f8f;
             text-transform: uppercase;
-            letter-spacing: 0.16em;
-            margin-bottom: 4px;
+            letter-spacing: 0.14em;
+            margin-bottom: 3px;
         }
         .price-value {
-            font-size: 19px;
+            font-size: 16px;
             font-weight: 700;
             color: #fff;
         }
         .price-diff {
-            font-size: 10px;
+            font-size: 9px;
             color: #bbb;
-            margin-top: 4px;
+            margin-top: 3px;
         }
         .stats-grid {
             position: absolute;
@@ -296,21 +295,19 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 width: min(1080px, 100%);
                 min-height: 700px;
             }
-            .focus-arc {
-                width: 480px;
-                gap: 12px;
+            .side-rail {
+                right: 0;
+                width: 158px;
+                gap: 8px;
             }
-            .focus-arc.top { top: -28px; }
-            .focus-arc.bottom { bottom: 176px; }
             .price-box {
-                width: 176px;
-                padding: 9px 12px;
+                padding: 8px 9px;
             }
             .price-value {
-                font-size: 17px;
+                font-size: 15px;
             }
             .price-diff {
-                font-size: 9px;
+                font-size: 8px;
             }
             .stats-grid {
                 width: 700px;
@@ -325,17 +322,17 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 width: 100%;
                 min-height: 920px;
             }
-            .focus-arc,
             .stats-grid {
                 width: min(92vw, 760px);
             }
-            .focus-arc {
-                flex-wrap: wrap;
-            }
-            .focus-arc.top { top: 0; }
-            .focus-arc.bottom { bottom: 180px; }
-            .price-box {
+            .side-rail {
+                position: static;
                 width: min(320px, 42vw);
+                margin: 0 auto 18px;
+                gap: 10px;
+            }
+            .price-box {
+                width: 100%;
                 padding: 10px 14px;
             }
             .price-value {
@@ -376,7 +373,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 <div class='center-ticker' id='focus' onclick='resetDashboard()' style='cursor:pointer;'>INIT<br>SCAN</div>
             </div>
             <aside class='focus-panel'>
-                <div class='focus-arc top'>
+                <div class='side-rail'>
                     <div class='price-box resistance'>
                         <div class='price-label'>Resistance 2</div>
                         <div class='price-value' id='resistance2'>--</div>
@@ -387,8 +384,6 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                         <div class='price-value' id='resistance1'>--</div>
                         <div class='price-diff' id='resistance1Diff'>Awaiting signal</div>
                     </div>
-                </div>
-                <div class='focus-arc bottom'>
                     <div class='price-box support'>
                         <div class='price-label'>Support 1</div>
                         <div class='price-value' id='support1'>--</div>
@@ -538,9 +533,9 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 
             const volume = data.volume || {};
             if (dayVolumeValue) dayVolumeValue.textContent = formatVolume(volume.current_day);
-            if (dayVolumeSubtext) dayVolumeSubtext.textContent = `Expected ${formatVolume(volume.expected_day)} today`;
+            if (dayVolumeSubtext) dayVolumeSubtext.textContent = `Avg day ${formatVolume(volume.expected_day)}`;
             if (dayVolumeRatio) dayVolumeRatio.textContent = formatRatio(volume.day_ratio);
-            if (barVolumeSubtext) barVolumeSubtext.textContent = `Bar ${formatVolume(volume.current_bar)} vs exp ${formatVolume(volume.expected_bar)} (${formatRatio(volume.bar_ratio)})`;
+            if (barVolumeSubtext) barVolumeSubtext.textContent = `Current bar ${formatVolume(volume.current_bar)} vs avg slot ${formatVolume(volume.expected_bar)} (${formatRatio(volume.bar_ratio)})`;
 
             if (indicatorSummary) {
                 const total = indicatorSummary.up + indicatorSummary.down + indicatorSummary.neutral;

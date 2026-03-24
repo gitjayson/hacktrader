@@ -80,6 +80,30 @@ def yfinance_range_for_interval(interval, periods):
     return '5y'
 
 
+def safe_float(value):
+    try:
+        if value is None:
+            return None
+        return float(value)
+    except Exception:
+        return None
+
+
+def parse_market_datetime(raw):
+    if not raw:
+        return None
+    try:
+        if isinstance(raw, (int, float)):
+            dt_utc = datetime.fromtimestamp(raw, tz=ZoneInfo('UTC'))
+        else:
+            parsed = str(raw).replace('Z', '+00:00')
+            dt = datetime.fromisoformat(parsed)
+            dt_utc = dt if dt.tzinfo else dt.replace(tzinfo=ZoneInfo('UTC'))
+        return dt_utc.astimezone(ZoneInfo('America/New_York'))
+    except Exception:
+        return None
+
+
 def compute_output(ticker, interval, display, periods, values, source):
     current = float(values[0]['close'])
     highs = [float(d.get('high', 0)) for d in values if d.get('high') is not None]
@@ -103,57 +127,68 @@ def compute_output(ticker, interval, display, periods, values, source):
 
     latest = values[0] if values else {}
     timestamp_raw = latest.get('datetime') or latest.get('timestamp')
-    eastern_time = None
-    eastern_label = 'US/Eastern'
-    if timestamp_raw:
-        try:
-            if isinstance(timestamp_raw, (int, float)):
-                dt_utc = datetime.fromtimestamp(timestamp_raw, tz=ZoneInfo('UTC'))
-            else:
-                parsed = str(timestamp_raw).replace('Z', '+00:00')
-                dt = datetime.fromisoformat(parsed)
-                dt_utc = dt if dt.tzinfo else dt.replace(tzinfo=ZoneInfo('UTC'))
-            dt_et = dt_utc.astimezone(ZoneInfo('America/New_York'))
-            eastern_time = dt_et.strftime('%Y-%m-%d %I:%M %p')
-            eastern_label = dt_et.tzname() or 'US/Eastern'
-        except Exception:
-            eastern_time = str(timestamp_raw)
+    latest_dt_et = parse_market_datetime(timestamp_raw)
+    eastern_time = latest_dt_et.strftime('%Y-%m-%d %I:%M %p') if latest_dt_et else (str(timestamp_raw) if timestamp_raw else None)
+    eastern_label = latest_dt_et.tzname() if latest_dt_et else 'US/Eastern'
 
-    volumes = [float(v.get('volume', 0) or 0) for v in values if v.get('volume') is not None]
-    current_volume = float(latest.get('volume', 0) or 0)
+    current_volume = safe_float(latest.get('volume'))
     expected_volume = None
     volume_ratio = None
-    if volumes:
-        sample = volumes[1:] if len(volumes) > 1 else volumes
-        if sample:
-            expected_volume = sum(sample) / len(sample)
-            if expected_volume > 0:
-                volume_ratio = current_volume / expected_volume
 
     interval_minutes = interval_to_minutes(interval)
     expected_day_volume = None
     current_day_volume = None
     day_volume_ratio = None
-    if interval != '1day' and volumes:
-        bars_per_day = max(1, round(390 / interval_minutes))
-        today_bars = volumes[:bars_per_day]
-        prior_bars = volumes[bars_per_day:bars_per_day * 6]
-        if today_bars:
-            current_day_volume = sum(today_bars)
-        if prior_bars:
-            chunks = [prior_bars[i:i + bars_per_day] for i in range(0, len(prior_bars), bars_per_day)]
-            full_chunks = [chunk for chunk in chunks if len(chunk) >= max(1, math.floor(bars_per_day * 0.6))]
-            if full_chunks:
-                day_totals = [sum(chunk) for chunk in full_chunks]
-                expected_day_volume = sum(day_totals) / len(day_totals)
+
+    if interval != '1day':
+        current_slot = None
+        if latest_dt_et:
+            current_slot = (latest_dt_et.hour, latest_dt_et.minute)
+
+        same_slot_volumes = []
+        daily_totals = {}
+        for row in values:
+            row_dt = parse_market_datetime(row.get('datetime') or row.get('timestamp'))
+            row_volume = safe_float(row.get('volume'))
+            if row_dt is None or row_volume is None:
+                continue
+
+            day_key = row_dt.date().isoformat()
+            daily_totals[day_key] = daily_totals.get(day_key, 0.0) + row_volume
+
+            if current_slot and (row_dt.hour, row_dt.minute) == current_slot:
+                if latest_dt_et and row_dt.date() == latest_dt_et.date():
+                    continue
+                same_slot_volumes.append(row_volume)
+
+        if daily_totals:
+            sorted_days = sorted(daily_totals.items(), reverse=True)
+            if latest_dt_et:
+                current_day_key = latest_dt_et.date().isoformat()
+                current_day_volume = daily_totals.get(current_day_key)
+                prior_day_totals = [total for day, total in sorted_days if day != current_day_key]
+            else:
+                current_day_volume = sorted_days[0][1]
+                prior_day_totals = [total for _, total in sorted_days[1:]]
+
+            if prior_day_totals:
+                expected_day_volume = sum(prior_day_totals[:5]) / min(len(prior_day_totals), 5)
+
+        if current_volume is not None and same_slot_volumes:
+            expected_volume = sum(same_slot_volumes[:5]) / min(len(same_slot_volumes), 5)
+            if expected_volume > 0:
+                volume_ratio = current_volume / expected_volume
+
         if current_day_volume is not None and expected_day_volume and expected_day_volume > 0:
             day_volume_ratio = current_day_volume / expected_day_volume
-    elif interval == '1day' and volumes:
+    else:
+        volumes = [safe_float(v.get('volume')) for v in values]
+        volumes = [v for v in volumes if v is not None]
         current_day_volume = current_volume
-        sample = volumes[1:] if len(volumes) > 1 else volumes
+        sample = volumes[1:] if len(volumes) > 1 else []
         if sample:
-            expected_day_volume = sum(sample) / len(sample)
-            if expected_day_volume > 0:
+            expected_day_volume = sum(sample[:20]) / min(len(sample), 20)
+            if expected_day_volume > 0 and current_day_volume is not None:
                 day_volume_ratio = current_day_volume / expected_day_volume
 
     return {
