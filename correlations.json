@@ -586,5 +586,19 @@
         {"symbol": "SPY", "relation": "positive"},
         {"symbol": "QQQ", "relation": "positive"},
         {"symbol": "TLT", "relation": "negative"}
+    ],
+    "GLD": [
+        {"symbol": "SLV", "relation": "positive"},
+        {"symbol": "GDX", "relation": "positive"},
+        {"symbol": "GDXJ", "relation": "positive"},
+        {"symbol": "IAU", "relation": "positive"},
+        {"symbol": "TLT", "relation": "positive"},
+        {"symbol": "UUP", "relation": "negative"},
+        {"symbol": "UDN", "relation": "positive"},
+        {"symbol": "SPY", "relation": "negative"},
+        {"symbol": "QQQ", "relation": "negative"},
+        {"symbol": "XLE", "relation": "negative"},
+        {"symbol": "WTI", "relation": "negative"},
+        {"symbol": "FXE", "relation": "positive"}
     ]
 }
