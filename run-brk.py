@@ -3,7 +3,10 @@ import os
 import sys
 import subprocess
 import random
+import math
 from pathlib import Path
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 secrets_path = os.path.join(script_dir, 'secrets.json')
@@ -52,6 +55,16 @@ def interval_to_yfinance(interval):
     return mapping.get(interval, '1d')
 
 
+def interval_to_minutes(interval):
+    mapping = {
+        '1min': 1,
+        '5min': 5,
+        '1h': 60,
+        '1day': 390,
+    }
+    return mapping.get(interval, 5)
+
+
 def yfinance_range_for_interval(interval, periods):
     try:
         periods = int(periods)
@@ -67,7 +80,7 @@ def yfinance_range_for_interval(interval, periods):
     return '5y'
 
 
-def compute_output(ticker, display, periods, values, source):
+def compute_output(ticker, interval, display, periods, values, source):
     current = float(values[0]['close'])
     highs = [float(d.get('high', 0)) for d in values if d.get('high') is not None]
     lows = [float(d.get('low', 0)) for d in values if d.get('low') is not None]
@@ -88,16 +101,83 @@ def compute_output(ticker, display, periods, values, source):
     up_prob = round((inv_upper / total_inv) * 100, 1) if total_inv > 0 else 0
     down_prob = round((inv_lower / total_inv) * 100, 1) if total_inv > 0 else 0
 
+    latest = values[0] if values else {}
+    timestamp_raw = latest.get('datetime') or latest.get('timestamp')
+    eastern_time = None
+    eastern_label = 'US/Eastern'
+    if timestamp_raw:
+        try:
+            if isinstance(timestamp_raw, (int, float)):
+                dt_utc = datetime.fromtimestamp(timestamp_raw, tz=ZoneInfo('UTC'))
+            else:
+                parsed = str(timestamp_raw).replace('Z', '+00:00')
+                dt = datetime.fromisoformat(parsed)
+                dt_utc = dt if dt.tzinfo else dt.replace(tzinfo=ZoneInfo('UTC'))
+            dt_et = dt_utc.astimezone(ZoneInfo('America/New_York'))
+            eastern_time = dt_et.strftime('%Y-%m-%d %I:%M %p')
+            eastern_label = dt_et.tzname() or 'US/Eastern'
+        except Exception:
+            eastern_time = str(timestamp_raw)
+
+    volumes = [float(v.get('volume', 0) or 0) for v in values if v.get('volume') is not None]
+    current_volume = float(latest.get('volume', 0) or 0)
+    expected_volume = None
+    volume_ratio = None
+    if volumes:
+        sample = volumes[1:] if len(volumes) > 1 else volumes
+        if sample:
+            expected_volume = sum(sample) / len(sample)
+            if expected_volume > 0:
+                volume_ratio = current_volume / expected_volume
+
+    interval_minutes = interval_to_minutes(interval)
+    expected_day_volume = None
+    current_day_volume = None
+    day_volume_ratio = None
+    if interval != '1day' and volumes:
+        bars_per_day = max(1, round(390 / interval_minutes))
+        today_bars = volumes[:bars_per_day]
+        prior_bars = volumes[bars_per_day:bars_per_day * 6]
+        if today_bars:
+            current_day_volume = sum(today_bars)
+        if prior_bars:
+            chunks = [prior_bars[i:i + bars_per_day] for i in range(0, len(prior_bars), bars_per_day)]
+            full_chunks = [chunk for chunk in chunks if len(chunk) >= max(1, math.floor(bars_per_day * 0.6))]
+            if full_chunks:
+                day_totals = [sum(chunk) for chunk in full_chunks]
+                expected_day_volume = sum(day_totals) / len(day_totals)
+        if current_day_volume is not None and expected_day_volume and expected_day_volume > 0:
+            day_volume_ratio = current_day_volume / expected_day_volume
+    elif interval == '1day' and volumes:
+        current_day_volume = current_volume
+        sample = volumes[1:] if len(volumes) > 1 else volumes
+        if sample:
+            expected_day_volume = sum(sample) / len(sample)
+            if expected_day_volume > 0:
+                day_volume_ratio = current_day_volume / expected_day_volume
+
     return {
         'ticker': ticker,
         'display': display,
         'periods': int(periods),
+        'interval': interval,
         'current_price': current,
+        'focus_price': current,
+        'quote_time_eastern': eastern_time,
+        'quote_timezone': eastern_label,
         'upper_resistances': [{'price': r, 'diff': round(r - current, 2)} for r in upper_resistances],
         'lower_supports': [{'price': r, 'diff': round(current - r, 2)} for r in lower_resistances],
         'probabilities': {
             'up': up_prob,
             'down': down_prob
+        },
+        'volume': {
+            'current_bar': round(current_volume, 2) if current_volume is not None else None,
+            'expected_bar': round(expected_volume, 2) if expected_volume is not None else None,
+            'bar_ratio': round(volume_ratio, 2) if volume_ratio is not None else None,
+            'current_day': round(current_day_volume, 2) if current_day_volume is not None else None,
+            'expected_day': round(expected_day_volume, 2) if expected_day_volume is not None else None,
+            'day_ratio': round(day_volume_ratio, 2) if day_volume_ratio is not None else None,
         },
         'source': source,
     }
@@ -131,6 +211,8 @@ def fetch_twelvedata(ticker, interval, periods):
                 'high': entry.get('high'),
                 'low': entry.get('low'),
                 'close': entry.get('close'),
+                'volume': entry.get('volume'),
+                'datetime': entry.get('datetime'),
             }
             for entry in data['values']
         ]
@@ -167,10 +249,12 @@ try:
         close = row.get('Close')
         if high is None or low is None or close is None:
             continue
+        volume = row.get('Volume')
         rows.append({
             'high': float(high),
             'low': float(low),
             'close': float(close),
+            'volume': float(volume) if volume is not None else None,
         })
 
     if not rows:
@@ -236,7 +320,7 @@ def run_breakout(ticker='TSLA', interval='1day', display='1-day', periods='100',
             print('Error: Unable to fetch market data')
         return
 
-    output = compute_output(ticker, display, periods, values, source)
+    output = compute_output(ticker, interval, display, periods, values, source)
     if td_error and source == 'yfinance':
         output['fallback_reason'] = td_error
 
