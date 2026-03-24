@@ -84,8 +84,8 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         .clock-container { flex-grow: 1; display: flex; justify-content: center; align-items: center; position: relative; padding: 20px 24px 40px; box-sizing: border-box; }
         .clock-shell {
             position: relative;
-            width: min(1040px, 100%);
-            min-height: 640px;
+            width: min(1160px, 100%);
+            min-height: 720px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -205,21 +205,21 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             position: absolute;
             left: 50%;
             transform: translateX(-50%);
-            width: 620px;
+            width: 520px;
             display: flex;
-            gap: 18px;
+            gap: 14px;
             justify-content: center;
             pointer-events: none;
         }
-        .focus-arc.top { top: 18px; }
-        .focus-arc.bottom { bottom: 132px; }
+        .focus-arc.top { top: -18px; }
+        .focus-arc.bottom { bottom: 168px; }
         .focus-stack {
             display: contents;
         }
         .price-box {
-            width: 230px;
+            width: 190px;
             border: 1px solid var(--panel-border);
-            padding: 12px 16px;
+            padding: 10px 14px;
             background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.015) 100%);
             clip-path: polygon(8% 0, 92% 0, 100% 50%, 92% 100%, 8% 100%, 0 50%);
             backdrop-filter: blur(4px);
@@ -243,12 +243,12 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             margin-bottom: 4px;
         }
         .price-value {
-            font-size: 22px;
+            font-size: 19px;
             font-weight: 700;
             color: #fff;
         }
         .price-diff {
-            font-size: 11px;
+            font-size: 10px;
             color: #bbb;
             margin-top: 4px;
         }
