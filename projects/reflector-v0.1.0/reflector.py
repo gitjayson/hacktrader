@@ -75,6 +75,7 @@ def fetch_symbol(symbol: str) -> dict:
 
 
 def build_snapshot() -> dict:
+    started_at = now_iso()
     indicator_ids = load_indicator_ids()
     base_symbols = []
     seen = set()
@@ -104,14 +105,23 @@ def build_snapshot() -> dict:
             "market": fetched.get(symbol, {}),
         }
 
+    completed_at = now_iso()
     return {
         "project": PROJECT,
         "version": VERSION,
-        "updated_at": now_iso(),
+        "updated_at": completed_at,
         "source": SOURCE,
         "count": len(indicator_ids),
         "base_symbol_count": len(base_symbols),
         "indicator_ids": indicator_ids,
+        "status": {
+            "ok": len(errors) == 0,
+            "started_at": started_at,
+            "completed_at": completed_at,
+            "refresh_interval_seconds": 60,
+            "error_count": len(errors)
+        },
+        "market_data": fetched,
         "data": data,
         "errors": errors,
     }
