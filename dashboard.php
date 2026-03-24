@@ -22,6 +22,8 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             --accent-blue: #00f3ff;
             --accent-amber: #ffb400;
             --accent-red: #ff3e3e;
+            --accent-green: #27ae60;
+            --panel-border: rgba(255, 255, 255, 0.12);
             --grid-color: rgba(255, 255, 255, 0.05);
         }
         body { 
@@ -79,33 +81,94 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         }
         button { cursor: pointer; border: 1px solid var(--accent-blue); color: var(--accent-blue); transition: 0.3s; }
         button:hover { background: var(--accent-blue); color: #000; }
-        .clock-container { flex-grow: 1; display: flex; justify-content: center; align-items: center; position: relative; gap: 28px; padding: 20px 24px 40px; box-sizing: border-box; }
-        .clock-face { position: relative; width: 400px; height: 400px; border: 1px dashed #333; border-radius: 50%; flex: 0 0 400px; }
+        .clock-container { flex-grow: 1; display: flex; justify-content: center; align-items: center; position: relative; padding: 20px 24px 40px; box-sizing: border-box; }
+        .clock-shell {
+            position: relative;
+            width: min(1040px, 100%);
+            min-height: 640px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .clock-face { position: relative; width: 440px; height: 440px; border: 1px dashed #333; border-radius: 50%; flex: 0 0 440px; box-shadow: inset 0 0 40px rgba(255,255,255,0.03), 0 0 30px rgba(0,243,255,0.05); }
+        .clock-face::before,
+        .clock-face::after {
+            content: '';
+            position: absolute;
+            inset: 22px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .clock-face::after {
+            inset: 52px;
+            border-style: dashed;
+            border-color: rgba(255,255,255,0.06);
+        }
         .center-ticker { 
-            width: 100px; height: 100px; 
-            border: 2px solid #666; 
-            box-shadow: 0 0 10px rgba(255,255,255,0.08);
+            width: 132px; height: 132px; 
+            border: 1px solid #666; 
+            box-shadow: 0 0 18px rgba(255,255,255,0.08), inset 0 0 24px rgba(255,255,255,0.04);
             border-radius: 50%; 
             display: flex; flex-direction: column; 
             justify-content: center; align-items: center; 
             font-weight: 700; font-size: 11px; 
-            position: absolute; top: 150px; left: 150px; 
-            background: rgba(0,0,0,0.88);
+            position: absolute; top: 154px; left: 154px; 
+            background: radial-gradient(circle at center, rgba(20,20,20,0.96) 0%, rgba(0,0,0,0.94) 68%, rgba(255,255,255,0.04) 100%);
             z-index: 10;
+            overflow: hidden;
+            text-align: center;
+            letter-spacing: 0.08em;
         }
         .indicator { 
-            width: 80px; height: 80px; 
+            width: 82px; height: 82px; 
             border: 1px solid #666; 
             border-radius: 50%; 
             position: absolute; display: flex; flex-direction: column; 
             justify-content: center; align-items: center; 
             font-size: 9px; background: rgba(0,0,0,0.8);
             text-align: center;
+            backdrop-filter: blur(2px);
         }
         .indicator.green { border-color: var(--accent-blue); box-shadow: 0 0 10px var(--accent-blue); }
         .indicator.red { border-color: var(--accent-red); box-shadow: 0 0 10px var(--accent-red); }
-        .center-ticker.green { border-color: var(--accent-blue); box-shadow: 0 0 20px var(--accent-blue); }
-        .center-ticker.red { border-color: var(--accent-red); box-shadow: 0 0 20px var(--accent-red); }
+        .center-ticker.green { border-color: var(--accent-blue); box-shadow: 0 0 20px var(--accent-blue), inset 0 0 25px rgba(0,243,255,0.08); }
+        .center-ticker.red { border-color: var(--accent-red); box-shadow: 0 0 20px var(--accent-red), inset 0 0 25px rgba(255,62,62,0.08); }
+        .focus-logo-badge {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+            background: radial-gradient(circle at center, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0.02) 55%, rgba(0,0,0,0.2) 100%);
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.04), inset 0 0 18px rgba(255,255,255,0.03);
+            overflow: hidden;
+        }
+        .focus-logo-badge img {
+            width: 30px;
+            height: 30px;
+            object-fit: contain;
+            filter: grayscale(1) brightness(1.15) contrast(1.1);
+            opacity: 0.95;
+        }
+        .focus-logo-fallback {
+            font-size: 14px;
+            color: var(--accent-amber);
+            letter-spacing: 0.16em;
+            padding-left: 0.16em;
+        }
+        .focus-symbol {
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+        .focus-meta {
+            font-size: 9px;
+            color: #bdbdbd;
+            margin-top: 4px;
+        }
         .status-banner {
             position: fixed;
             top: 72px;
@@ -126,48 +189,57 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             color: var(--accent-red);
         }
         .focus-panel {
-            width: 320px;
-            background: rgba(0, 0, 0, 0.9);
-            border: 1px solid #2a2a2a;
-            box-shadow: 0 0 18px rgba(0, 243, 255, 0.08);
-            padding: 16px;
-            box-sizing: border-box;
-            min-height: 400px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
         }
         .panel-title {
             color: var(--accent-blue);
             font-weight: 700;
-            font-size: 14px;
-            letter-spacing: 1px;
+            font-size: 12px;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
         }
-        .focus-stack {
+        .focus-arc {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 620px;
             display: flex;
-            flex-direction: column;
-            gap: 8px;
+            gap: 18px;
+            justify-content: center;
+            pointer-events: none;
+        }
+        .focus-arc.top { top: 18px; }
+        .focus-arc.bottom { bottom: 132px; }
+        .focus-stack {
+            display: contents;
         }
         .price-box {
-            border: 1px solid #333;
-            padding: 10px 12px;
-            background: rgba(255,255,255,0.02);
+            width: 230px;
+            border: 1px solid var(--panel-border);
+            padding: 12px 16px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.015) 100%);
+            clip-path: polygon(8% 0, 92% 0, 100% 50%, 92% 100%, 8% 100%, 0 50%);
+            backdrop-filter: blur(4px);
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.03);
         }
         .price-box.focus {
-            border-color: var(--accent-blue);
-            box-shadow: 0 0 10px rgba(0, 243, 255, 0.15);
+            border-color: rgba(0,243,255,0.5);
+            box-shadow: 0 0 18px rgba(0, 243, 255, 0.12), inset 0 0 20px rgba(255,255,255,0.03);
         }
         .price-box.support {
-            border-left: 3px solid #25c26e;
+            border-color: rgba(39,174,96,0.42);
         }
         .price-box.resistance {
-            border-left: 3px solid var(--accent-amber);
+            border-color: rgba(255,180,0,0.42);
         }
         .price-label {
             font-size: 10px;
             color: #8f8f8f;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.16em;
             margin-bottom: 4px;
         }
         .price-value {
@@ -181,17 +253,25 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             margin-top: 4px;
         }
         .stats-grid {
+            position: absolute;
+            left: 50%;
+            bottom: 12px;
+            transform: translateX(-50%);
+            width: 760px;
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            pointer-events: none;
         }
         .stat-card {
             border: 1px solid #2f2f2f;
-            padding: 10px;
-            background: rgba(255,255,255,0.02);
+            padding: 12px 14px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.015) 100%);
+            clip-path: polygon(4% 0, 96% 0, 100% 50%, 96% 100%, 4% 100%, 0 50%);
+            box-shadow: inset 0 0 18px rgba(255,255,255,0.025);
         }
         .stat-card.wide {
-            grid-column: 1 / -1;
+            grid-column: auto;
         }
         .stat-label {
             font-size: 10px;
@@ -210,6 +290,28 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             color: #b8b8b8;
             margin-top: 4px;
             line-height: 1.4;
+        }
+        @media (max-width: 1100px) {
+            body {
+                height: auto;
+                overflow: auto;
+            }
+            .clock-shell {
+                width: 100%;
+                min-height: 920px;
+            }
+            .focus-arc,
+            .stats-grid {
+                width: min(92vw, 760px);
+            }
+            .focus-arc {
+                flex-wrap: wrap;
+            }
+            .focus-arc.top { top: 0; }
+            .focus-arc.bottom { bottom: 180px; }
+            .price-box {
+                width: min(320px, 42vw);
+            }
         }
     </style>
 </head>
@@ -236,57 +338,55 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
     </header>
     <div id='statusBanner' class='status-banner'></div>
     <div class='clock-container'>
-        <div class='clock-face' id='clock'>
-            <svg id='lines' style='position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;'></svg>
-            <div class='center-ticker' id='focus' onclick='resetDashboard()' style='cursor:pointer;'>INIT<br>SCAN</div>
+        <div class='clock-shell'>
+            <div class='clock-face' id='clock'>
+                <svg id='lines' style='position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;'></svg>
+                <div class='center-ticker' id='focus' onclick='resetDashboard()' style='cursor:pointer;'>INIT<br>SCAN</div>
+            </div>
+            <aside class='focus-panel'>
+                <div class='focus-arc top'>
+                    <div class='price-box resistance'>
+                        <div class='price-label'>Resistance 2</div>
+                        <div class='price-value' id='resistance2'>--</div>
+                        <div class='price-diff' id='resistance2Diff'>Awaiting signal</div>
+                    </div>
+                    <div class='price-box resistance'>
+                        <div class='price-label'>Resistance 1</div>
+                        <div class='price-value' id='resistance1'>--</div>
+                        <div class='price-diff' id='resistance1Diff'>Awaiting signal</div>
+                    </div>
+                </div>
+                <div class='focus-arc bottom'>
+                    <div class='price-box support'>
+                        <div class='price-label'>Support 1</div>
+                        <div class='price-value' id='support1'>--</div>
+                        <div class='price-diff' id='support1Diff'>Awaiting signal</div>
+                    </div>
+                    <div class='price-box support'>
+                        <div class='price-label'>Support 2</div>
+                        <div class='price-value' id='support2'>--</div>
+                        <div class='price-diff' id='support2Diff'>Awaiting signal</div>
+                    </div>
+                </div>
+                <div class='stats-grid'>
+                    <div class='stat-card'>
+                        <div class='stat-label'>Day Volume</div>
+                        <div class='stat-value' id='dayVolumeValue'>--</div>
+                        <div class='stat-subtext' id='dayVolumeSubtext'>Waiting on market data</div>
+                    </div>
+                    <div class='stat-card wide'>
+                        <div class='stat-label'>Indicator Bias</div>
+                        <div class='stat-value' id='indicatorBiasValue'>--</div>
+                        <div class='stat-subtext' id='indicatorBiasSubtext'>0 of 12 processed</div>
+                    </div>
+                    <div class='stat-card'>
+                        <div class='stat-label'>Volume Ratio</div>
+                        <div class='stat-value' id='dayVolumeRatio'>--</div>
+                        <div class='stat-subtext' id='barVolumeSubtext'>Current bar vs expected bar pending</div>
+                    </div>
+                </div>
+            </aside>
         </div>
-        <aside class='focus-panel'>
-            <div class='panel-title'>FOCUS LADDER</div>
-            <div class='focus-stack'>
-                <div class='price-box resistance'>
-                    <div class='price-label'>RESISTANCE 2</div>
-                    <div class='price-value' id='resistance2'>--</div>
-                    <div class='price-diff' id='resistance2Diff'>Awaiting signal</div>
-                </div>
-                <div class='price-box resistance'>
-                    <div class='price-label'>RESISTANCE 1</div>
-                    <div class='price-value' id='resistance1'>--</div>
-                    <div class='price-diff' id='resistance1Diff'>Awaiting signal</div>
-                </div>
-                <div class='price-box focus'>
-                    <div class='price-label'>FOCUS PRICE</div>
-                    <div class='price-value' id='focusPriceBox'>--</div>
-                    <div class='price-diff' id='focusTimeBox'>Awaiting signal</div>
-                </div>
-                <div class='price-box support'>
-                    <div class='price-label'>SUPPORT 1</div>
-                    <div class='price-value' id='support1'>--</div>
-                    <div class='price-diff' id='support1Diff'>Awaiting signal</div>
-                </div>
-                <div class='price-box support'>
-                    <div class='price-label'>SUPPORT 2</div>
-                    <div class='price-value' id='support2'>--</div>
-                    <div class='price-diff' id='support2Diff'>Awaiting signal</div>
-                </div>
-            </div>
-            <div class='stats-grid'>
-                <div class='stat-card'>
-                    <div class='stat-label'>DAY VOLUME</div>
-                    <div class='stat-value' id='dayVolumeValue'>--</div>
-                    <div class='stat-subtext' id='dayVolumeSubtext'>Waiting on market data</div>
-                </div>
-                <div class='stat-card'>
-                    <div class='stat-label'>VOLUME RATIO</div>
-                    <div class='stat-value' id='dayVolumeRatio'>--</div>
-                    <div class='stat-subtext' id='barVolumeSubtext'>Current bar vs expected bar pending</div>
-                </div>
-                <div class='stat-card wide'>
-                    <div class='stat-label'>INDICATOR BIAS</div>
-                    <div class='stat-value' id='indicatorBiasValue'>--</div>
-                    <div class='stat-subtext' id='indicatorBiasSubtext'>0 of 12 processed</div>
-                </div>
-            </div>
-        </aside>
     </div>
     <script>
         let refreshInterval = setInterval(updateDashboard, 30000);
@@ -339,6 +439,31 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             const num = Number(value);
             if (!Number.isFinite(num)) return '--';
             return `${num.toFixed(2)}x`;
+        }
+
+        function getLogoUrl(symbol) {
+            const map = {
+                TSLA: 'https://logo.clearbit.com/tesla.com',
+                AAPL: 'https://logo.clearbit.com/apple.com',
+                NVDA: 'https://logo.clearbit.com/nvidia.com',
+                AMZN: 'https://logo.clearbit.com/amazon.com',
+                META: 'https://logo.clearbit.com/meta.com',
+                GOOGL: 'https://logo.clearbit.com/google.com',
+                GOOG: 'https://logo.clearbit.com/google.com',
+                MSFT: 'https://logo.clearbit.com/microsoft.com',
+                NFLX: 'https://logo.clearbit.com/netflix.com',
+                AMD: 'https://logo.clearbit.com/amd.com'
+            };
+            return map[symbol] || null;
+        }
+
+        function buildFocusMarkup(symbol, data) {
+            const logoUrl = getLogoUrl(symbol);
+            const fallback = symbol.slice(0, 2);
+            const logoHtml = logoUrl
+                ? `<div class="focus-logo-badge"><img src="${logoUrl}" alt="${symbol} logo" onerror="this.parentElement.innerHTML='<div class=\'focus-logo-fallback\'>${fallback}</div>'"></div>`
+                : `<div class="focus-logo-badge"><div class="focus-logo-fallback">${fallback}</div></div>`;
+            return `${logoHtml}<div class="focus-symbol">${symbol}</div><div>$${formatPrice(data.current_price)}</div><div class="focus-meta"><span style='color: var(--accent-green)'>↑ ${data.probabilities.up}%</span> · <span style='color: var(--accent-red)'>↓ ${data.probabilities.down}%</span></div>`;
         }
 
         function setPriceBox(idPrefix, entry, kind) {
@@ -396,7 +521,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 return;
             }
 
-            el.innerHTML = buildTickerMarkup(symbol, data);
+            el.innerHTML = el.id === 'focus' ? buildFocusMarkup(symbol, data) : buildTickerMarkup(symbol, data);
             applyTickerState(el, data, tolerance);
         }
 
@@ -469,7 +594,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 
             const focus = document.getElementById('focus');
             focus.className = 'center-ticker';
-            focus.innerHTML = `${ticker}<br>SCANNING`;
+            focus.innerHTML = `<div class="focus-logo-badge"><div class="focus-logo-fallback">${ticker.slice(0, 2)}</div></div><div class="focus-symbol">${ticker}</div><div>SCANNING</div>`;
             showBanner('');
 
             let currentFocus = null;
