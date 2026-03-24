@@ -517,7 +517,8 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         function setTickerDisplay(el, symbol, data, tolerance) {
             el.className = el.id === 'focus' ? 'center-ticker' : 'indicator';
             if (!data || data.error || !data.probabilities) {
-                el.innerHTML = `${symbol}<br>DATA ERR`;
+                const detail = data?.error ? String(data.error).slice(0, 24) : 'DATA ERR';
+                el.innerHTML = `${symbol}<br>${detail}`;
                 return;
             }
 
@@ -604,8 +605,8 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 updateFocusPanel(currentFocus);
                 showBanner(formatSourceMeta(currentFocus), false);
             } catch (e) {
-                focus.innerHTML = `${ticker}<br>DATA ERR`;
                 const detail = e?.details ? JSON.stringify(e.details) : (e?.error || 'Unknown error');
+                focus.innerHTML = `${ticker}<br>ERR`;
                 showBanner(`MARKET DATA ERROR: ${detail}`, true);
                 return;
             }
@@ -670,7 +671,8 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                         else summary.neutral += 1;
                     } catch (e) {
                         if (!el.innerHTML || el.innerHTML.includes('<br>...')) {
-                            el.innerHTML = `${ind}<br>DATA ERR`;
+                            const detail = e?.error ? String(e.error).slice(0, 16) : 'DATA ERR';
+                            el.innerHTML = `${ind}<br>${detail}`;
                         }
                     }
                 });
