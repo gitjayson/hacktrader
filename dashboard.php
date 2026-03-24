@@ -349,6 +349,10 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
     $corrData = json_decode(file_get_contents('correlations.json'), true);
     $allTickers = array_keys($corrData);
     sort($allTickers);
+    $logoManifest = [];
+    if (file_exists('logos.json')) {
+        $logoManifest = json_decode(file_get_contents('logos.json'), true) ?: [];
+    }
     ?>
     <header>
         <input type='text' id='ticker' list='ticker-list' placeholder='TICKER' size='6'>
@@ -416,6 +420,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         </div>
     </div>
     <script>
+        const logoManifest = <?php echo json_encode($logoManifest, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>;
         let refreshInterval = setInterval(updateDashboard, 30000);
 
         function syncToleranceValue() {
@@ -469,19 +474,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         }
 
         function getLogoUrl(symbol) {
-            const map = {
-                TSLA: 'https://logo.clearbit.com/tesla.com',
-                AAPL: 'https://logo.clearbit.com/apple.com',
-                NVDA: 'https://logo.clearbit.com/nvidia.com',
-                AMZN: 'https://logo.clearbit.com/amazon.com',
-                META: 'https://logo.clearbit.com/meta.com',
-                GOOGL: 'https://logo.clearbit.com/google.com',
-                GOOG: 'https://logo.clearbit.com/google.com',
-                MSFT: 'https://logo.clearbit.com/microsoft.com',
-                NFLX: 'https://logo.clearbit.com/netflix.com',
-                AMD: 'https://logo.clearbit.com/amd.com'
-            };
-            return map[symbol] || null;
+            return logoManifest[symbol] || null;
         }
 
         function buildFocusMarkup(symbol, data) {
