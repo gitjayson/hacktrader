@@ -3,9 +3,15 @@ import os
 import sys
 import subprocess
 import random
+from pathlib import Path
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 secrets_path = os.path.join(script_dir, 'secrets.json')
+
+home = Path.home()
+user_site = home / '.local' / 'lib' / f'python{sys.version_info.major}.{sys.version_info.minor}' / 'site-packages'
+if user_site.exists() and str(user_site) not in sys.path:
+    sys.path.insert(0, str(user_site))
 
 
 def load_api_keys():
