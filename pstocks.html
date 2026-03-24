@@ -574,9 +574,14 @@
       text-transform: uppercase;
     }
 
-    .chart-container {
+    .chart-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .chart-container,
+    .indicator-panel {
       position: relative;
-      height: 470px;
       width: 100%;
       background: var(--panel);
       border: 1px solid rgba(255,255,255,0.06);
@@ -585,7 +590,38 @@
       overflow: hidden;
     }
 
-    .chart-container::before {
+    .chart-container {
+      height: 470px;
+    }
+
+    .indicator-panels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .indicator-panel {
+      height: 190px;
+    }
+
+    .panel-title {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      z-index: 2;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: rgba(5,11,22,0.58);
+      border: 1px solid rgba(255,255,255,0.06);
+      padding: 6px 10px;
+      border-radius: 999px;
+    }
+
+    .chart-container::before,
+    .indicator-panel::before {
       content: "";
       position: absolute;
       inset: 0;
@@ -625,12 +661,17 @@
       .left-rail { grid-template-columns: 1fr; }
     }
 
+    @media (max-width: 760px) {
+      .indicator-panels { grid-template-columns: 1fr; }
+    }
+
     @media (max-width: 640px) {
       body { padding: 14px; }
       .container { padding: 18px; border-radius: 22px; }
       .search-container { grid-template-columns: 1fr; }
       .stock-info { grid-template-columns: 1fr; }
       .chart-container { height: 340px; }
+      .indicator-panel { height: 180px; }
     }
   </style>
 </head>
@@ -769,9 +810,22 @@
               <span class="chip" id="vwapChip">VWAP --</span>
             </div>
           </div>
-          <div class="chart-container">
-            <div class="hud-sweep"></div>
-            <canvas id="stockChart"></canvas>
+          <div class="chart-grid">
+            <div class="chart-container">
+              <div class="panel-title">Price + VWAP</div>
+              <div class="hud-sweep"></div>
+              <canvas id="stockChart"></canvas>
+            </div>
+            <div class="indicator-panels">
+              <div class="indicator-panel">
+                <div class="panel-title">RSI</div>
+                <canvas id="rsiChart"></canvas>
+              </div>
+              <div class="indicator-panel">
+                <div class="panel-title">MACD</div>
+                <canvas id="macdChart"></canvas>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -780,6 +834,8 @@
 
   <script>
     let stockChart = null;
+    let rsiChart = null;
+    let macdChart = null;
     const sparkCharts = {};
     let autoRefresh = false;
     let autoRefreshTimer = null;
@@ -875,6 +931,15 @@
             pointHoverBorderWidth: 2,
             fill: true,
             tension: 0.38
+          }, {
+            label: 'VWAP',
+            data: data.vwapSeries || [],
+            borderColor: '#ffc96b',
+            borderWidth: 2,
+            pointRadius: 0,
+            tension: 0.18,
+            fill: false,
+            borderDash: [7, 5]
           }]
         },
         options: {
@@ -897,7 +962,7 @@
               titleColor: '#ffffff',
               bodyColor: '#d8e6ff',
               padding: 12,
-              displayColors: false
+              displayColors: true
             }
           },
           scales: {
@@ -910,6 +975,117 @@
               grid: { color: 'rgba(255,255,255,0.05)' },
               border: { color: 'rgba(255,255,255,0.08)' },
               ticks: { color: '#9fb5d4', maxTicksLimit: 10 }
+            }
+          }
+        }
+      });
+    }
+
+    function createRSIChart(labels, rsiSeries) {
+      const ctx = document.getElementById('rsiChart').getContext('2d');
+      if (rsiChart) rsiChart.destroy();
+      rsiChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'RSI',
+            data: rsiSeries,
+            borderColor: '#57f7b2',
+            borderWidth: 2,
+            pointRadius: 0,
+            tension: 0.32,
+            fill: false,
+            segment: {
+              borderColor: ctx => {
+                const y = ctx.p1.parsed.y;
+                if (y >= 70) return '#ff7398';
+                if (y <= 30) return '#57f7b2';
+                return '#66e3ff';
+              }
+            }
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: {
+              min: 0,
+              max: 100,
+              grid: { color: 'rgba(255,255,255,0.07)' },
+              ticks: { color: '#9fb5d4', stepSize: 20 }
+            },
+            x: {
+              grid: { color: 'rgba(255,255,255,0.04)' },
+              ticks: { color: '#9fb5d4', maxTicksLimit: 6 }
+            }
+          }
+        },
+        plugins: [{
+          id: 'rsiZones',
+          beforeDraw(chart) {
+            const {ctx, chartArea, scales} = chart;
+            if (!chartArea) return;
+            const y70 = scales.y.getPixelForValue(70);
+            const y30 = scales.y.getPixelForValue(30);
+            ctx.save();
+            ctx.fillStyle = 'rgba(255,115,152,0.08)';
+            ctx.fillRect(chartArea.left, chartArea.top, chartArea.right - chartArea.left, y70 - chartArea.top);
+            ctx.fillStyle = 'rgba(87,247,178,0.08)';
+            ctx.fillRect(chartArea.left, y30, chartArea.right - chartArea.left, chartArea.bottom - y30);
+            ctx.restore();
+          }
+        }]
+      });
+    }
+
+    function createMACDChart(labels, macdLine, signalLine, histSeries) {
+      const ctx = document.getElementById('macdChart').getContext('2d');
+      if (macdChart) macdChart.destroy();
+      macdChart = new Chart(ctx, {
+        data: {
+          labels,
+          datasets: [{
+            type: 'bar',
+            label: 'Histogram',
+            data: histSeries,
+            backgroundColor: histSeries.map(v => v >= 0 ? 'rgba(87,247,178,0.5)' : 'rgba(255,115,152,0.5)'),
+            borderWidth: 0,
+            order: 3
+          }, {
+            type: 'line',
+            label: 'MACD',
+            data: macdLine,
+            borderColor: '#66e3ff',
+            borderWidth: 2,
+            pointRadius: 0,
+            tension: 0.3,
+            order: 1
+          }, {
+            type: 'line',
+            label: 'Signal',
+            data: signalLine,
+            borderColor: '#ffc96b',
+            borderWidth: 2,
+            pointRadius: 0,
+            tension: 0.3,
+            order: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: '#cfe3ff' } } },
+          scales: {
+            y: {
+              grid: { color: 'rgba(255,255,255,0.07)' },
+              ticks: { color: '#9fb5d4' }
+            },
+            x: {
+              grid: { color: 'rgba(255,255,255,0.04)' },
+              ticks: { color: '#9fb5d4', maxTicksLimit: 6 }
             }
           }
         }
@@ -1034,7 +1210,8 @@
     }
 
     function calcRSI(closes, period = 14) {
-      if (closes.length <= period) return null;
+      if (closes.length <= period) return { value: null, series: [] };
+      const rsiSeries = Array(closes.length).fill(null);
       let gains = 0;
       let losses = 0;
       for (let i = 1; i <= period; i++) {
@@ -1044,36 +1221,43 @@
       }
       let avgGain = gains / period;
       let avgLoss = losses / period;
+      rsiSeries[period] = avgLoss === 0 ? 100 : 100 - (100 / (1 + (avgGain / avgLoss)));
       for (let i = period + 1; i < closes.length; i++) {
         const delta = closes[i] - closes[i - 1];
         const gain = delta > 0 ? delta : 0;
         const loss = delta < 0 ? Math.abs(delta) : 0;
         avgGain = ((avgGain * (period - 1)) + gain) / period;
         avgLoss = ((avgLoss * (period - 1)) + loss) / period;
+        rsiSeries[i] = avgLoss === 0 ? 100 : 100 - (100 / (1 + (avgGain / avgLoss)));
       }
-      if (avgLoss === 0) return 100;
-      const rs = avgGain / avgLoss;
-      return 100 - (100 / (1 + rs));
+      const cleaned = rsiSeries.filter(v => v != null);
+      return { value: cleaned.length ? cleaned[cleaned.length - 1] : null, series: rsiSeries };
     }
 
     function calcMACD(closes) {
-      if (closes.length < 26) return null;
+      if (closes.length < 26) return { value: null, lineSeries: [], signalSeries: [], histSeries: [] };
       const ema12 = ema(closes, 12);
       const ema26 = ema(closes, 26);
       const macdLine = closes.map((_, i) => ema12[i] - ema26[i]);
       const signalLine = ema(macdLine, 9);
-      const hist = macdLine[macdLine.length - 1] - signalLine[signalLine.length - 1];
+      const histSeries = macdLine.map((v, i) => v - signalLine[i]);
       return {
-        line: macdLine[macdLine.length - 1],
-        signal: signalLine[signalLine.length - 1],
-        hist
+        value: {
+          line: macdLine[macdLine.length - 1],
+          signal: signalLine[signalLine.length - 1],
+          hist: histSeries[histSeries.length - 1]
+        },
+        lineSeries: macdLine,
+        signalSeries: signalLine,
+        histSeries
       };
     }
 
     function calcVWAP(series) {
-      if (!series.length) return null;
+      if (!series.length) return { value: null, series: [] };
       let cumulativePV = 0;
       let cumulativeV = 0;
+      const out = [];
       for (const bar of series) {
         const high = parseFloat(bar.high ?? bar.close ?? 0);
         const low = parseFloat(bar.low ?? bar.close ?? 0);
@@ -1082,14 +1266,21 @@
         const typical = (high + low + close) / 3;
         cumulativePV += typical * volume;
         cumulativeV += volume;
+        out.push(cumulativeV ? cumulativePV / cumulativeV : null);
       }
-      return cumulativeV ? cumulativePV / cumulativeV : null;
+      return { value: out[out.length - 1], series: out };
     }
 
     function updateIndicatorChips(rsi, macd, vwap) {
-      document.getElementById('rsiChip').textContent = `RSI ${rsi == null ? '--' : rsi.toFixed(1)}`;
-      document.getElementById('macdChip').textContent = `MACD ${macd == null ? '--' : macd.hist.toFixed(2)}`;
-      document.getElementById('vwapChip').textContent = `VWAP ${vwap == null ? '--' : '$' + vwap.toFixed(2)}`;
+      const rsiEl = document.getElementById('rsiChip');
+      const macdEl = document.getElementById('macdChip');
+      const vwapEl = document.getElementById('vwapChip');
+      rsiEl.textContent = `RSI ${rsi == null ? '--' : rsi.toFixed(1)}`;
+      macdEl.textContent = `MACD ${macd == null ? '--' : macd.hist.toFixed(2)}`;
+      vwapEl.textContent = `VWAP ${vwap == null ? '--' : '$' + vwap.toFixed(2)}`;
+      rsiEl.style.color = rsi == null ? '#cfe3ff' : rsi >= 70 ? '#ff7398' : rsi <= 30 ? '#57f7b2' : '#cfe3ff';
+      macdEl.style.color = macd == null ? '#cfe3ff' : macd.hist >= 0 ? '#57f7b2' : '#ff7398';
+      vwapEl.style.color = '#ffc96b';
     }
 
     function seedDefaultTiles() {
@@ -1115,10 +1306,12 @@
       createSparkline('sparkChange', prices.map((p, i, arr) => i === 0 ? 0 : p - arr[i - 1]), delta >= 0 ? '#57f7b2' : '#ff7398');
       createSparkline('sparkHigh', prices.map((_, i) => Math.max(...prices.slice(0, i + 1))), '#7c5cff');
       createSparkline('sparkLow', prices.map((_, i) => Math.min(...prices.slice(0, i + 1))), '#ffc96b');
-      const seedVwap = average(prices);
+      const seedVwap = { value: average(prices), series: prices.map(() => average(prices)) };
       const seedRsi = calcRSI(prices);
       const seedMacd = calcMACD(prices);
-      updateLeftRail(78200000, prices, { rsi: seedRsi, macd: seedMacd, vwap: seedVwap });
+      createRSIChart(defaultData.labels, seedRsi.series.map(v => v ?? null));
+      createMACDChart(defaultData.labels, seedMacd.lineSeries, seedMacd.signalSeries, seedMacd.histSeries);
+      updateLeftRail(78200000, prices, { rsi: seedRsi.value, macd: seedMacd.value, vwap: seedVwap.value });
     }
 
     async function loadStockData(silent = false) {
@@ -1151,7 +1344,9 @@
         const macd = calcMACD(closes);
         const vwap = calcVWAP(prices);
 
-        createChart({ labels: prices.map(p => p.datetime), prices: closes });
+        createChart({ labels: prices.map(p => p.datetime), prices: closes, vwapSeries: vwap.series });
+        createRSIChart(prices.map(p => p.datetime), rsi.series);
+        createMACDChart(prices.map(p => p.datetime), macd.lineSeries, macd.signalSeries, macd.histSeries);
 
         animateValue(document.getElementById('currentPrice'), currentPrice, { prefix: '$' });
         animateValue(document.getElementById('change'), change, {
@@ -1177,7 +1372,7 @@
         createSparkline('sparkHigh', closes.map((_, i) => Math.max(...closes.slice(0, i + 1))).slice(-24), '#7c5cff');
         createSparkline('sparkLow', closes.map((_, i) => Math.min(...closes.slice(0, i + 1))).slice(-24), '#ffc96b');
 
-        updateLeftRail(currentVolume, closes, { rsi, macd, vwap });
+        updateLeftRail(currentVolume, closes, { rsi: rsi.value, macd: macd.value, vwap: vwap.value });
         setStatus(`Live · ${symbol}`);
       } catch (error) {
         setStatus('Error');
