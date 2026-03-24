@@ -237,7 +237,12 @@ except Exception as e:
 
 symbol, interval, period = sys.argv[1], sys.argv[2], sys.argv[3]
 try:
-    df = yf.Ticker(symbol).history(interval=interval, period=period, auto_adjust=False, prepost=False)
+    try:
+        df = yf.Ticker(symbol).history(interval=interval, period=period, auto_adjust=False, prepost=False)
+    except Exception as e:
+        print(json.dumps({'error': f'yfinance history failed: {e}'}))
+        raise SystemExit(0)
+
     if df is None or df.empty:
         print(json.dumps({'error': 'No values in yfinance response'}))
         raise SystemExit(0)
