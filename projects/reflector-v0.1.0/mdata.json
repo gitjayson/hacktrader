@@ -1,0 +1,13 @@
+{
+  "project": "reflector",
+  "version": "0.1.0",
+  "updated_at": null,
+  "source": "yfinance",
+  "count": 50,
+  "base_symbol_count": 40,
+  "indicator_ids": [],
+  "data": {},
+  "errors": {
+    "status": "not_collected_yet"
+  }
+}
