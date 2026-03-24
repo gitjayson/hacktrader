@@ -291,6 +291,31 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             margin-top: 4px;
             line-height: 1.4;
         }
+        @media (max-width: 1280px) {
+            .clock-shell {
+                width: min(1080px, 100%);
+                min-height: 700px;
+            }
+            .focus-arc {
+                width: 480px;
+                gap: 12px;
+            }
+            .focus-arc.top { top: -28px; }
+            .focus-arc.bottom { bottom: 176px; }
+            .price-box {
+                width: 176px;
+                padding: 9px 12px;
+            }
+            .price-value {
+                font-size: 17px;
+            }
+            .price-diff {
+                font-size: 9px;
+            }
+            .stats-grid {
+                width: 700px;
+            }
+        }
         @media (max-width: 1100px) {
             body {
                 height: auto;
@@ -311,6 +336,13 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             .focus-arc.bottom { bottom: 180px; }
             .price-box {
                 width: min(320px, 42vw);
+                padding: 10px 14px;
+            }
+            .price-value {
+                font-size: 19px;
+            }
+            .price-diff {
+                font-size: 10px;
             }
         }
     </style>
