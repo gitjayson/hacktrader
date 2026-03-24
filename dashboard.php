@@ -54,6 +54,29 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             padding: 8px; 
             font-family: inherit;
         }
+        input[type='range'] {
+            padding: 0;
+            width: 140px;
+            accent-color: var(--accent-blue);
+            cursor: pointer;
+        }
+        .slider-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 220px;
+        }
+        .slider-label {
+            color: var(--accent-amber);
+            font-size: 12px;
+            min-width: 84px;
+        }
+        .slider-value {
+            color: var(--accent-blue);
+            font-weight: 700;
+            min-width: 28px;
+            text-align: right;
+        }
         button { cursor: pointer; border: 1px solid var(--accent-blue); color: var(--accent-blue); transition: 0.3s; }
         button:hover { background: var(--accent-blue); color: #000; }
         .clock-container { flex-grow: 1; display: flex; justify-content: center; align-items: center; position: relative; }
@@ -104,7 +127,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         }
     </style>
 </head>
-<body onload='updateDashboard()'>
+<body onload='syncToleranceValue(); updateDashboard()'>
     <?php
     $corrData = json_decode(file_get_contents('correlations.json'), true);
     $allTickers = array_keys($corrData);
@@ -117,7 +140,11 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         </datalist>
         <select id='period'><option>1m</option><option>5m</option><option>1h</option><option>1d</option></select>
         <input type='number' id='lookback' value='100' placeholder='LOOKBACK' size='5'>
-        <input type='number' id='tolerance' value='90' size='3'>
+        <div class='slider-wrap'>
+            <span class='slider-label'>TOLERANCE</span>
+            <input type='range' id='tolerance' min='0' max='100' value='90' oninput='syncToleranceValue()'>
+            <span class='slider-value' id='toleranceValue'>90</span>
+        </div>
         <button onclick='updateDashboard()'>EXECUTE</button>
         <button onclick='resetDashboard()'>RESET</button>
     </header>
@@ -130,6 +157,12 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
     </div>
     <script>
         let refreshInterval = setInterval(updateDashboard, 30000);
+
+        function syncToleranceValue() {
+            const slider = document.getElementById('tolerance');
+            const value = document.getElementById('toleranceValue');
+            value.textContent = slider.value;
+        }
 
         function showBanner(message, isError = false) {
             const banner = document.getElementById('statusBanner');
@@ -194,6 +227,8 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             document.getElementById('ticker').value = 'TSLA';
             document.getElementById('period').value = '5m';
             document.getElementById('lookback').value = '100';
+            document.getElementById('tolerance').value = '90';
+            syncToleranceValue();
             updateDashboard();
         }
 
