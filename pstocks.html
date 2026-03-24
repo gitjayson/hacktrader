@@ -691,6 +691,8 @@
           <div class="rail-metrics">
             <div class="micro-stat"><div class="micro-stat-label">MA Stack</div><div class="micro-stat-value" id="maStack">--</div></div>
             <div class="micro-stat"><div class="micro-stat-label">Momentum</div><div class="micro-stat-value" id="momentumStat">--</div></div>
+            <div class="micro-stat"><div class="micro-stat-label">RSI</div><div class="micro-stat-value" id="rsiStat">--</div></div>
+            <div class="micro-stat"><div class="micro-stat-label">MACD</div><div class="micro-stat-value" id="macdStat">--</div></div>
           </div>
         </div>
 
@@ -762,6 +764,9 @@
             <div class="chart-meta">
               <span class="chip" id="symbolChip">AAPL</span>
               <span class="chip" id="lookbackChip">30 bars</span>
+              <span class="chip" id="rsiChip">RSI --</span>
+              <span class="chip" id="macdChip">MACD --</span>
+              <span class="chip" id="vwapChip">VWAP --</span>
             </div>
           </div>
           <div class="chart-container">
@@ -975,14 +980,20 @@
       return new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 2 }).format(num);
     }
 
-    function updateLeftRail(currentVolume, closes) {
+    function updateLeftRail(currentVolume, closes, indicatorData = {}) {
       const avgVolume = closes.length ? currentVolume * 0.82 : currentVolume;
       const participation = avgVolume ? currentVolume / avgVolume : 1;
       const volumeRatio = participation;
       const maFast = average(closes.slice(-5));
       const maSlow = average(closes.slice(-20));
       const momentum = closes.length > 10 ? closes[closes.length - 1] - closes[closes.length - 10] : 0;
-      const bias = maFast > maSlow && momentum > 0 ? 'Bullish' : maFast < maSlow && momentum < 0 ? 'Bearish' : 'Neutral';
+      const rsi = indicatorData.rsi;
+      const macd = indicatorData.macd;
+      const vwap = indicatorData.vwap;
+
+      let bias = 'Neutral';
+      if (maFast > maSlow && momentum > 0 && (rsi == null || rsi >= 50) && (!macd || macd.hist >= 0)) bias = 'Bullish';
+      if (maFast < maSlow && momentum < 0 && (rsi == null || rsi < 50) && (!macd || macd.hist < 0)) bias = 'Bearish';
 
       document.getElementById('dayVolume').textContent = fmtCompact(currentVolume);
       document.getElementById('avgVolume').textContent = fmtCompact(avgVolume);
@@ -995,17 +1006,90 @@
       document.getElementById('biasMeter').style.width = `${bias === 'Bullish' ? 82 : bias === 'Bearish' ? 28 : 50}%`;
       document.getElementById('maStack').textContent = maFast > maSlow ? 'Positive' : maFast < maSlow ? 'Negative' : 'Flat';
       document.getElementById('momentumStat').textContent = `${momentum >= 0 ? '+' : ''}${momentum.toFixed(2)}`;
+      document.getElementById('rsiStat').textContent = rsi == null ? '--' : rsi.toFixed(1);
+      document.getElementById('macdStat').textContent = macd == null ? '--' : macd.hist.toFixed(2);
 
       document.getElementById('volumeRatio').textContent = `${volumeRatio.toFixed(2)}x`;
       document.getElementById('volumeRatioSubtext').textContent = volumeRatio >= 1 ? 'Expansion regime' : 'Compressed regime';
       document.getElementById('volumeRatioMeter').style.width = `${Math.min(100, volumeRatio * 40)}%`;
       document.getElementById('volumeImpulse').textContent = volumeRatio >= 1.2 ? 'High' : volumeRatio >= 0.9 ? 'Normal' : 'Low';
-      document.getElementById('volumeRegime').textContent = volumeRatio >= 1.2 ? 'Expansion' : volumeRatio >= 0.9 ? 'Balanced' : 'Quiet';
+      document.getElementById('volumeRegime').textContent = vwap == null ? (volumeRatio >= 1.2 ? 'Expansion' : volumeRatio >= 0.9 ? 'Balanced' : 'Quiet') : (closes[closes.length - 1] >= vwap ? 'Above VWAP' : 'Below VWAP');
+
+      updateIndicatorChips(rsi, macd, vwap);
     }
 
     function average(arr) {
       if (!arr.length) return 0;
       return arr.reduce((a, b) => a + b, 0) / arr.length;
+    }
+
+    function ema(values, period) {
+      if (!values.length) return [];
+      const k = 2 / (period + 1);
+      const out = [values[0]];
+      for (let i = 1; i < values.length; i++) {
+        out.push(values[i] * k + out[i - 1] * (1 - k));
+      }
+      return out;
+    }
+
+    function calcRSI(closes, period = 14) {
+      if (closes.length <= period) return null;
+      let gains = 0;
+      let losses = 0;
+      for (let i = 1; i <= period; i++) {
+        const delta = closes[i] - closes[i - 1];
+        if (delta >= 0) gains += delta;
+        else losses += Math.abs(delta);
+      }
+      let avgGain = gains / period;
+      let avgLoss = losses / period;
+      for (let i = period + 1; i < closes.length; i++) {
+        const delta = closes[i] - closes[i - 1];
+        const gain = delta > 0 ? delta : 0;
+        const loss = delta < 0 ? Math.abs(delta) : 0;
+        avgGain = ((avgGain * (period - 1)) + gain) / period;
+        avgLoss = ((avgLoss * (period - 1)) + loss) / period;
+      }
+      if (avgLoss === 0) return 100;
+      const rs = avgGain / avgLoss;
+      return 100 - (100 / (1 + rs));
+    }
+
+    function calcMACD(closes) {
+      if (closes.length < 26) return null;
+      const ema12 = ema(closes, 12);
+      const ema26 = ema(closes, 26);
+      const macdLine = closes.map((_, i) => ema12[i] - ema26[i]);
+      const signalLine = ema(macdLine, 9);
+      const hist = macdLine[macdLine.length - 1] - signalLine[signalLine.length - 1];
+      return {
+        line: macdLine[macdLine.length - 1],
+        signal: signalLine[signalLine.length - 1],
+        hist
+      };
+    }
+
+    function calcVWAP(series) {
+      if (!series.length) return null;
+      let cumulativePV = 0;
+      let cumulativeV = 0;
+      for (const bar of series) {
+        const high = parseFloat(bar.high ?? bar.close ?? 0);
+        const low = parseFloat(bar.low ?? bar.close ?? 0);
+        const close = parseFloat(bar.close ?? 0);
+        const volume = parseFloat(bar.volume ?? 0) || 1;
+        const typical = (high + low + close) / 3;
+        cumulativePV += typical * volume;
+        cumulativeV += volume;
+      }
+      return cumulativeV ? cumulativePV / cumulativeV : null;
+    }
+
+    function updateIndicatorChips(rsi, macd, vwap) {
+      document.getElementById('rsiChip').textContent = `RSI ${rsi == null ? '--' : rsi.toFixed(1)}`;
+      document.getElementById('macdChip').textContent = `MACD ${macd == null ? '--' : macd.hist.toFixed(2)}`;
+      document.getElementById('vwapChip').textContent = `VWAP ${vwap == null ? '--' : '$' + vwap.toFixed(2)}`;
     }
 
     function seedDefaultTiles() {
@@ -1031,7 +1115,10 @@
       createSparkline('sparkChange', prices.map((p, i, arr) => i === 0 ? 0 : p - arr[i - 1]), delta >= 0 ? '#57f7b2' : '#ff7398');
       createSparkline('sparkHigh', prices.map((_, i) => Math.max(...prices.slice(0, i + 1))), '#7c5cff');
       createSparkline('sparkLow', prices.map((_, i) => Math.min(...prices.slice(0, i + 1))), '#ffc96b');
-      updateLeftRail(78200000, prices);
+      const seedVwap = average(prices);
+      const seedRsi = calcRSI(prices);
+      const seedMacd = calcMACD(prices);
+      updateLeftRail(78200000, prices, { rsi: seedRsi, macd: seedMacd, vwap: seedVwap });
     }
 
     async function loadStockData(silent = false) {
@@ -1060,6 +1147,9 @@
         const high52 = parseFloat(quoteData['fifty_two_week']?.high);
         const low52 = parseFloat(quoteData['fifty_two_week']?.low);
         const currentVolume = parseFloat(quoteData.volume || quoteData.average_volume || 0);
+        const rsi = calcRSI(closes);
+        const macd = calcMACD(closes);
+        const vwap = calcVWAP(prices);
 
         createChart({ labels: prices.map(p => p.datetime), prices: closes });
 
@@ -1087,7 +1177,7 @@
         createSparkline('sparkHigh', closes.map((_, i) => Math.max(...closes.slice(0, i + 1))).slice(-24), '#7c5cff');
         createSparkline('sparkLow', closes.map((_, i) => Math.min(...closes.slice(0, i + 1))).slice(-24), '#ffc96b');
 
-        updateLeftRail(currentVolume, closes);
+        updateLeftRail(currentVolume, closes, { rsi, macd, vwap });
         setStatus(`Live · ${symbol}`);
       } catch (error) {
         setStatus('Error');
