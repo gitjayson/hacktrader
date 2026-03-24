@@ -374,7 +374,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 
             if (indicatorSummary) {
                 const total = indicatorSummary.up + indicatorSummary.down + indicatorSummary.neutral;
-                document.getElementById('indicatorBiasValue').textContent = `${indicatorSummary.up} ↑ / ${indicatorSummary.down} ↓`;
+                document.getElementById('indicatorBiasValue').innerHTML = `<span style="color: var(--accent-green)">${indicatorSummary.up} ↑</span> / <span style="color: var(--accent-red)">${indicatorSummary.down} ↓</span>`;
                 document.getElementById('indicatorBiasSubtext').textContent = `${total} processed · ${indicatorSummary.neutral} neutral/inside tolerance`;
             }
         }
