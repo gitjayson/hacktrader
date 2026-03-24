@@ -79,8 +79,8 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         }
         button { cursor: pointer; border: 1px solid var(--accent-blue); color: var(--accent-blue); transition: 0.3s; }
         button:hover { background: var(--accent-blue); color: #000; }
-        .clock-container { flex-grow: 1; display: flex; justify-content: center; align-items: center; position: relative; }
-        .clock-face { position: relative; width: 400px; height: 400px; border: 1px dashed #333; border-radius: 50%; }
+        .clock-container { flex-grow: 1; display: flex; justify-content: center; align-items: center; position: relative; gap: 28px; padding: 20px 24px 40px; box-sizing: border-box; }
+        .clock-face { position: relative; width: 400px; height: 400px; border: 1px dashed #333; border-radius: 50%; flex: 0 0 400px; }
         .center-ticker { 
             width: 100px; height: 100px; 
             border: 2px solid #666; 
@@ -125,6 +125,92 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             border-color: var(--accent-red);
             color: var(--accent-red);
         }
+        .focus-panel {
+            width: 320px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #2a2a2a;
+            box-shadow: 0 0 18px rgba(0, 243, 255, 0.08);
+            padding: 16px;
+            box-sizing: border-box;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .panel-title {
+            color: var(--accent-blue);
+            font-weight: 700;
+            font-size: 14px;
+            letter-spacing: 1px;
+        }
+        .focus-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .price-box {
+            border: 1px solid #333;
+            padding: 10px 12px;
+            background: rgba(255,255,255,0.02);
+        }
+        .price-box.focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.15);
+        }
+        .price-box.support {
+            border-left: 3px solid #25c26e;
+        }
+        .price-box.resistance {
+            border-left: 3px solid var(--accent-amber);
+        }
+        .price-label {
+            font-size: 10px;
+            color: #8f8f8f;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+        .price-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .price-diff {
+            font-size: 11px;
+            color: #bbb;
+            margin-top: 4px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .stat-card {
+            border: 1px solid #2f2f2f;
+            padding: 10px;
+            background: rgba(255,255,255,0.02);
+        }
+        .stat-card.wide {
+            grid-column: 1 / -1;
+        }
+        .stat-label {
+            font-size: 10px;
+            color: #8f8f8f;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+        .stat-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .stat-subtext {
+            font-size: 11px;
+            color: #b8b8b8;
+            margin-top: 4px;
+            line-height: 1.4;
+        }
     </style>
 </head>
 <body onload='syncToleranceValue(); updateDashboard()'>
@@ -154,6 +240,53 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             <svg id='lines' style='position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;'></svg>
             <div class='center-ticker' id='focus' onclick='resetDashboard()' style='cursor:pointer;'>INIT<br>SCAN</div>
         </div>
+        <aside class='focus-panel'>
+            <div class='panel-title'>FOCUS LADDER</div>
+            <div class='focus-stack'>
+                <div class='price-box resistance'>
+                    <div class='price-label'>RESISTANCE 2</div>
+                    <div class='price-value' id='resistance2'>--</div>
+                    <div class='price-diff' id='resistance2Diff'>Awaiting signal</div>
+                </div>
+                <div class='price-box resistance'>
+                    <div class='price-label'>RESISTANCE 1</div>
+                    <div class='price-value' id='resistance1'>--</div>
+                    <div class='price-diff' id='resistance1Diff'>Awaiting signal</div>
+                </div>
+                <div class='price-box focus'>
+                    <div class='price-label'>FOCUS PRICE</div>
+                    <div class='price-value' id='focusPriceBox'>--</div>
+                    <div class='price-diff' id='focusTimeBox'>Awaiting signal</div>
+                </div>
+                <div class='price-box support'>
+                    <div class='price-label'>SUPPORT 1</div>
+                    <div class='price-value' id='support1'>--</div>
+                    <div class='price-diff' id='support1Diff'>Awaiting signal</div>
+                </div>
+                <div class='price-box support'>
+                    <div class='price-label'>SUPPORT 2</div>
+                    <div class='price-value' id='support2'>--</div>
+                    <div class='price-diff' id='support2Diff'>Awaiting signal</div>
+                </div>
+            </div>
+            <div class='stats-grid'>
+                <div class='stat-card'>
+                    <div class='stat-label'>DAY VOLUME</div>
+                    <div class='stat-value' id='dayVolumeValue'>--</div>
+                    <div class='stat-subtext' id='dayVolumeSubtext'>Waiting on market data</div>
+                </div>
+                <div class='stat-card'>
+                    <div class='stat-label'>VOLUME RATIO</div>
+                    <div class='stat-value' id='dayVolumeRatio'>--</div>
+                    <div class='stat-subtext' id='barVolumeSubtext'>Current bar vs expected bar pending</div>
+                </div>
+                <div class='stat-card wide'>
+                    <div class='stat-label'>INDICATOR BIAS</div>
+                    <div class='stat-value' id='indicatorBiasValue'>--</div>
+                    <div class='stat-subtext' id='indicatorBiasSubtext'>0 of 12 processed</div>
+                </div>
+            </div>
+        </aside>
     </div>
     <script>
         let refreshInterval = setInterval(updateDashboard, 30000);
@@ -191,6 +324,59 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             const num = Number(value);
             if (!Number.isFinite(num)) return '--';
             return num.toFixed(2);
+        }
+
+        function formatVolume(value) {
+            const num = Number(value);
+            if (!Number.isFinite(num)) return '--';
+            if (num >= 1_000_000_000) return `${(num / 1_000_000_000).toFixed(2)}B`;
+            if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(2)}M`;
+            if (num >= 1_000) return `${(num / 1_000).toFixed(1)}K`;
+            return `${Math.round(num)}`;
+        }
+
+        function formatRatio(value) {
+            const num = Number(value);
+            if (!Number.isFinite(num)) return '--';
+            return `${num.toFixed(2)}x`;
+        }
+
+        function setPriceBox(idPrefix, entry, kind) {
+            const valueEl = document.getElementById(idPrefix);
+            const diffEl = document.getElementById(`${idPrefix}Diff`);
+            if (!entry) {
+                valueEl.textContent = '--';
+                diffEl.textContent = 'Not available';
+                return;
+            }
+            valueEl.textContent = `$${formatPrice(entry.price)}`;
+            const sign = kind === 'resistance' ? '+' : '-';
+            diffEl.textContent = `${sign}$${formatPrice(entry.diff)} from focus`;
+        }
+
+        function updateFocusPanel(data, indicatorSummary = null) {
+            document.getElementById('focusPriceBox').textContent = `$${formatPrice(data.focus_price ?? data.current_price)}`;
+            const timeText = data.quote_time_eastern ? `${data.quote_time_eastern} ${data.quote_timezone || 'ET'}` : 'Time unavailable';
+            document.getElementById('focusTimeBox').textContent = timeText;
+
+            const upper = data.upper_resistances || [];
+            const lower = data.lower_supports || [];
+            setPriceBox('resistance1', upper[0], 'resistance');
+            setPriceBox('resistance2', upper[1], 'resistance');
+            setPriceBox('support1', lower[0], 'support');
+            setPriceBox('support2', lower[1], 'support');
+
+            const volume = data.volume || {};
+            document.getElementById('dayVolumeValue').textContent = formatVolume(volume.current_day);
+            document.getElementById('dayVolumeSubtext').textContent = `Expected ${formatVolume(volume.expected_day)} today`;
+            document.getElementById('dayVolumeRatio').textContent = formatRatio(volume.day_ratio);
+            document.getElementById('barVolumeSubtext').textContent = `Bar ${formatVolume(volume.current_bar)} vs exp ${formatVolume(volume.expected_bar)} (${formatRatio(volume.bar_ratio)})`;
+
+            if (indicatorSummary) {
+                const total = indicatorSummary.up + indicatorSummary.down + indicatorSummary.neutral;
+                document.getElementById('indicatorBiasValue').textContent = `${indicatorSummary.up} ↑ / ${indicatorSummary.down} ↓`;
+                document.getElementById('indicatorBiasSubtext').textContent = `${total} processed · ${indicatorSummary.neutral} neutral/inside tolerance`;
+            }
         }
 
         function buildTickerMarkup(symbol, data) {
@@ -290,6 +476,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             try {
                 currentFocus = await fetchTickerData(ticker, period, lookback);
                 setTickerDisplay(focus, ticker, currentFocus, tolerance);
+                updateFocusPanel(currentFocus);
                 showBanner(formatSourceMeta(currentFocus), false);
             } catch (e) {
                 focus.innerHTML = `${ticker}<br>DATA ERR`;
@@ -333,6 +520,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                     el.style.top = `calc(50% + ${y}px - 40px)`;
                 });
 
+                const summary = { up: 0, down: 0, neutral: 0 };
                 const promises = indicators.map(async (indObj, i) => {
                     const ind = indObj.symbol;
                     const relation = indObj.relation;
@@ -351,6 +539,10 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                         el.className = 'indicator';
                         applyTickerState(el, data, tolerance);
                         drawOrUpdateLine(lineId, x, y, lineColor);
+
+                        if (data.probabilities.up >= tolerance) summary.up += 1;
+                        else if (data.probabilities.down >= tolerance) summary.down += 1;
+                        else summary.neutral += 1;
                     } catch (e) {
                         if (!el.innerHTML || el.innerHTML.includes('<br>...')) {
                             el.innerHTML = `${ind}<br>DATA ERR`;
@@ -358,6 +550,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                     }
                 });
                 await Promise.all(promises);
+                updateFocusPanel(currentFocus, summary);
             } catch (e) {
                 console.error(e);
                 showBanner('Correlation fetch failed.', true);
