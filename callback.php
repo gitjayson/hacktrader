@@ -7,7 +7,10 @@ $secrets = json_decode(file_get_contents('secrets.json'), true);
 $client = new Google\Client();
 $client->setClientId($secrets['GOOGLE_CLIENT_ID']);
 $client->setClientSecret($secrets['GOOGLE_CLIENT_SECRET']);
-$client->setRedirectUri('https://hacktrader.com/callback.php');
+
+$scheme = (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) ? $_SERVER['HTTP_X_FORWARDED_PROTO'] : ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http'));
+$host = $_SERVER['HTTP_HOST'] ?? 'hacktrader.com';
+$client->setRedirectUri($scheme . '://' . $host . '/callback.php');
 $client->addScope('email');
 $client->addScope('profile');
 
