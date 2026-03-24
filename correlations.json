@@ -558,5 +558,33 @@
         {"symbol": "USO", "relation": "negative"},
         {"symbol": "TLT", "relation": "positive"},
         {"symbol": "WTI", "relation": "negative"}
+    ],
+    "WTI": [
+        {"symbol": "USO", "relation": "positive"},
+        {"symbol": "XLE", "relation": "positive"},
+        {"symbol": "XOP", "relation": "positive"},
+        {"symbol": "CVX", "relation": "positive"},
+        {"symbol": "XOM", "relation": "positive"},
+        {"symbol": "OXY", "relation": "positive"},
+        {"symbol": "SLB", "relation": "positive"},
+        {"symbol": "HAL", "relation": "positive"},
+        {"symbol": "UNG", "relation": "positive"},
+        {"symbol": "UUP", "relation": "negative"},
+        {"symbol": "GLD", "relation": "negative"},
+        {"symbol": "SPY", "relation": "positive"}
+    ],
+    "UNG": [
+        {"symbol": "WTI", "relation": "positive"},
+        {"symbol": "USO", "relation": "positive"},
+        {"symbol": "XLE", "relation": "positive"},
+        {"symbol": "XOP", "relation": "positive"},
+        {"symbol": "SLB", "relation": "positive"},
+        {"symbol": "HAL", "relation": "positive"},
+        {"symbol": "OXY", "relation": "positive"},
+        {"symbol": "UUP", "relation": "negative"},
+        {"symbol": "GLD", "relation": "negative"},
+        {"symbol": "SPY", "relation": "positive"},
+        {"symbol": "QQQ", "relation": "positive"},
+        {"symbol": "TLT", "relation": "negative"}
     ]
 }
