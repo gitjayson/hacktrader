@@ -1,6 +1,12 @@
 <?php
 session_start();
-require_once 'vendor/autoload.php';
+
+$autoloadPath = __DIR__ . '/../../vendor/autoload.php';
+if (!file_exists($autoloadPath)) {
+    http_response_code(500);
+    die('Missing vendor autoload at expected path: ' . $autoloadPath);
+}
+require_once $autoloadPath;
 
 $secretsPath = __DIR__ . '/../../secrets.json';
 if (!file_exists($secretsPath)) {
