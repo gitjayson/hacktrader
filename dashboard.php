@@ -171,6 +171,18 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             inset: 0;
             pointer-events: none;
         }
+        .top-rail {
+            position: absolute;
+            top: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(980px, 100%);
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 10px;
+            pointer-events: none;
+            z-index: 20;
+        }
         .panel-title {
             color: var(--accent-blue);
             font-weight: 700;
@@ -210,11 +222,11 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         .price-box.resistance {
             border-color: rgba(39,174,96,0.45);
         }
-        .price-box.r2 { top: 78px; left: calc(50% - 224px); }
-        .price-box.r1 { top: 78px; left: calc(50% - 116px); }
-        .price-box.cp { top: 78px; left: calc(50% + 0px); }
-        .price-box.s1 { top: 78px; left: calc(50% + 116px); }
-        .price-box.s2 { top: 78px; left: calc(50% + 224px); }
+        .price-box.r2 { position: static; transform: none; width: 100%; }
+        .price-box.r1 { position: static; transform: none; width: 100%; }
+        .price-box.cp { position: static; transform: none; width: 100%; }
+        .price-box.s1 { position: static; transform: none; width: 100%; }
+        .price-box.s2 { position: static; transform: none; width: 100%; }
         .price-label {
             font-size: 9px;
             color: #8f8f8f;
@@ -285,19 +297,14 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 width: min(1080px, 100%);
                 min-height: 700px;
             }
-            .side-rail {
-                inset: 0;
-                width: 100%;
+            .top-rail {
+                width: min(920px, 100%);
+                gap: 8px;
             }
             .price-box {
-                width: 108px;
+                width: 100%;
                 padding: 7px 8px;
             }
-            .price-box.r2 { top: 74px; left: calc(50% - 220px); }
-            .price-box.r1 { top: 74px; left: calc(50% - 112px); }
-            .price-box.cp { top: 74px; left: calc(50% + 0px); }
-            .price-box.s1 { top: 74px; left: calc(50% + 112px); }
-            .price-box.s2 { top: 74px; left: calc(50% + 220px); }
             .price-value {
                 font-size: 15px;
             }
@@ -319,6 +326,13 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             }
             .stats-grid {
                 width: min(92vw, 760px);
+            }
+            .top-rail {
+                position: static;
+                transform: none;
+                width: min(92vw, 760px);
+                margin: 0 auto 14px;
+                grid-template-columns: 1fr;
             }
             .side-rail {
                 position: static;
@@ -375,7 +389,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 <div class='center-ticker' id='focus' onclick='resetDashboard()' style='cursor:pointer;'>INIT<br>SCAN</div>
             </div>
             <aside class='focus-panel'>
-                <div class='side-rail'>
+                <div class='top-rail'>
                     <div class='price-box resistance r2'>
                         <div class='price-label'>Resistance 2</div>
                         <div class='price-value' id='resistance2'>--</div>
