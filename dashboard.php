@@ -209,11 +209,11 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         .price-box.resistance {
             border-color: rgba(39,174,96,0.45);
         }
-        .price-box.r2 { top: 88px; left: calc(50% - 240px); }
-        .price-box.r1 { top: 88px; left: calc(50% - 124px); }
-        .price-box.cp { top: 88px; left: calc(50% + 0px); }
-        .price-box.s1 { top: 88px; left: calc(50% + 124px); }
-        .price-box.s2 { top: 88px; left: calc(50% + 240px); }
+        .price-box.r2 { top: 78px; left: calc(50% - 224px); }
+        .price-box.r1 { top: 78px; left: calc(50% - 116px); }
+        .price-box.cp { top: 78px; left: calc(50% + 0px); }
+        .price-box.s1 { top: 78px; left: calc(50% + 116px); }
+        .price-box.s2 { top: 78px; left: calc(50% + 224px); }
         .price-label {
             font-size: 9px;
             color: #8f8f8f;
@@ -293,11 +293,11 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 width: 122px;
                 padding: 8px 10px;
             }
-            .price-box.r2 { top: 114px; left: calc(50% + 370px); }
-            .price-box.r1 { top: 192px; left: calc(50% + 414px); }
-            .price-box.cp { top: 270px; left: calc(50% + 434px); }
-            .price-box.s1 { top: 350px; left: calc(50% + 414px); }
-            .price-box.s2 { top: 428px; left: calc(50% + 370px); }
+            .price-box.r2 { top: 78px; left: calc(50% - 214px); }
+            .price-box.r1 { top: 78px; left: calc(50% - 110px); }
+            .price-box.cp { top: 78px; left: calc(50% + 0px); }
+            .price-box.s1 { top: 78px; left: calc(50% + 110px); }
+            .price-box.s2 { top: 78px; left: calc(50% + 214px); }
             .price-value {
                 font-size: 15px;
             }
@@ -357,6 +357,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         <datalist id='ticker-list'>
             <?php foreach($allTickers as $t) echo "<option value='$t'>"; ?>
         </datalist>
+        <button onclick='updateDashboard()'>EXECUTE</button>
         <select id='period'><option selected>5m</option><option>1m</option><option>1h</option><option>1d</option></select>
         <input type='number' id='lookback' value='100' placeholder='LOOKBACK' size='5'>
         <div class='slider-wrap'>
@@ -364,7 +365,6 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             <input type='range' id='tolerance' min='0' max='100' value='90' oninput='syncToleranceValue()'>
             <span class='slider-value' id='toleranceValue'>90</span>
         </div>
-        <button onclick='updateDashboard()'>EXECUTE</button>
         <button onclick='resetDashboard()'>RESET</button>
     </header>
     <div id='statusBanner' class='status-banner'></div>
