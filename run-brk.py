@@ -17,11 +17,16 @@ if user_site.exists() and str(user_site) not in sys.path:
     sys.path.insert(0, str(user_site))
 
 
-def load_api_keys():
-    keys = [
-        "1dbc799fe411479686be512ee797a777",
-        "8e13917d80264a63935d62aa2c448076",
-    ]
+def load_feed_config():
+    config = {
+        'provider': 'twelvedata',
+        'api_keys': [
+            '1dbc799fe411479686be512ee797a777',
+            '8e13917d80264a63935d62aa2c448076',
+        ],
+        'massive_api_key': None,
+        'massive_url': None,
+    }
 
     if os.path.exists(secrets_path):
         try:
@@ -29,20 +34,48 @@ def load_api_keys():
                 secrets = json.load(f)
             secret_key = secrets.get('TWELVEDATA_API_KEY')
             if secret_key:
-                keys.insert(0, secret_key)
+                config['api_keys'].insert(0, secret_key)
+        except Exception:
+            pass
+
+    massive_secret = os.path.join(script_dir, 'massive.secret')
+    if os.path.exists(massive_secret):
+        try:
+            with open(massive_secret) as f:
+                raw = f.read().strip()
+            if raw:
+                config['provider'] = 'massive'
+                config['massive_url'] = raw
+                if 'apiKey=' in raw:
+                    config['massive_api_key'] = raw.split('apiKey=', 1)[1].split('&', 1)[0].split('#', 1)[0]
+        except Exception:
+            pass
+
+    # Optional workspace override if the user moved the key into secrets.json.
+    workspace_secrets = os.path.join(script_dir, 'secrets.json')
+    if os.path.exists(workspace_secrets):
+        try:
+            with open(workspace_secrets) as f:
+                secrets = json.load(f)
+            massive_key = secrets.get('MASSIVE_API_KEY') or secrets.get('POLYGON_API_KEY')
+            if massive_key:
+                config['provider'] = 'massive'
+                config['massive_api_key'] = massive_key
         except Exception:
             pass
 
     seen = set()
     deduped = []
-    for key in keys:
+    for key in config['api_keys']:
         if key and key not in seen:
             deduped.append(key)
             seen.add(key)
-    return deduped
+    config['api_keys'] = deduped
+    return config
 
 
-API_KEYS = load_api_keys()
+FEED_CONFIG = load_feed_config()
+API_KEYS = FEED_CONFIG['api_keys']
 
 
 def interval_to_yfinance(interval):
@@ -340,17 +373,83 @@ except Exception as e:
     return trimmed, 'yfinance', None
 
 
+def fetch_massive(ticker, interval, periods):
+    api_key = FEED_CONFIG.get('massive_api_key')
+    url = FEED_CONFIG.get('massive_url')
+
+    if not api_key and not url:
+        return None, None, 'No Massive API configured'
+
+    if url and url.startswith('http'):
+        response = subprocess.run(['curl', '-s', url], capture_output=True, text=True)
+    else:
+        endpoint = f'https://api.massive.com/v3/reference/aggregates?adjusted=true&sort=asc&limit={periods}&apiKey={api_key}'
+        if interval == '1min':
+            endpoint += '&timespan=minute'
+        elif interval == '5min':
+            endpoint += '&timespan=minute&multiplier=5'
+        elif interval == '1h':
+            endpoint += '&timespan=hour'
+        else:
+            endpoint += '&timespan=day'
+        endpoint += f'&ticker={ticker}'
+        response = subprocess.run(['curl', '-s', endpoint], capture_output=True, text=True)
+
+    try:
+        data = json.loads(response.stdout)
+    except Exception:
+        return None, None, 'Could not parse Massive response'
+
+    results = data.get('results') or data.get('values') or []
+    if not results:
+        return None, None, 'No values in Massive response'
+
+    values = []
+    for entry in results:
+        close = entry.get('c', entry.get('close'))
+        high = entry.get('h', entry.get('high'))
+        low = entry.get('l', entry.get('low'))
+        volume = entry.get('v', entry.get('volume'))
+        ts = entry.get('t', entry.get('datetime'))
+        if close is None or high is None or low is None:
+            continue
+        if isinstance(ts, (int, float)):
+            ts = datetime.fromtimestamp(ts / 1000 if ts > 10**12 else ts, tz=ZoneInfo('UTC')).isoformat()
+        values.append({
+            'high': high,
+            'low': low,
+            'close': close,
+            'volume': volume,
+            'datetime': ts,
+        })
+
+    if not values:
+        return None, None, 'No usable Massive rows'
+
+    values.reverse()
+    try:
+        periods_int = int(periods)
+    except Exception:
+        periods_int = 100
+    trimmed = values[:periods_int] if periods_int > 0 else values
+    return trimmed, 'massive', None
+
+
 def run_breakout(ticker='TSLA', interval='1day', display='1-day', periods='100', output_json='false'):
-    values, source, yf_error = fetch_yfinance(ticker, interval, periods)
+    values, source, massive_error = fetch_massive(ticker, interval, periods)
+    yf_error = None
     td_error = None
     backend_error = None
 
     if values is None:
         values, source, td_error = fetch_twelvedata(ticker, interval, periods)
         if values is None:
+            values, source, yf_error = fetch_yfinance(ticker, interval, periods)
+        if values is None:
             backend_error = {
-                'yfinance': yf_error,
+                'massive': massive_error,
                 'twelvedata': td_error,
+                'yfinance': yf_error,
             }
 
     if values is None:
@@ -368,16 +467,26 @@ def run_breakout(ticker='TSLA', interval='1day', display='1-day', periods='100',
         return
 
     output = compute_output(ticker, interval, display, periods, values, source)
-    if yf_error and source == 'twelvedata':
+    if source == 'massive' and td_error:
+        output['fallback_reason'] = td_error
+    elif source == 'twelvedata' and yf_error:
         output['fallback_reason'] = yf_error
 
     if output_json == 'true':
         print(json.dumps(output, indent=2))
         return
 
+    banner_source = source
+    if source == 'massive':
+        banner_source = 'massive/polygon'
+    elif source == 'twelvedata':
+        banner_source = 'twelvedata'
+    elif source == 'yfinance':
+        banner_source = 'yfinance'
+
     print(f"=== {ticker} Breakout Analysis ({display}, {periods} periods) ===")
     print(f"Last Known Market Price: ${output['current_price']:.2f}")
-    print(f"Source: {source}")
+    print(f"Source: {banner_source}")
     print()
 
     print('## Upper Resistance Levels')
