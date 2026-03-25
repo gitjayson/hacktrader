@@ -134,35 +134,13 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         .indicator.red { border-color: var(--accent-red); box-shadow: 0 0 10px var(--accent-red); }
         .center-ticker.green { border-color: var(--accent-blue); box-shadow: 0 0 20px var(--accent-blue), inset 0 0 25px rgba(0,243,255,0.08); }
         .center-ticker.red { border-color: var(--accent-red); box-shadow: 0 0 20px var(--accent-red), inset 0 0 25px rgba(255,62,62,0.08); }
-        .focus-logo-badge {
-            width: 52px;
-            height: 52px;
-            border-radius: 50%;
-            border: 1px solid rgba(255,255,255,0.25);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 8px;
-            background: radial-gradient(circle at center, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0.02) 55%, rgba(0,0,0,0.2) 100%);
-            box-shadow: 0 0 0 1px rgba(255,255,255,0.04), inset 0 0 18px rgba(255,255,255,0.03);
-            overflow: hidden;
-        }
-        .focus-logo-badge img {
-            width: 30px;
-            height: 30px;
-            object-fit: contain;
-            filter: grayscale(1) brightness(1.15) contrast(1.1);
-            opacity: 0.95;
-        }
-        .focus-logo-fallback {
-            font-size: 14px;
-            color: var(--accent-amber);
-            letter-spacing: 0.16em;
-            padding-left: 0.16em;
-        }
         .focus-symbol {
-            font-size: 15px;
-            margin-bottom: 4px;
+            font-size: 26px;
+            line-height: 1;
+            margin-bottom: 8px;
+            letter-spacing: 0.12em;
+            color: var(--accent-blue);
+            padding-left: 0.12em;
         }
         .focus-meta {
             font-size: 9px;
@@ -203,37 +181,39 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         }
         .side-rail {
             position: absolute;
-            right: 8px;
-            top: 52px;
-            width: 172px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+            inset: 0;
             pointer-events: none;
         }
         .focus-stack {
             display: contents;
         }
         .price-box {
-            width: 100%;
+            position: absolute;
+            width: 112px;
             border: 1px solid var(--panel-border);
             padding: 8px 10px;
-            background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.015) 100%);
+            background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.018) 100%);
             clip-path: polygon(8% 0, 92% 0, 100% 50%, 92% 100%, 8% 100%, 0 50%);
             backdrop-filter: blur(4px);
             box-shadow: inset 0 0 20px rgba(255,255,255,0.03);
             box-sizing: border-box;
+            transform: translate(-50%, -50%);
         }
         .price-box.focus {
-            border-color: rgba(0,243,255,0.5);
-            box-shadow: 0 0 18px rgba(0, 243, 255, 0.12), inset 0 0 20px rgba(255,255,255,0.03);
+            border-color: rgba(0,243,255,0.58);
+            box-shadow: 0 0 18px rgba(0, 243, 255, 0.16), inset 0 0 20px rgba(255,255,255,0.03);
         }
         .price-box.support {
-            border-color: rgba(39,174,96,0.42);
+            border-color: rgba(255,62,62,0.45);
         }
         .price-box.resistance {
-            border-color: rgba(255,180,0,0.42);
+            border-color: rgba(39,174,96,0.45);
         }
+        .price-box.r2 { top: 88px; left: calc(50% - 240px); }
+        .price-box.r1 { top: 88px; left: calc(50% - 124px); }
+        .price-box.cp { top: 88px; left: calc(50% + 0px); }
+        .price-box.s1 { top: 88px; left: calc(50% + 124px); }
+        .price-box.s2 { top: 88px; left: calc(50% + 240px); }
         .price-label {
             font-size: 9px;
             color: #8f8f8f;
@@ -245,6 +225,15 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             font-size: 16px;
             font-weight: 700;
             color: #fff;
+        }
+        .price-box.resistance .price-value {
+            color: var(--accent-green);
+        }
+        .price-box.support .price-value {
+            color: var(--accent-red);
+        }
+        .price-box.focus .price-value {
+            color: var(--accent-blue);
         }
         .price-diff {
             font-size: 9px;
@@ -297,12 +286,18 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             }
             .side-rail {
                 right: 0;
-                width: 158px;
-                gap: 8px;
+                width: 190px;
+                gap: 10px;
             }
             .price-box {
-                padding: 8px 9px;
+                width: 122px;
+                padding: 8px 10px;
             }
+            .price-box.r2 { top: 114px; left: calc(50% + 370px); }
+            .price-box.r1 { top: 192px; left: calc(50% + 414px); }
+            .price-box.cp { top: 270px; left: calc(50% + 434px); }
+            .price-box.s1 { top: 350px; left: calc(50% + 414px); }
+            .price-box.s2 { top: 428px; left: calc(50% + 370px); }
             .price-value {
                 font-size: 15px;
             }
@@ -327,12 +322,15 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             }
             .side-rail {
                 position: static;
-                width: min(320px, 42vw);
+                width: min(360px, 46vw);
                 margin: 0 auto 18px;
                 gap: 10px;
             }
             .price-box {
+                position: static;
                 width: 100%;
+                transform: none;
+                margin-bottom: 10px;
                 padding: 10px 14px;
             }
             .price-value {
@@ -359,7 +357,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         <datalist id='ticker-list'>
             <?php foreach($allTickers as $t) echo "<option value='$t'>"; ?>
         </datalist>
-        <select id='period'><option>1m</option><option>5m</option><option>1h</option><option>1d</option></select>
+        <select id='period'><option selected>5m</option><option>1m</option><option>1h</option><option>1d</option></select>
         <input type='number' id='lookback' value='100' placeholder='LOOKBACK' size='5'>
         <div class='slider-wrap'>
             <span class='slider-label'>TOLERANCE</span>
@@ -378,22 +376,27 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             </div>
             <aside class='focus-panel'>
                 <div class='side-rail'>
-                    <div class='price-box resistance'>
+                    <div class='price-box resistance r2'>
                         <div class='price-label'>Resistance 2</div>
                         <div class='price-value' id='resistance2'>--</div>
                         <div class='price-diff' id='resistance2Diff'>Awaiting signal</div>
                     </div>
-                    <div class='price-box resistance'>
+                    <div class='price-box resistance r1'>
                         <div class='price-label'>Resistance 1</div>
                         <div class='price-value' id='resistance1'>--</div>
                         <div class='price-diff' id='resistance1Diff'>Awaiting signal</div>
                     </div>
-                    <div class='price-box support'>
+                    <div class='price-box focus cp'>
+                        <div class='price-label'>Current Price</div>
+                        <div class='price-value' id='focusPriceBox'>--</div>
+                        <div class='price-diff' id='focusTimeBox'>Awaiting quote</div>
+                    </div>
+                    <div class='price-box support s1'>
                         <div class='price-label'>Support 1</div>
                         <div class='price-value' id='support1'>--</div>
                         <div class='price-diff' id='support1Diff'>Awaiting signal</div>
                     </div>
-                    <div class='price-box support'>
+                    <div class='price-box support s2'>
                         <div class='price-label'>Support 2</div>
                         <div class='price-value' id='support2'>--</div>
                         <div class='price-diff' id='support2Diff'>Awaiting signal</div>
@@ -422,6 +425,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
     <script>
         const logoManifest = <?php echo json_encode($logoManifest, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>;
         let refreshInterval = setInterval(updateDashboard, 30000);
+        let tickerInputDebounce = null;
 
         function syncToleranceValue() {
             const slider = document.getElementById('tolerance');
@@ -478,12 +482,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         }
 
         function buildFocusMarkup(symbol, data) {
-            const logoUrl = getLogoUrl(symbol);
-            const fallback = symbol.slice(0, 2);
-            const logoHtml = logoUrl
-                ? `<div class="focus-logo-badge"><img src="${logoUrl}" alt="${symbol} logo" onerror="this.parentElement.innerHTML='<div class=\'focus-logo-fallback\'>${fallback}</div>'"></div>`
-                : `<div class="focus-logo-badge"><div class="focus-logo-fallback">${fallback}</div></div>`;
-            return `${logoHtml}<div class="focus-symbol">${symbol}</div><div>$${formatPrice(data.current_price)}</div><div class="focus-meta"><span style='color: var(--accent-green)'>↑ ${data.probabilities.up}%</span> · <span style='color: var(--accent-red)'>↓ ${data.probabilities.down}%</span></div>`;
+            return `<div class="focus-symbol">${symbol}</div><div style="font-size:18px; margin-bottom:4px;">$${formatPrice(data.current_price)}</div><div class="focus-meta"><span style='color: var(--accent-green)'>↑ ${data.probabilities.up}%</span> · <span style='color: var(--accent-red)'>↓ ${data.probabilities.down}%</span></div>`;
         }
 
         function setPriceBox(idPrefix, entry, kind) {
@@ -574,7 +573,28 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             document.getElementById('lookback').value = '100';
             document.getElementById('tolerance').value = '90';
             syncToleranceValue();
-            updateDashboard();
+            updateDashboard('TSLA');
+        }
+
+        function attachTickerAutoRefresh() {
+            const tickerEl = document.getElementById('ticker');
+            if (!tickerEl) return;
+
+            const triggerRefresh = () => {
+                const nextTicker = tickerEl.value.trim().toUpperCase();
+                if (!nextTicker) return;
+                clearTimeout(tickerInputDebounce);
+                tickerInputDebounce = setTimeout(() => updateDashboard(nextTicker), 250);
+            };
+
+            tickerEl.addEventListener('change', triggerRefresh);
+            tickerEl.addEventListener('blur', triggerRefresh);
+            tickerEl.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    triggerRefresh();
+                }
+            });
         }
 
         function computeLineColor(data, relation, tolerance) {
@@ -716,6 +736,8 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 showBanner('Correlation fetch failed.', true);
             }
         }
+
+        attachTickerAutoRefresh();
     </script>
     <footer style='position: fixed; bottom: 10px; width: 100%; text-align: center; font-size: 10px; color: #444;'>v0.5.0</footer>
 </body>

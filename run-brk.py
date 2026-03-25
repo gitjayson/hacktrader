@@ -478,7 +478,7 @@ def run_breakout(ticker='TSLA', interval='1day', display='1-day', periods='100',
 
     banner_source = source
     if source == 'massive':
-        banner_source = 'massive/polygon'
+        banner_source = 'Massive/Polygon'
     elif source == 'twelvedata':
         banner_source = 'twelvedata'
     elif source == 'yfinance':
