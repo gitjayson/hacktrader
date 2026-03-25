@@ -616,6 +616,18 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             return '#444444';
         }
 
+        function summarizeRelationshipBias(data, indicators, tolerance) {
+            const summary = { green: 0, red: 0, neutral: 0 };
+            (indicators || []).forEach((indObj) => {
+                const relation = indObj.relation || indObj.relationship || indObj.sign;
+                const color = computeLineColor(data, relation, tolerance);
+                if (color === '#27ae60') summary.green += 1;
+                else if (color === '#c0392b') summary.red += 1;
+                else summary.neutral += 1;
+            });
+            return summary;
+        }
+
         function drawOrUpdateLine(lineId, x, y, lineColor) {
             const lines = document.getElementById('lines');
             let line = document.getElementById(lineId);
@@ -668,6 +680,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 const corrRes = await fetch(`correlate.php?ticker=${ticker}`);
                 const indicators = await corrRes.json();
                 const activeSymbols = new Set(indicators.map(ind => ind.symbol));
+                const indicatorSummary = summarizeRelationshipBias(currentFocus, indicators, tolerance);
 
                 document.querySelectorAll('.indicator').forEach(el => {
                     if (!activeSymbols.has(el.dataset.symbol)) {
@@ -699,7 +712,6 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                     el.style.top = `calc(50% + ${y}px - 40px)`;
                 });
 
-                const summary = { up: 0, down: 0, neutral: 0 };
                 const promises = indicators.map(async (indObj, i) => {
                     const ind = indObj.symbol;
                     const relation = indObj.relation;
@@ -719,9 +731,6 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                         applyTickerState(el, data, tolerance);
                         drawOrUpdateLine(lineId, x, y, lineColor);
 
-                        if (data.probabilities.up >= tolerance) summary.up += 1;
-                        else if (data.probabilities.down >= tolerance) summary.down += 1;
-                        else summary.neutral += 1;
                     } catch (e) {
                         if (!el.innerHTML || el.innerHTML.includes('<br>...')) {
                             const detail = e?.error ? String(e.error).slice(0, 16) : 'DATA ERR';
@@ -730,7 +739,8 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                     }
                 });
                 await Promise.all(promises);
-                updateFocusPanel(currentFocus, summary);
+                const relationshipSummary = summarizeRelationshipBias(currentFocus, indicators, tolerance);
+                updateFocusPanel(currentFocus, relationshipSummary);
             } catch (e) {
                 console.error(e);
                 showBanner('Correlation fetch failed.', true);
