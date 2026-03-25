@@ -2,7 +2,17 @@
 session_start();
 require_once 'vendor/autoload.php';
 
-$secrets = json_decode(file_get_contents('secrets.json'), true);
+$secretsPath = __DIR__ . '/../../secrets.json';
+if (!file_exists($secretsPath)) {
+    http_response_code(500);
+    die('Missing secrets.json at expected path: ' . $secretsPath);
+}
+
+$secrets = json_decode(file_get_contents($secretsPath), true);
+if (!is_array($secrets)) {
+    http_response_code(500);
+    die('Invalid secrets.json payload.');
+}
 
 $client = new Google\Client();
 $client->setClientId($secrets['GOOGLE_CLIENT_ID']);
