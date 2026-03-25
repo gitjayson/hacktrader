@@ -183,6 +183,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             position: absolute;
             inset: 0;
             pointer-events: none;
+            width: 100%;
         }
         .focus-stack {
             display: contents;
@@ -285,19 +286,18 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 min-height: 700px;
             }
             .side-rail {
-                right: 0;
-                width: 190px;
-                gap: 10px;
+                inset: 0;
+                width: 100%;
             }
             .price-box {
-                width: 122px;
-                padding: 8px 10px;
+                width: 108px;
+                padding: 7px 8px;
             }
-            .price-box.r2 { top: 78px; left: calc(50% - 214px); }
-            .price-box.r1 { top: 78px; left: calc(50% - 110px); }
-            .price-box.cp { top: 78px; left: calc(50% + 0px); }
-            .price-box.s1 { top: 78px; left: calc(50% + 110px); }
-            .price-box.s2 { top: 78px; left: calc(50% + 214px); }
+            .price-box.r2 { top: 74px; left: calc(50% - 220px); }
+            .price-box.r1 { top: 74px; left: calc(50% - 112px); }
+            .price-box.cp { top: 74px; left: calc(50% + 0px); }
+            .price-box.s1 { top: 74px; left: calc(50% + 112px); }
+            .price-box.s2 { top: 74px; left: calc(50% + 220px); }
             .price-value {
                 font-size: 15px;
             }
@@ -322,7 +322,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             }
             .side-rail {
                 position: static;
-                width: min(360px, 46vw);
+                width: min(520px, 92vw);
                 margin: 0 auto 18px;
                 gap: 10px;
             }
