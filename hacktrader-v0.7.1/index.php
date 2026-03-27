@@ -25,6 +25,6 @@
         <h1>Welcome to HackTrader</h1>
         <a href='callback.php' class='signin-button'>Sign in with Google</a>
     </div>
-    <footer>v0.7.0</footer>
+    <footer>v0.7.1</footer>
 </body>
 </html>
