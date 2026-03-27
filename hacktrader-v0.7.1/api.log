@@ -1,0 +1,2 @@
+[2026-03-27 14:22:04] Ticker: SHOP, Period: 5m, Lookback: 100. Status: Error: {"error":"Market data unavailable","ticker":"SHOP","period":"5m","lookback":100,"details":{"raw_output":""}}
+[2026-03-27 14:22:14] Ticker: SHOP, Period: 5m, Lookback: 100. Status: Success via twelvedata
