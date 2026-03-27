@@ -4,6 +4,9 @@ $period = $_GET['period'] ?? '5m';
 $lookback = $_GET['lookback'] ?? '100';
 
 $pipelineDir = 'pipelines';
+$focusUniverseFile = __DIR__ . '/focus-universe.json';
+$marketWatchlistFile = __DIR__ . '/market-watchlist.json';
+$correlationGenerator = __DIR__ . '/generate-correlations.py';
 if (!is_dir($pipelineDir)) {
     mkdir($pipelineDir, 0755, true);
 }
@@ -35,6 +38,57 @@ function read_cached_payload($pipeline, $maxAgeSeconds = null) {
     return is_array($decoded) ? $decoded : null;
 }
 
+function load_json_file($path, $default) {
+    if (!file_exists($path)) {
+        return $default;
+    }
+    $contents = file_get_contents($path);
+    if ($contents === false || trim($contents) === '') {
+        return $default;
+    }
+    $decoded = json_decode($contents, true);
+    return is_array($decoded) ? $decoded : $default;
+}
+
+function save_json_file($path, $payload) {
+    $tmp = $path . '.tmp';
+    file_put_contents($tmp, json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n");
+    rename($tmp, $path);
+}
+
+function remember_focus_symbol($ticker, $focusUniverseFile, $marketWatchlistFile, $correlationGenerator) {
+    $ticker = strtoupper(trim((string)$ticker));
+    if ($ticker === '') {
+        return;
+    }
+
+    $now = gmdate('c');
+    $universe = load_json_file($focusUniverseFile, ['symbols' => [], 'seen' => []]);
+    $symbols = $universe['symbols'] ?? [];
+    $seen = $universe['seen'] ?? [];
+
+    if (!in_array($ticker, $symbols, true)) {
+        $symbols[] = $ticker;
+        sort($symbols);
+    }
+    $seen[$ticker] = $now;
+    $universe['symbols'] = array_values($symbols);
+    $universe['seen'] = $seen;
+    save_json_file($focusUniverseFile, $universe);
+
+    $watchlist = load_json_file($marketWatchlistFile, []);
+    if (!in_array($ticker, $watchlist, true)) {
+        $watchlist[] = $ticker;
+        sort($watchlist);
+        save_json_file($marketWatchlistFile, array_values($watchlist));
+    }
+
+    if (file_exists($correlationGenerator)) {
+        $cmd = 'python3 ' . escapeshellarg($correlationGenerator) . ' ' . escapeshellarg($ticker) . ' > /dev/null 2>&1 &';
+        @exec($cmd);
+    }
+}
+
 $freshCache = read_cached_payload($pipeline, $maxCacheAgeSeconds);
 if ($freshCache !== null) {
     $freshCache['cache'] = [
@@ -54,6 +108,7 @@ $hasError = $isValidJson && isset($decoded['error']);
 
 if ($isValidJson && !$hasError) {
     file_put_contents($pipeline, json_encode($decoded, JSON_PRETTY_PRINT));
+    remember_focus_symbol($ticker, $focusUniverseFile, $marketWatchlistFile, $correlationGenerator);
     $decoded['cache'] = [
         'hit' => false,
         'stale' => false,

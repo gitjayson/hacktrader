@@ -1,604 +1,2044 @@
 {
-    "TSLA": [
-        {"symbol": "RIVN", "relation": "positive"},
-        {"symbol": "LCID", "relation": "positive"},
-        {"symbol": "NIO", "relation": "positive"},
-        {"symbol": "LIT", "relation": "positive"},
-        {"symbol": "ARKK", "relation": "positive"},
-        {"symbol": "QQQ", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "XLY", "relation": "positive"},
-        {"symbol": "SMOG", "relation": "positive"},
-        {"symbol": "QCLN", "relation": "positive"},
-        {"symbol": "TSLL", "relation": "positive"},
-        {"symbol": "UUP", "relation": "negative"}
-    ],
-    "NVDA": [
-        {"symbol": "AMD", "relation": "positive"},
-        {"symbol": "AVGO", "relation": "positive"},
-        {"symbol": "INTC", "relation": "positive"},
-        {"symbol": "TSM", "relation": "positive"},
-        {"symbol": "QCOM", "relation": "positive"},
-        {"symbol": "ARM", "relation": "positive"},
-        {"symbol": "APLD", "relation": "positive"},
-        {"symbol": "SMH", "relation": "positive"},
-        {"symbol": "SOXQ", "relation": "positive"},
-        {"symbol": "XLK", "relation": "positive"},
-        {"symbol": "IYW", "relation": "positive"},
-        {"symbol": "UUP", "relation": "negative"}
-    ],
-    "AAPL": [
-        {"symbol": "MSFT", "relation": "positive"},
-        {"symbol": "GOOGL", "relation": "positive"},
-        {"symbol": "META", "relation": "positive"},
-        {"symbol": "AMZN", "relation": "positive"},
-        {"symbol": "VGT", "relation": "positive"},
-        {"symbol": "XLK", "relation": "positive"},
-        {"symbol": "FTEC", "relation": "positive"},
-        {"symbol": "IXN", "relation": "positive"},
-        {"symbol": "IYW", "relation": "positive"},
-        {"symbol": "QQQ", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "UUP", "relation": "negative"}
-    ],
-    "AMZN": [
-        {"symbol": "AAPL", "relation": "positive"},
-        {"symbol": "MSFT", "relation": "positive"},
-        {"symbol": "GOOGL", "relation": "positive"},
-        {"symbol": "META", "relation": "positive"},
-        {"symbol": "VCR", "relation": "positive"},
-        {"symbol": "XLY", "relation": "positive"},
-        {"symbol": "FDIS", "relation": "positive"},
-        {"symbol": "ONLN", "relation": "positive"},
-        {"symbol": "RTH", "relation": "positive"},
-        {"symbol": "QQQ", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "UUP", "relation": "negative"}
-    ],
-    "MSFT": [
-        {"symbol": "AAPL", "relation": "positive"},
-        {"symbol": "GOOGL", "relation": "positive"},
-        {"symbol": "AMZN", "relation": "positive"},
-        {"symbol": "META", "relation": "positive"},
-        {"symbol": "VGT", "relation": "positive"},
-        {"symbol": "XLK", "relation": "positive"},
-        {"symbol": "FTEC", "relation": "positive"},
-        {"symbol": "QQQ", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "VUG", "relation": "positive"},
-        {"symbol": "IYW", "relation": "positive"},
-        {"symbol": "UUP", "relation": "negative"}
-    ],
-    "GOOGL": [
-        {"symbol": "AAPL", "relation": "positive"},
-        {"symbol": "MSFT", "relation": "positive"},
-        {"symbol": "META", "relation": "positive"},
-        {"symbol": "AMZN", "relation": "positive"},
-        {"symbol": "XLC", "relation": "positive"},
-        {"symbol": "XLK", "relation": "positive"},
-        {"symbol": "QQQ", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "VUG", "relation": "positive"},
-        {"symbol": "FTEC", "relation": "positive"},
-        {"symbol": "IXN", "relation": "positive"},
-        {"symbol": "UUP", "relation": "negative"}
-    ],
-    "META": [
-        {"symbol": "GOOGL", "relation": "positive"},
-        {"symbol": "AAPL", "relation": "positive"},
-        {"symbol": "MSFT", "relation": "positive"},
-        {"symbol": "AMZN", "relation": "positive"},
-        {"symbol": "XLC", "relation": "positive"},
-        {"symbol": "XLK", "relation": "positive"},
-        {"symbol": "QQQ", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "VUG", "relation": "positive"},
-        {"symbol": "FTEC", "relation": "positive"},
-        {"symbol": "IXN", "relation": "positive"},
-        {"symbol": "UUP", "relation": "negative"}
-    ],
-    "AMD": [
-        {"symbol": "NVDA", "relation": "positive"},
-        {"symbol": "AVGO", "relation": "positive"},
-        {"symbol": "INTC", "relation": "positive"},
-        {"symbol": "QCOM", "relation": "positive"},
-        {"symbol": "TXN", "relation": "positive"},
-        {"symbol": "SMH", "relation": "positive"},
-        {"symbol": "SOXQ", "relation": "positive"},
-        {"symbol": "XLK", "relation": "positive"},
-        {"symbol": "IYW", "relation": "positive"},
-        {"symbol": "QQQ", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "UUP", "relation": "negative"}
-    ],
-    "NFLX": [
-        {"symbol": "DIS", "relation": "positive"},
-        {"symbol": "CMCSA", "relation": "positive"},
-        {"symbol": "ROKU", "relation": "positive"},
-        {"symbol": "XLC", "relation": "positive"},
-        {"symbol": "QQQ", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "VCR", "relation": "positive"},
-        {"symbol": "XLY", "relation": "positive"},
-        {"symbol": "FDIS", "relation": "positive"},
-        {"symbol": "VUG", "relation": "positive"},
-        {"symbol": "XLI", "relation": "positive"},
-        {"symbol": "UUP", "relation": "negative"}
-    ],
-    "SPY": [
-        {"symbol": "QQQ", "relation": "positive"},
-        {"symbol": "IWM", "relation": "positive"},
-        {"symbol": "DIA", "relation": "positive"},
-        {"symbol": "XLF", "relation": "positive"},
-        {"symbol": "XLE", "relation": "positive"},
-        {"symbol": "XLK", "relation": "positive"},
-        {"symbol": "XLV", "relation": "positive"},
-        {"symbol": "XLY", "relation": "positive"},
-        {"symbol": "XLP", "relation": "positive"},
-        {"symbol": "XLU", "relation": "positive"},
-        {"symbol": "XLB", "relation": "positive"},
-        {"symbol": "UUP", "relation": "negative"}
-    ],
-    "QQQ": [
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "IWM", "relation": "positive"},
-        {"symbol": "DIA", "relation": "positive"},
-        {"symbol": "XLK", "relation": "positive"},
-        {"symbol": "XLY", "relation": "positive"},
-        {"symbol": "XLC", "relation": "positive"},
-        {"symbol": "SMH", "relation": "positive"},
-        {"symbol": "VGT", "relation": "positive"},
-        {"symbol": "VUG", "relation": "positive"},
-        {"symbol": "IYW", "relation": "positive"},
-        {"symbol": "FTEC", "relation": "positive"},
-        {"symbol": "UUP", "relation": "negative"}
-    ],
-    "JPM": [
-        {"symbol": "BAC", "relation": "positive"},
-        {"symbol": "GS", "relation": "positive"},
-        {"symbol": "MS", "relation": "positive"},
-        {"symbol": "WFC", "relation": "positive"},
-        {"symbol": "C", "relation": "positive"},
-        {"symbol": "XLF", "relation": "positive"},
-        {"symbol": "KBE", "relation": "positive"},
-        {"symbol": "KRE", "relation": "positive"},
-        {"symbol": "DIA", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "VFH", "relation": "positive"},
-        {"symbol": "UUP", "relation": "positive"}
-    ],
-    "BAC": [
-        {"symbol": "JPM", "relation": "positive"},
-        {"symbol": "WFC", "relation": "positive"},
-        {"symbol": "C", "relation": "positive"},
-        {"symbol": "GS", "relation": "positive"},
-        {"symbol": "MS", "relation": "positive"},
-        {"symbol": "XLF", "relation": "positive"},
-        {"symbol": "KBE", "relation": "positive"},
-        {"symbol": "DIA", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "VFH", "relation": "positive"},
-        {"symbol": "IYG", "relation": "positive"},
-        {"symbol": "UUP", "relation": "positive"}
-    ],
-    "JNJ": [
-        {"symbol": "PFE", "relation": "positive"},
-        {"symbol": "MRK", "relation": "positive"},
-        {"symbol": "UNH", "relation": "positive"},
-        {"symbol": "ABBV", "relation": "positive"},
-        {"symbol": "XLV", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "DIA", "relation": "positive"},
-        {"symbol": "XLP", "relation": "positive"},
-        {"symbol": "XLY", "relation": "positive"},
-        {"symbol": "XLI", "relation": "positive"},
-        {"symbol": "VHT", "relation": "positive"},
-        {"symbol": "UUP", "relation": "positive"}
-    ],
-    "XOM": [
-        {"symbol": "CVX", "relation": "positive"},
-        {"symbol": "COP", "relation": "positive"},
-        {"symbol": "SLB", "relation": "positive"},
-        {"symbol": "XLE", "relation": "positive"},
-        {"symbol": "XOP", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "DIA", "relation": "positive"},
-        {"symbol": "UNG", "relation": "positive"},
-        {"symbol": "WTI", "relation": "positive"},
-        {"symbol": "UUP", "relation": "positive"},
-        {"symbol": "OXY", "relation": "positive"},
-        {"symbol": "HAL", "relation": "positive"}
-    ],
-    "KO": [
-        {"symbol": "PEP", "relation": "positive"},
-        {"symbol": "WMT", "relation": "positive"},
-        {"symbol": "COST", "relation": "positive"},
-        {"symbol": "MCD", "relation": "positive"},
-        {"symbol": "PG", "relation": "positive"},
-        {"symbol": "XLP", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "DIA", "relation": "positive"},
-        {"symbol": "XLY", "relation": "positive"},
-        {"symbol": "XLV", "relation": "positive"},
-        {"symbol": "VDC", "relation": "positive"},
-        {"symbol": "UUP", "relation": "positive"}
-    ],
-    "PEP": [
-        {"symbol": "KO", "relation": "positive"},
-        {"symbol": "WMT", "relation": "positive"},
-        {"symbol": "COST", "relation": "positive"},
-        {"symbol": "MCD", "relation": "positive"},
-        {"symbol": "PG", "relation": "positive"},
-        {"symbol": "XLP", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "DIA", "relation": "positive"},
-        {"symbol": "XLY", "relation": "positive"},
-        {"symbol": "XLV", "relation": "positive"},
-        {"symbol": "VDC", "relation": "positive"},
-        {"symbol": "UUP", "relation": "positive"}
-    ],
-    "WMT": [
-        {"symbol": "COST", "relation": "positive"},
-        {"symbol": "TGT", "relation": "positive"},
-        {"symbol": "AMZN", "relation": "positive"},
-        {"symbol": "KO", "relation": "positive"},
-        {"symbol": "PEP", "relation": "positive"},
-        {"symbol": "XLP", "relation": "positive"},
-        {"symbol": "XLY", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "DIA", "relation": "positive"},
-        {"symbol": "VDC", "relation": "positive"},
-        {"symbol": "VCR", "relation": "positive"},
-        {"symbol": "UUP", "relation": "positive"}
-    ],
-    "BA": [
-        {"symbol": "CAT", "relation": "positive"},
-        {"symbol": "HON", "relation": "positive"},
-        {"symbol": "GE", "relation": "positive"},
-        {"symbol": "LMT", "relation": "positive"},
-        {"symbol": "XLI", "relation": "positive"},
-        {"symbol": "DIA", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "ITA", "relation": "positive"},
-        {"symbol": "XLY", "relation": "positive"},
-        {"symbol": "XLK", "relation": "positive"},
-        {"symbol": "XLF", "relation": "positive"},
-        {"symbol": "UUP", "relation": "positive"}
-    ],
-    "CAT": [
-        {"symbol": "DE", "relation": "positive"},
-        {"symbol": "BA", "relation": "positive"},
-        {"symbol": "HON", "relation": "positive"},
-        {"symbol": "MMM", "relation": "positive"},
-        {"symbol": "XLI", "relation": "positive"},
-        {"symbol": "DIA", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "VIG", "relation": "positive"},
-        {"symbol": "XLY", "relation": "positive"},
-        {"symbol": "XLK", "relation": "positive"},
-        {"symbol": "XLF", "relation": "positive"},
-        {"symbol": "UUP", "relation": "positive"}
-    ],
-    "INTC": [
-        {"symbol": "AMD", "relation": "positive"},
-        {"symbol": "NVDA", "relation": "positive"},
-        {"symbol": "AVGO", "relation": "positive"},
-        {"symbol": "QCOM", "relation": "positive"},
-        {"symbol": "TXN", "relation": "positive"},
-        {"symbol": "SMH", "relation": "positive"},
-        {"symbol": "XLK", "relation": "positive"},
-        {"symbol": "QQQ", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "VGT", "relation": "positive"},
-        {"symbol": "IYW", "relation": "positive"},
-        {"symbol": "UUP", "relation": "negative"}
-    ],
-    "ADBE": [
-        {"symbol": "CRM", "relation": "positive"},
-        {"symbol": "MSFT", "relation": "positive"},
-        {"symbol": "ORCL", "relation": "positive"},
-        {"symbol": "NOW", "relation": "positive"},
-        {"symbol": "XLK", "relation": "positive"},
-        {"symbol": "QQQ", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "VGT", "relation": "positive"},
-        {"symbol": "IYW", "relation": "positive"},
-        {"symbol": "VUG", "relation": "positive"},
-        {"symbol": "VONG", "relation": "positive"},
-        {"symbol": "UUP", "relation": "negative"}
-    ],
-    "CRM": [
-        {"symbol": "ADBE", "relation": "positive"},
-        {"symbol": "MSFT", "relation": "positive"},
-        {"symbol": "ORCL", "relation": "positive"},
-        {"symbol": "NOW", "relation": "positive"},
-        {"symbol": "XLK", "relation": "positive"},
-        {"symbol": "QQQ", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "VGT", "relation": "positive"},
-        {"symbol": "IYW", "relation": "positive"},
-        {"symbol": "VUG", "relation": "positive"},
-        {"symbol": "VONG", "relation": "positive"},
-        {"symbol": "UUP", "relation": "negative"}
-    ],
-    "CSCO": [
-        {"symbol": "IBM", "relation": "positive"},
-        {"symbol": "MSFT", "relation": "positive"},
-        {"symbol": "ORCL", "relation": "positive"},
-        {"symbol": "JNPR", "relation": "positive"},
-        {"symbol": "XLK", "relation": "positive"},
-        {"symbol": "DIA", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "VGT", "relation": "positive"},
-        {"symbol": "IYW", "relation": "positive"},
-        {"symbol": "VONG", "relation": "positive"},
-        {"symbol": "VGT", "relation": "positive"},
-        {"symbol": "UUP", "relation": "negative"}
-    ],
-    "ORCL": [
-        {"symbol": "MSFT", "relation": "positive"},
-        {"symbol": "ADBE", "relation": "positive"},
-        {"symbol": "CRM", "relation": "positive"},
-        {"symbol": "IBM", "relation": "positive"},
-        {"symbol": "XLK", "relation": "positive"},
-        {"symbol": "QQQ", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "VGT", "relation": "positive"},
-        {"symbol": "IYW", "relation": "positive"},
-        {"symbol": "VUG", "relation": "positive"},
-        {"symbol": "VONG", "relation": "positive"},
-        {"symbol": "UUP", "relation": "negative"}
-    ],
-    "DIS": [
-        {"symbol": "NFLX", "relation": "positive"},
-        {"symbol": "CMCSA", "relation": "positive"},
-        {"symbol": "TMUS", "relation": "positive"},
-        {"symbol": "VZ", "relation": "positive"},
-        {"symbol": "T", "relation": "positive"},
-        {"symbol": "XLC", "relation": "positive"},
-        {"symbol": "QQQ", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "VCR", "relation": "positive"},
-        {"symbol": "XLY", "relation": "positive"},
-        {"symbol": "XLI", "relation": "positive"},
-        {"symbol": "UUP", "relation": "positive"}
-    ],
-    "V": [
-        {"symbol": "MA", "relation": "positive"},
-        {"symbol": "AXP", "relation": "positive"},
-        {"symbol": "PYPL", "relation": "positive"},
-        {"symbol": "DFS", "relation": "positive"},
-        {"symbol": "XLF", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "DIA", "relation": "positive"},
-        {"symbol": "KBE", "relation": "positive"},
-        {"symbol": "KRE", "relation": "positive"},
-        {"symbol": "XLY", "relation": "positive"},
-        {"symbol": "VFH", "relation": "positive"},
-        {"symbol": "UUP", "relation": "positive"}
-    ],
-    "MA": [
-        {"symbol": "V", "relation": "positive"},
-        {"symbol": "AXP", "relation": "positive"},
-        {"symbol": "PYPL", "relation": "positive"},
-        {"symbol": "DFS", "relation": "positive"},
-        {"symbol": "XLF", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "DIA", "relation": "positive"},
-        {"symbol": "KBE", "relation": "positive"},
-        {"symbol": "KRE", "relation": "positive"},
-        {"symbol": "XLY", "relation": "positive"},
-        {"symbol": "VFH", "relation": "positive"},
-        {"symbol": "UUP", "relation": "positive"}
-    ],
-    "AXP": [
-        {"symbol": "V", "relation": "positive"},
-        {"symbol": "MA", "relation": "positive"},
-        {"symbol": "DFS", "relation": "positive"},
-        {"symbol": "SYF", "relation": "positive"},
-        {"symbol": "XLF", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "DIA", "relation": "positive"},
-        {"symbol": "XLY", "relation": "positive"},
-        {"symbol": "VFH", "relation": "positive"},
-        {"symbol": "IYG", "relation": "positive"},
-        {"symbol": "XLK", "relation": "positive"},
-        {"symbol": "UUP", "relation": "positive"}
-    ],
-    "HD": [
-        {"symbol": "LOW", "relation": "positive"},
-        {"symbol": "AMZN", "relation": "positive"},
-        {"symbol": "TGT", "relation": "positive"},
-        {"symbol": "WMT", "relation": "positive"},
-        {"symbol": "XLY", "relation": "positive"},
-        {"symbol": "VCR", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "DIA", "relation": "positive"},
-        {"symbol": "XLI", "relation": "positive"},
-        {"symbol": "XLK", "relation": "positive"},
-        {"symbol": "XLF", "relation": "positive"},
-        {"symbol": "UUP", "relation": "positive"}
-    ],
-    "LOW": [
-        {"symbol": "HD", "relation": "positive"},
-        {"symbol": "AMZN", "relation": "positive"},
-        {"symbol": "TGT", "relation": "positive"},
-        {"symbol": "WMT", "relation": "positive"},
-        {"symbol": "XLY", "relation": "positive"},
-        {"symbol": "VCR", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "DIA", "relation": "positive"},
-        {"symbol": "XLI", "relation": "positive"},
-        {"symbol": "XLK", "relation": "positive"},
-        {"symbol": "XLF", "relation": "positive"},
-        {"symbol": "UUP", "relation": "positive"}
-    ],
-    "PG": [
-        {"symbol": "KO", "relation": "positive"},
-        {"symbol": "PEP", "relation": "positive"},
-        {"symbol": "CL", "relation": "positive"},
-        {"symbol": "EL", "relation": "positive"},
-        {"symbol": "XLP", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "DIA", "relation": "positive"},
-        {"symbol": "XLV", "relation": "positive"},
-        {"symbol": "XLY", "relation": "positive"},
-        {"symbol": "VDC", "relation": "positive"},
-        {"symbol": "KDC", "relation": "positive"},
-        {"symbol": "UUP", "relation": "positive"}
-    ],
-    "UNH": [
-        {"symbol": "ELV", "relation": "positive"},
-        {"symbol": "CI", "relation": "positive"},
-        {"symbol": "HUM", "relation": "positive"},
-        {"symbol": "CVS", "relation": "positive"},
-        {"symbol": "XLV", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "DIA", "relation": "positive"},
-        {"symbol": "XLP", "relation": "positive"},
-        {"symbol": "VHT", "relation": "positive"},
-        {"symbol": "IHE", "relation": "positive"},
-        {"symbol": "XLI", "relation": "positive"},
-        {"symbol": "UUP", "relation": "positive"}
-    ],
-    "CVS": [
-        {"symbol": "WBA", "relation": "positive"},
-        {"symbol": "UNH", "relation": "positive"},
-        {"symbol": "CI", "relation": "positive"},
-        {"symbol": "HUM", "relation": "positive"},
-        {"symbol": "XLV", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "DIA", "relation": "positive"},
-        {"symbol": "XLP", "relation": "positive"},
-        {"symbol": "VHT", "relation": "positive"},
-        {"symbol": "IHE", "relation": "positive"},
-        {"symbol": "XLY", "relation": "positive"},
-        {"symbol": "UUP", "relation": "positive"}
-    ],
-    "CVX": [
-        {"symbol": "XOM", "relation": "positive"},
-        {"symbol": "COP", "relation": "positive"},
-        {"symbol": "SLB", "relation": "positive"},
-        {"symbol": "XLE", "relation": "positive"},
-        {"symbol": "XOP", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "DIA", "relation": "positive"},
-        {"symbol": "UNG", "relation": "positive"},
-        {"symbol": "WTI", "relation": "positive"},
-        {"symbol": "UUP", "relation": "positive"},
-        {"symbol": "OXY", "relation": "positive"},
-        {"symbol": "HAL", "relation": "positive"}
-    ],
-    "MRK": [
-        {"symbol": "JNJ", "relation": "positive"},
-        {"symbol": "PFE", "relation": "positive"},
-        {"symbol": "ABBV", "relation": "positive"},
-        {"symbol": "LLY", "relation": "positive"},
-        {"symbol": "XLV", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "DIA", "relation": "positive"},
-        {"symbol": "XLP", "relation": "positive"},
-        {"symbol": "VHT", "relation": "positive"},
-        {"symbol": "IHE", "relation": "positive"},
-        {"symbol": "XLI", "relation": "positive"},
-        {"symbol": "UUP", "relation": "positive"}
-    ],
-    "PFE": [
-        {"symbol": "JNJ", "relation": "positive"},
-        {"symbol": "MRK", "relation": "positive"},
-        {"symbol": "ABBV", "relation": "positive"},
-        {"symbol": "LLY", "relation": "positive"},
-        {"symbol": "XLV", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "DIA", "relation": "positive"},
-        {"symbol": "XLP", "relation": "positive"},
-        {"symbol": "VHT", "relation": "positive"},
-        {"symbol": "IHE", "relation": "positive"},
-        {"symbol": "XLI", "relation": "positive"},
-        {"symbol": "UUP", "relation": "positive"}
-    ],
-    "LLY": [
-        {"symbol": "MRK", "relation": "positive"},
-        {"symbol": "PFE", "relation": "positive"},
-        {"symbol": "ABBV", "relation": "positive"},
-        {"symbol": "JNJ", "relation": "positive"},
-        {"symbol": "XLV", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "DIA", "relation": "positive"},
-        {"symbol": "XLP", "relation": "positive"},
-        {"symbol": "VHT", "relation": "positive"},
-        {"symbol": "IHE", "relation": "positive"},
-        {"symbol": "XLI", "relation": "positive"},
-        {"symbol": "UUP", "relation": "positive"}
-    ],
-    "MMM": [
-        {"symbol": "CAT", "relation": "positive"},
-        {"symbol": "HON", "relation": "positive"},
-        {"symbol": "GE", "relation": "positive"},
-        {"symbol": "DD", "relation": "positive"},
-        {"symbol": "XLI", "relation": "positive"},
-        {"symbol": "DIA", "relation": "positive"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "VIG", "relation": "positive"},
-        {"symbol": "XLY", "relation": "positive"},
-        {"symbol": "XLK", "relation": "positive"},
-        {"symbol": "XLF", "relation": "positive"},
-        {"symbol": "UUP", "relation": "positive"}
-    ],
-    "UUP": [
-        {"symbol": "UDN", "relation": "negative"},
-        {"symbol": "FXE", "relation": "negative"},
-        {"symbol": "FXY", "relation": "negative"},
-        {"symbol": "FXB", "relation": "negative"},
-        {"symbol": "GLD", "relation": "negative"},
-        {"symbol": "SLV", "relation": "negative"},
-        {"symbol": "SPY", "relation": "negative"},
-        {"symbol": "QQQ", "relation": "negative"},
-        {"symbol": "EEM", "relation": "negative"},
-        {"symbol": "USO", "relation": "negative"},
-        {"symbol": "TLT", "relation": "positive"},
-        {"symbol": "WTI", "relation": "negative"}
-    ],
-    "WTI": [
-        {"symbol": "USO", "relation": "positive"},
-        {"symbol": "XLE", "relation": "positive"},
-        {"symbol": "XOP", "relation": "positive"},
-        {"symbol": "CVX", "relation": "positive"},
-        {"symbol": "XOM", "relation": "positive"},
-        {"symbol": "OXY", "relation": "positive"},
-        {"symbol": "SLB", "relation": "positive"},
-        {"symbol": "HAL", "relation": "positive"},
-        {"symbol": "UNG", "relation": "positive"},
-        {"symbol": "UUP", "relation": "negative"},
-        {"symbol": "GLD", "relation": "negative"},
-        {"symbol": "SPY", "relation": "positive"}
-    ],
-    "UNG": [
-        {"symbol": "WTI", "relation": "positive"},
-        {"symbol": "USO", "relation": "positive"},
-        {"symbol": "XLE", "relation": "positive"},
-        {"symbol": "XOP", "relation": "positive"},
-        {"symbol": "SLB", "relation": "positive"},
-        {"symbol": "HAL", "relation": "positive"},
-        {"symbol": "OXY", "relation": "positive"},
-        {"symbol": "UUP", "relation": "negative"},
-        {"symbol": "GLD", "relation": "negative"},
-        {"symbol": "SPY", "relation": "positive"},
-        {"symbol": "QQQ", "relation": "positive"},
-        {"symbol": "TLT", "relation": "negative"}
-    ],
-    "GLD": [
-        {"symbol": "SLV", "relation": "positive"},
-        {"symbol": "GDX", "relation": "positive"},
-        {"symbol": "GDXJ", "relation": "positive"},
-        {"symbol": "IAU", "relation": "positive"},
-        {"symbol": "TLT", "relation": "positive"},
-        {"symbol": "UUP", "relation": "negative"},
-        {"symbol": "UDN", "relation": "positive"},
-        {"symbol": "SPY", "relation": "negative"},
-        {"symbol": "QQQ", "relation": "negative"},
-        {"symbol": "XLE", "relation": "negative"},
-        {"symbol": "WTI", "relation": "negative"},
-        {"symbol": "FXE", "relation": "positive"}
-    ]
+  "AAPL": [
+    {
+      "symbol": "WTI",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UNG",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "negative"
+    }
+  ],
+  "ADBE": [
+    {
+      "symbol": "CRM",
+      "relation": "positive"
+    },
+    {
+      "symbol": "MSFT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "ORCL",
+      "relation": "positive"
+    },
+    {
+      "symbol": "NOW",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLK",
+      "relation": "positive"
+    },
+    {
+      "symbol": "QQQ",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VGT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "IYW",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VUG",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VONG",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "negative"
+    }
+  ],
+  "AMD": [
+    {
+      "symbol": "NVDA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "AVGO",
+      "relation": "positive"
+    },
+    {
+      "symbol": "INTC",
+      "relation": "positive"
+    },
+    {
+      "symbol": "QCOM",
+      "relation": "positive"
+    },
+    {
+      "symbol": "TXN",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SMH",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SOXQ",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLK",
+      "relation": "positive"
+    },
+    {
+      "symbol": "IYW",
+      "relation": "positive"
+    },
+    {
+      "symbol": "QQQ",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "negative"
+    }
+  ],
+  "AMZN": [
+    {
+      "symbol": "AAPL",
+      "relation": "positive"
+    },
+    {
+      "symbol": "MSFT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "GOOGL",
+      "relation": "positive"
+    },
+    {
+      "symbol": "META",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VCR",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "FDIS",
+      "relation": "positive"
+    },
+    {
+      "symbol": "ONLN",
+      "relation": "positive"
+    },
+    {
+      "symbol": "RTH",
+      "relation": "positive"
+    },
+    {
+      "symbol": "QQQ",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "negative"
+    }
+  ],
+  "AXP": [
+    {
+      "symbol": "V",
+      "relation": "positive"
+    },
+    {
+      "symbol": "MA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "DFS",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SYF",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLF",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "DIA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VFH",
+      "relation": "positive"
+    },
+    {
+      "symbol": "IYG",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLK",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "positive"
+    }
+  ],
+  "BA": [
+    {
+      "symbol": "CAT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "HON",
+      "relation": "positive"
+    },
+    {
+      "symbol": "GE",
+      "relation": "positive"
+    },
+    {
+      "symbol": "LMT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLI",
+      "relation": "positive"
+    },
+    {
+      "symbol": "DIA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "ITA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLK",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLF",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "positive"
+    }
+  ],
+  "BAC": [
+    {
+      "symbol": "JPM",
+      "relation": "positive"
+    },
+    {
+      "symbol": "WFC",
+      "relation": "positive"
+    },
+    {
+      "symbol": "C",
+      "relation": "positive"
+    },
+    {
+      "symbol": "GS",
+      "relation": "positive"
+    },
+    {
+      "symbol": "MS",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLF",
+      "relation": "positive"
+    },
+    {
+      "symbol": "KBE",
+      "relation": "positive"
+    },
+    {
+      "symbol": "DIA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VFH",
+      "relation": "positive"
+    },
+    {
+      "symbol": "IYG",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "positive"
+    }
+  ],
+  "CAT": [
+    {
+      "symbol": "DE",
+      "relation": "positive"
+    },
+    {
+      "symbol": "BA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "HON",
+      "relation": "positive"
+    },
+    {
+      "symbol": "MMM",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLI",
+      "relation": "positive"
+    },
+    {
+      "symbol": "DIA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VIG",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLK",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLF",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "positive"
+    }
+  ],
+  "CRM": [
+    {
+      "symbol": "ADBE",
+      "relation": "positive"
+    },
+    {
+      "symbol": "MSFT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "ORCL",
+      "relation": "positive"
+    },
+    {
+      "symbol": "NOW",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLK",
+      "relation": "positive"
+    },
+    {
+      "symbol": "QQQ",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VGT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "IYW",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VUG",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VONG",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "negative"
+    }
+  ],
+  "CSCO": [
+    {
+      "symbol": "IBM",
+      "relation": "positive"
+    },
+    {
+      "symbol": "MSFT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "ORCL",
+      "relation": "positive"
+    },
+    {
+      "symbol": "JNPR",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLK",
+      "relation": "positive"
+    },
+    {
+      "symbol": "DIA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VGT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "IYW",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VONG",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VGT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "negative"
+    }
+  ],
+  "CVS": [
+    {
+      "symbol": "WBA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UNH",
+      "relation": "positive"
+    },
+    {
+      "symbol": "CI",
+      "relation": "positive"
+    },
+    {
+      "symbol": "HUM",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLV",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "DIA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLP",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VHT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "IHE",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "positive"
+    }
+  ],
+  "CVX": [
+    {
+      "symbol": "XOM",
+      "relation": "positive"
+    },
+    {
+      "symbol": "COP",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SLB",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLE",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XOP",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "DIA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UNG",
+      "relation": "positive"
+    },
+    {
+      "symbol": "WTI",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "positive"
+    },
+    {
+      "symbol": "OXY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "HAL",
+      "relation": "positive"
+    }
+  ],
+  "DIS": [
+    {
+      "symbol": "NFLX",
+      "relation": "positive"
+    },
+    {
+      "symbol": "CMCSA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "TMUS",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VZ",
+      "relation": "positive"
+    },
+    {
+      "symbol": "T",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLC",
+      "relation": "positive"
+    },
+    {
+      "symbol": "QQQ",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VCR",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLI",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "positive"
+    }
+  ],
+  "GLD": [
+    {
+      "symbol": "SLV",
+      "relation": "positive"
+    },
+    {
+      "symbol": "GDX",
+      "relation": "positive"
+    },
+    {
+      "symbol": "GDXJ",
+      "relation": "positive"
+    },
+    {
+      "symbol": "IAU",
+      "relation": "positive"
+    },
+    {
+      "symbol": "TLT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "negative"
+    },
+    {
+      "symbol": "UDN",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "negative"
+    },
+    {
+      "symbol": "QQQ",
+      "relation": "negative"
+    },
+    {
+      "symbol": "XLE",
+      "relation": "negative"
+    },
+    {
+      "symbol": "WTI",
+      "relation": "negative"
+    },
+    {
+      "symbol": "FXE",
+      "relation": "positive"
+    }
+  ],
+  "GOOGL": [
+    {
+      "symbol": "AAPL",
+      "relation": "positive"
+    },
+    {
+      "symbol": "MSFT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "META",
+      "relation": "positive"
+    },
+    {
+      "symbol": "AMZN",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLC",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLK",
+      "relation": "positive"
+    },
+    {
+      "symbol": "QQQ",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VUG",
+      "relation": "positive"
+    },
+    {
+      "symbol": "FTEC",
+      "relation": "positive"
+    },
+    {
+      "symbol": "IXN",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "negative"
+    }
+  ],
+  "HD": [
+    {
+      "symbol": "LOW",
+      "relation": "positive"
+    },
+    {
+      "symbol": "AMZN",
+      "relation": "positive"
+    },
+    {
+      "symbol": "TGT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "WMT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VCR",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "DIA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLI",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLK",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLF",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "positive"
+    }
+  ],
+  "INTC": [
+    {
+      "symbol": "AMD",
+      "relation": "positive"
+    },
+    {
+      "symbol": "NVDA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "AVGO",
+      "relation": "positive"
+    },
+    {
+      "symbol": "QCOM",
+      "relation": "positive"
+    },
+    {
+      "symbol": "TXN",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SMH",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLK",
+      "relation": "positive"
+    },
+    {
+      "symbol": "QQQ",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VGT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "IYW",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "negative"
+    }
+  ],
+  "JNJ": [
+    {
+      "symbol": "PFE",
+      "relation": "positive"
+    },
+    {
+      "symbol": "MRK",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UNH",
+      "relation": "positive"
+    },
+    {
+      "symbol": "ABBV",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLV",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "DIA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLP",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLI",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VHT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "positive"
+    }
+  ],
+  "JPM": [
+    {
+      "symbol": "BAC",
+      "relation": "positive"
+    },
+    {
+      "symbol": "GS",
+      "relation": "positive"
+    },
+    {
+      "symbol": "MS",
+      "relation": "positive"
+    },
+    {
+      "symbol": "WFC",
+      "relation": "positive"
+    },
+    {
+      "symbol": "C",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLF",
+      "relation": "positive"
+    },
+    {
+      "symbol": "KBE",
+      "relation": "positive"
+    },
+    {
+      "symbol": "KRE",
+      "relation": "positive"
+    },
+    {
+      "symbol": "DIA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VFH",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "positive"
+    }
+  ],
+  "KO": [
+    {
+      "symbol": "PEP",
+      "relation": "positive"
+    },
+    {
+      "symbol": "WMT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "COST",
+      "relation": "positive"
+    },
+    {
+      "symbol": "MCD",
+      "relation": "positive"
+    },
+    {
+      "symbol": "PG",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLP",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "DIA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLV",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VDC",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "positive"
+    }
+  ],
+  "LLY": [
+    {
+      "symbol": "MRK",
+      "relation": "positive"
+    },
+    {
+      "symbol": "PFE",
+      "relation": "positive"
+    },
+    {
+      "symbol": "ABBV",
+      "relation": "positive"
+    },
+    {
+      "symbol": "JNJ",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLV",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "DIA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLP",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VHT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "IHE",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLI",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "positive"
+    }
+  ],
+  "LOW": [
+    {
+      "symbol": "HD",
+      "relation": "positive"
+    },
+    {
+      "symbol": "AMZN",
+      "relation": "positive"
+    },
+    {
+      "symbol": "TGT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "WMT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VCR",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "DIA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLI",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLK",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLF",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "positive"
+    }
+  ],
+  "MA": [
+    {
+      "symbol": "V",
+      "relation": "positive"
+    },
+    {
+      "symbol": "AXP",
+      "relation": "positive"
+    },
+    {
+      "symbol": "PYPL",
+      "relation": "positive"
+    },
+    {
+      "symbol": "DFS",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLF",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "DIA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "KBE",
+      "relation": "positive"
+    },
+    {
+      "symbol": "KRE",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VFH",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "positive"
+    }
+  ],
+  "META": [
+    {
+      "symbol": "GOOGL",
+      "relation": "positive"
+    },
+    {
+      "symbol": "AAPL",
+      "relation": "positive"
+    },
+    {
+      "symbol": "MSFT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "AMZN",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLC",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLK",
+      "relation": "positive"
+    },
+    {
+      "symbol": "QQQ",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VUG",
+      "relation": "positive"
+    },
+    {
+      "symbol": "FTEC",
+      "relation": "positive"
+    },
+    {
+      "symbol": "IXN",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "negative"
+    }
+  ],
+  "MMM": [
+    {
+      "symbol": "CAT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "HON",
+      "relation": "positive"
+    },
+    {
+      "symbol": "GE",
+      "relation": "positive"
+    },
+    {
+      "symbol": "DD",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLI",
+      "relation": "positive"
+    },
+    {
+      "symbol": "DIA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VIG",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLK",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLF",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "positive"
+    }
+  ],
+  "MRK": [
+    {
+      "symbol": "JNJ",
+      "relation": "positive"
+    },
+    {
+      "symbol": "PFE",
+      "relation": "positive"
+    },
+    {
+      "symbol": "ABBV",
+      "relation": "positive"
+    },
+    {
+      "symbol": "LLY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLV",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "DIA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLP",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VHT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "IHE",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLI",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "positive"
+    }
+  ],
+  "MSFT": [
+    {
+      "symbol": "AAPL",
+      "relation": "positive"
+    },
+    {
+      "symbol": "GOOGL",
+      "relation": "positive"
+    },
+    {
+      "symbol": "AMZN",
+      "relation": "positive"
+    },
+    {
+      "symbol": "META",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VGT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLK",
+      "relation": "positive"
+    },
+    {
+      "symbol": "FTEC",
+      "relation": "positive"
+    },
+    {
+      "symbol": "QQQ",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VUG",
+      "relation": "positive"
+    },
+    {
+      "symbol": "IYW",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "negative"
+    }
+  ],
+  "NFLX": [
+    {
+      "symbol": "DIS",
+      "relation": "positive"
+    },
+    {
+      "symbol": "CMCSA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "ROKU",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLC",
+      "relation": "positive"
+    },
+    {
+      "symbol": "QQQ",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VCR",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "FDIS",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VUG",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLI",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "negative"
+    }
+  ],
+  "NVDA": [
+    {
+      "symbol": "WTI",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UNG",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "negative"
+    }
+  ],
+  "ORCL": [
+    {
+      "symbol": "MSFT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "ADBE",
+      "relation": "positive"
+    },
+    {
+      "symbol": "CRM",
+      "relation": "positive"
+    },
+    {
+      "symbol": "IBM",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLK",
+      "relation": "positive"
+    },
+    {
+      "symbol": "QQQ",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VGT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "IYW",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VUG",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VONG",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "negative"
+    }
+  ],
+  "PEP": [
+    {
+      "symbol": "KO",
+      "relation": "positive"
+    },
+    {
+      "symbol": "WMT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "COST",
+      "relation": "positive"
+    },
+    {
+      "symbol": "MCD",
+      "relation": "positive"
+    },
+    {
+      "symbol": "PG",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLP",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "DIA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLV",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VDC",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "positive"
+    }
+  ],
+  "PFE": [
+    {
+      "symbol": "JNJ",
+      "relation": "positive"
+    },
+    {
+      "symbol": "MRK",
+      "relation": "positive"
+    },
+    {
+      "symbol": "ABBV",
+      "relation": "positive"
+    },
+    {
+      "symbol": "LLY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLV",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "DIA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLP",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VHT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "IHE",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLI",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "positive"
+    }
+  ],
+  "PG": [
+    {
+      "symbol": "KO",
+      "relation": "positive"
+    },
+    {
+      "symbol": "PEP",
+      "relation": "positive"
+    },
+    {
+      "symbol": "CL",
+      "relation": "positive"
+    },
+    {
+      "symbol": "EL",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLP",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "DIA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLV",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VDC",
+      "relation": "positive"
+    },
+    {
+      "symbol": "KDC",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "positive"
+    }
+  ],
+  "QQQ": [
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "IWM",
+      "relation": "positive"
+    },
+    {
+      "symbol": "DIA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLK",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLC",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SMH",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VGT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VUG",
+      "relation": "positive"
+    },
+    {
+      "symbol": "IYW",
+      "relation": "positive"
+    },
+    {
+      "symbol": "FTEC",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "negative"
+    }
+  ],
+  "SPY": [
+    {
+      "symbol": "QQQ",
+      "relation": "positive"
+    },
+    {
+      "symbol": "IWM",
+      "relation": "positive"
+    },
+    {
+      "symbol": "DIA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLF",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLE",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLK",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLV",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLP",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLU",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLB",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "negative"
+    }
+  ],
+  "TSLA": [
+    {
+      "symbol": "WTI",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UNG",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "negative"
+    }
+  ],
+  "UNG": [
+    {
+      "symbol": "WTI",
+      "relation": "positive"
+    },
+    {
+      "symbol": "USO",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLE",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XOP",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SLB",
+      "relation": "positive"
+    },
+    {
+      "symbol": "HAL",
+      "relation": "positive"
+    },
+    {
+      "symbol": "OXY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "negative"
+    },
+    {
+      "symbol": "GLD",
+      "relation": "negative"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "QQQ",
+      "relation": "positive"
+    },
+    {
+      "symbol": "TLT",
+      "relation": "negative"
+    }
+  ],
+  "UNH": [
+    {
+      "symbol": "ELV",
+      "relation": "positive"
+    },
+    {
+      "symbol": "CI",
+      "relation": "positive"
+    },
+    {
+      "symbol": "HUM",
+      "relation": "positive"
+    },
+    {
+      "symbol": "CVS",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLV",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "DIA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLP",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VHT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "IHE",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLI",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "positive"
+    }
+  ],
+  "UUP": [
+    {
+      "symbol": "UDN",
+      "relation": "negative"
+    },
+    {
+      "symbol": "FXE",
+      "relation": "negative"
+    },
+    {
+      "symbol": "FXY",
+      "relation": "negative"
+    },
+    {
+      "symbol": "FXB",
+      "relation": "negative"
+    },
+    {
+      "symbol": "GLD",
+      "relation": "negative"
+    },
+    {
+      "symbol": "SLV",
+      "relation": "negative"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "negative"
+    },
+    {
+      "symbol": "QQQ",
+      "relation": "negative"
+    },
+    {
+      "symbol": "EEM",
+      "relation": "negative"
+    },
+    {
+      "symbol": "USO",
+      "relation": "negative"
+    },
+    {
+      "symbol": "TLT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "WTI",
+      "relation": "negative"
+    }
+  ],
+  "V": [
+    {
+      "symbol": "MA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "AXP",
+      "relation": "positive"
+    },
+    {
+      "symbol": "PYPL",
+      "relation": "positive"
+    },
+    {
+      "symbol": "DFS",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLF",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "DIA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "KBE",
+      "relation": "positive"
+    },
+    {
+      "symbol": "KRE",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VFH",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "positive"
+    }
+  ],
+  "WMT": [
+    {
+      "symbol": "COST",
+      "relation": "positive"
+    },
+    {
+      "symbol": "TGT",
+      "relation": "positive"
+    },
+    {
+      "symbol": "AMZN",
+      "relation": "positive"
+    },
+    {
+      "symbol": "KO",
+      "relation": "positive"
+    },
+    {
+      "symbol": "PEP",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLP",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "DIA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VDC",
+      "relation": "positive"
+    },
+    {
+      "symbol": "VCR",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "positive"
+    }
+  ],
+  "WTI": [
+    {
+      "symbol": "USO",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLE",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XOP",
+      "relation": "positive"
+    },
+    {
+      "symbol": "CVX",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XOM",
+      "relation": "positive"
+    },
+    {
+      "symbol": "OXY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SLB",
+      "relation": "positive"
+    },
+    {
+      "symbol": "HAL",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UNG",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "negative"
+    },
+    {
+      "symbol": "GLD",
+      "relation": "negative"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    }
+  ],
+  "XOM": [
+    {
+      "symbol": "CVX",
+      "relation": "positive"
+    },
+    {
+      "symbol": "COP",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SLB",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XLE",
+      "relation": "positive"
+    },
+    {
+      "symbol": "XOP",
+      "relation": "positive"
+    },
+    {
+      "symbol": "SPY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "DIA",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UNG",
+      "relation": "positive"
+    },
+    {
+      "symbol": "WTI",
+      "relation": "positive"
+    },
+    {
+      "symbol": "UUP",
+      "relation": "positive"
+    },
+    {
+      "symbol": "OXY",
+      "relation": "positive"
+    },
+    {
+      "symbol": "HAL",
+      "relation": "positive"
+    }
+  ]
 }
