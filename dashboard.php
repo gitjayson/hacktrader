@@ -815,6 +815,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 el.style.left = `calc(50% + ${x}px - ${indicatorHalf}px)`;
                 el.style.top = `calc(50% + ${y}px - ${indicatorHalf}px)`;
                 clock.appendChild(el);
+                drawOrUpdateLine(`line-${ind}`, x, y, '#444444');
             });
         }
 
@@ -902,15 +903,19 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                     scheduleCorrelationRefresh(requestId, ticker, 4000);
                 }
 
-                const ringChanged = currentRingFocusTicker !== ticker;
+                const currentIndicators = currentRingIndicators || [];
+                const hasRingForTicker = currentRingFocusTicker === ticker && currentIndicators.length > 0;
+                const indicatorsChanged = currentIndicators.length !== indicators.length
+                    || currentIndicators.some((existing, index) => existing.symbol !== indicators[index]?.symbol || existing.relation !== indicators[index]?.relation);
+                const shouldRebuildRing = !hasRingForTicker || indicatorsChanged;
 
-                if (ringChanged) {
+                if (shouldRebuildRing) {
                     currentRingFocusTicker = ticker;
                     buildRingLayout(indicators);
                 }
 
                 const activeIndicators = currentRingIndicators;
-                showDebug(`focus=${ticker} | corr=${activeIndicators.length} | ${activeIndicators.slice(0, 5).map(ind => ind.symbol).join(', ')} | fallback=${usedFallback} | status=${corrStatus.status || 'unknown'} | ${ringChanged ? 'repopulating ring' : 'updating ring data only'}`);
+                showDebug(`focus=${ticker} | corr=${activeIndicators.length} | ${activeIndicators.slice(0, 5).map(ind => ind.symbol).join(', ')} | fallback=${usedFallback} | status=${corrStatus.status || 'unknown'} | ${shouldRebuildRing ? 'repopulating ring' : 'updating ring data only'}`);
                 const indicatorStates = [];
                 const promises = activeIndicators.map(async (indObj) => {
                     const ind = indObj.symbol;
