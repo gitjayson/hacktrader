@@ -788,6 +788,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         }
 
         function buildRingLayout(indicators) {
+            const clock = document.getElementById('clock');
             clearRingElements();
             currentRingIndicators = indicators.map(ind => ({ ...ind }));
 
@@ -901,18 +902,17 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                     scheduleCorrelationRefresh(requestId, ticker, 4000);
                 }
 
-                const ringChanged = currentRingFocusTicker !== ticker
-                    || currentRingIndicators.length !== indicators.length
-                    || currentRingIndicators.some((existing, index) => existing.symbol !== indicators[index]?.symbol || existing.relation !== indicators[index]?.relation);
+                const ringChanged = currentRingFocusTicker !== ticker;
 
                 if (ringChanged) {
                     currentRingFocusTicker = ticker;
                     buildRingLayout(indicators);
                 }
 
-                showDebug(`focus=${ticker} | corr=${indicators.length} | ${indicators.slice(0, 5).map(ind => ind.symbol).join(', ')} | fallback=${usedFallback} | status=${corrStatus.status || 'unknown'} | ${ringChanged ? 'repopulating ring' : 'updating ring data only'}`);
+                const activeIndicators = currentRingIndicators;
+                showDebug(`focus=${ticker} | corr=${activeIndicators.length} | ${activeIndicators.slice(0, 5).map(ind => ind.symbol).join(', ')} | fallback=${usedFallback} | status=${corrStatus.status || 'unknown'} | ${ringChanged ? 'repopulating ring' : 'updating ring data only'}`);
                 const indicatorStates = [];
-                const promises = indicators.map(async (indObj) => {
+                const promises = activeIndicators.map(async (indObj) => {
                     const ind = indObj.symbol;
                     const relation = indObj.relation;
                     const el = document.querySelector(`.indicator[data-symbol="${ind}"]`);
