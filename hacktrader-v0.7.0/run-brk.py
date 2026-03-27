@@ -251,12 +251,12 @@ def compute_output(ticker, interval, display, periods, values, source):
 def fetch_from_cache(ticker, periods):
     cache = load_market_cache()
     if not isinstance(cache, dict):
-        return None
+        return None, None, None
     quotes = cache.get('quotes') or {}
     quote = quotes.get(ticker.upper())
     value = cache_quote_to_value(quote)
     if not value:
-        return None
+        return None, None, None
     return [value], 'cache', None
 
 
