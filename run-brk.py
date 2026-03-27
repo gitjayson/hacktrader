@@ -3,13 +3,13 @@ import os
 import sys
 import subprocess
 import random
-import math
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 secrets_path = os.path.join(script_dir, 'secrets.json')
+cache_path = os.path.join(script_dir, 'market-data-cache.json')
 
 home = Path.home()
 user_site = home / '.local' / 'lib' / f'python{sys.version_info.major}.{sys.version_info.minor}' / 'site-packages'
@@ -17,65 +17,71 @@ if user_site.exists() and str(user_site) not in sys.path:
     sys.path.insert(0, str(user_site))
 
 
-def load_feed_config():
-    config = {
-        'provider': 'twelvedata',
-        'api_keys': [
-            '1dbc799fe411479686be512ee797a777',
-            '8e13917d80264a63935d62aa2c448076',
-        ],
-        'massive_api_key': None,
-        'massive_url': None,
+def load_api_keys():
+    keys = {
+        'massive': None,
+        'twelvedata': []
     }
+
+    twelvedata_fallback_keys = [
+        "1dbc799fe411479686be512ee797a777",
+        "8e13917d80264a63935d62aa2c448076",
+    ]
 
     if os.path.exists(secrets_path):
         try:
             with open(secrets_path) as f:
                 secrets = json.load(f)
-            secret_key = secrets.get('TWELVEDATA_API_KEY')
-            if secret_key:
-                config['api_keys'].insert(0, secret_key)
-        except Exception:
-            pass
-
-    massive_secret = os.path.join(script_dir, 'massive.secret')
-    if os.path.exists(massive_secret):
-        try:
-            with open(massive_secret) as f:
-                raw = f.read().strip()
-            if raw:
-                config['provider'] = 'massive'
-                config['massive_url'] = raw
-                if 'apiKey=' in raw:
-                    config['massive_api_key'] = raw.split('apiKey=', 1)[1].split('&', 1)[0].split('#', 1)[0]
-        except Exception:
-            pass
-
-    # Optional workspace override if the user moved the key into secrets.json.
-    workspace_secrets = os.path.join(script_dir, 'secrets.json')
-    if os.path.exists(workspace_secrets):
-        try:
-            with open(workspace_secrets) as f:
-                secrets = json.load(f)
-            massive_key = secrets.get('MASSIVE_API_KEY') or secrets.get('POLYGON_API_KEY')
+            massive_key = secrets.get('MASSIVE_API_KEY')
+            td_key = secrets.get('TWELVEDATA_API_KEY')
             if massive_key:
-                config['provider'] = 'massive'
-                config['massive_api_key'] = massive_key
+                keys['massive'] = massive_key
+            if td_key:
+                keys['twelvedata'].append(td_key)
         except Exception:
             pass
 
     seen = set()
-    deduped = []
-    for key in config['api_keys']:
+    deduped_td = []
+    for key in keys['twelvedata'] + twelvedata_fallback_keys:
         if key and key not in seen:
-            deduped.append(key)
+            deduped_td.append(key)
             seen.add(key)
-    config['api_keys'] = deduped
-    return config
+    keys['twelvedata'] = deduped_td
+    return keys
 
 
-FEED_CONFIG = load_feed_config()
-API_KEYS = FEED_CONFIG['api_keys']
+API_KEYS = load_api_keys()
+
+
+def load_market_cache():
+    try:
+        if not os.path.exists(cache_path):
+            return None
+        with open(cache_path) as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+
+def cache_quote_to_value(quote):
+    if not isinstance(quote, dict):
+        return None
+    price = quote.get('close') or quote.get('price') or quote.get('last')
+    if price is None:
+        return None
+    timestamp = quote.get('datetime') or quote.get('timestamp') or quote.get('time')
+    volume = quote.get('volume')
+    try:
+        return {
+            'high': float(quote.get('high') or price),
+            'low': float(quote.get('low') or price),
+            'close': float(price),
+            'volume': float(volume) if volume is not None else None,
+            'datetime': timestamp or datetime.now(timezone.utc).isoformat(),
+        }
+    except Exception:
+        return None
 
 
 def interval_to_yfinance(interval):
@@ -251,8 +257,109 @@ def compute_output(ticker, interval, display, periods, values, source):
     }
 
 
+def fetch_from_cache(ticker, periods):
+    cache = load_market_cache()
+    if not isinstance(cache, dict):
+        return None, None, "miss"
+    quotes = cache.get('quotes') or {}
+    quote = quotes.get(ticker.upper())
+    value = cache_quote_to_value(quote)
+    if not value:
+        return None, None, "miss"
+    return [value], 'cache', None
+
+
+def interval_to_massive_params(interval):
+    mapping = {
+        '1min': (1, 'minute'),
+        '5min': (5, 'minute'),
+        '1h': (1, 'hour'),
+        '1day': (1, 'day'),
+    }
+    return mapping.get(interval, (1, 'day'))
+
+
+def massive_range_for_interval(interval, periods):
+    try:
+        periods = int(periods)
+    except Exception:
+        periods = 100
+
+    if interval == '1min':
+        return '10d'
+    if interval == '5min':
+        return '60d'
+    if interval == '1h':
+        return '730d'
+    return '5y'
+
+
+def fetch_massive(ticker, interval, periods):
+    api_key = API_KEYS.get('massive')
+    if not api_key:
+        return None, None, 'No Massive API key configured'
+
+    multiplier, timespan = interval_to_massive_params(interval)
+    lookback_range = massive_range_for_interval(interval, periods)
+
+    end = datetime.now(timezone.utc)
+    if lookback_range.endswith('d'):
+        days = int(lookback_range[:-1])
+        start = end - __import__('datetime').timedelta(days=days)
+    elif lookback_range.endswith('y'):
+        years = int(lookback_range[:-1])
+        start = end - __import__('datetime').timedelta(days=365 * years)
+    else:
+        start = end - __import__('datetime').timedelta(days=60)
+
+    from_date = start.strftime('%Y-%m-%d')
+    to_date = end.strftime('%Y-%m-%d')
+    url = f'https://api.massive.com/v2/aggs/ticker/{ticker}/range/{multiplier}/{timespan}/{from_date}/{to_date}?adjusted=true&sort=desc&limit=50000&apiKey={api_key}'
+    response = subprocess.run(['curl', '-s', url], capture_output=True, text=True)
+
+    try:
+        data = json.loads(response.stdout)
+    except Exception:
+        return None, None, 'Could not parse Massive response'
+
+    if data.get('status') == 'ERROR' or data.get('error'):
+        return None, None, data.get('error') or data.get('message') or 'Massive API Error'
+
+    results = data.get('results') or []
+    if not results:
+        return None, None, 'No values in Massive response'
+
+    values = []
+    for entry in results:
+        timestamp_ms = entry.get('t')
+        iso_ts = None
+        if timestamp_ms is not None:
+            try:
+                iso_ts = datetime.fromtimestamp(timestamp_ms / 1000, tz=timezone.utc).isoformat()
+            except Exception:
+                iso_ts = None
+        values.append({
+            'high': entry.get('h'),
+            'low': entry.get('l'),
+            'close': entry.get('c'),
+            'volume': entry.get('v'),
+            'datetime': iso_ts,
+        })
+
+    try:
+        periods_int = int(periods)
+    except Exception:
+        periods_int = 100
+    trimmed = values[:periods_int] if periods_int > 0 else values
+
+    if not trimmed:
+        return None, None, 'No usable Massive rows'
+
+    return trimmed, 'massive', None
+
+
 def fetch_twelvedata(ticker, interval, periods):
-    api_keys = API_KEYS[:]
+    api_keys = API_KEYS.get('twelvedata', [])[:]
     random.shuffle(api_keys)
 
     last_error = 'No Twelve Data API keys configured'
@@ -347,7 +454,7 @@ except Exception as e:
 '''
 
     response = subprocess.run(
-        ['python3', '-c', pycode, ticker, yf_interval, yf_range],
+        [sys.executable, '-c', pycode, ticker, yf_interval, yf_range],
         capture_output=True,
         text=True,
     )
@@ -373,83 +480,25 @@ except Exception as e:
     return trimmed, 'yfinance', None
 
 
-def fetch_massive(ticker, interval, periods):
-    api_key = FEED_CONFIG.get('massive_api_key')
-    url = FEED_CONFIG.get('massive_url')
-
-    if not api_key and not url:
-        return None, None, 'No Massive API configured'
-
-    if url and url.startswith('http'):
-        response = subprocess.run(['curl', '-s', url], capture_output=True, text=True)
-    else:
-        endpoint = f'https://api.massive.com/v3/reference/aggregates?adjusted=true&sort=asc&limit={periods}&apiKey={api_key}'
-        if interval == '1min':
-            endpoint += '&timespan=minute'
-        elif interval == '5min':
-            endpoint += '&timespan=minute&multiplier=5'
-        elif interval == '1h':
-            endpoint += '&timespan=hour'
-        else:
-            endpoint += '&timespan=day'
-        endpoint += f'&ticker={ticker}'
-        response = subprocess.run(['curl', '-s', endpoint], capture_output=True, text=True)
-
-    try:
-        data = json.loads(response.stdout)
-    except Exception:
-        return None, None, 'Could not parse Massive response'
-
-    results = data.get('results') or data.get('values') or []
-    if not results:
-        return None, None, 'No values in Massive response'
-
-    values = []
-    for entry in results:
-        close = entry.get('c', entry.get('close'))
-        high = entry.get('h', entry.get('high'))
-        low = entry.get('l', entry.get('low'))
-        volume = entry.get('v', entry.get('volume'))
-        ts = entry.get('t', entry.get('datetime'))
-        if close is None or high is None or low is None:
-            continue
-        if isinstance(ts, (int, float)):
-            ts = datetime.fromtimestamp(ts / 1000 if ts > 10**12 else ts, tz=ZoneInfo('UTC')).isoformat()
-        values.append({
-            'high': high,
-            'low': low,
-            'close': close,
-            'volume': volume,
-            'datetime': ts,
-        })
-
-    if not values:
-        return None, None, 'No usable Massive rows'
-
-    values.reverse()
-    try:
-        periods_int = int(periods)
-    except Exception:
-        periods_int = 100
-    trimmed = values[:periods_int] if periods_int > 0 else values
-    return trimmed, 'massive', None
-
-
 def run_breakout(ticker='TSLA', interval='1day', display='1-day', periods='100', output_json='false'):
-    values, source, massive_error = fetch_massive(ticker, interval, periods)
-    yf_error = None
+    values, source, yf_error = fetch_from_cache(ticker, periods)
     td_error = None
     backend_error = None
 
+    massive_error = None
+
+    if values is None:
+        values, source, massive_error = fetch_massive(ticker, interval, periods)
+    if values is None:
+        values, source, yf_error = fetch_yfinance(ticker, interval, periods)
     if values is None:
         values, source, td_error = fetch_twelvedata(ticker, interval, periods)
         if values is None:
-            values, source, yf_error = fetch_yfinance(ticker, interval, periods)
-        if values is None:
             backend_error = {
+                'cache': 'miss',
                 'massive': massive_error,
-                'twelvedata': td_error,
                 'yfinance': yf_error,
+                'twelvedata': td_error,
             }
 
     if values is None:
@@ -467,26 +516,16 @@ def run_breakout(ticker='TSLA', interval='1day', display='1-day', periods='100',
         return
 
     output = compute_output(ticker, interval, display, periods, values, source)
-    if source == 'massive' and td_error:
-        output['fallback_reason'] = td_error
-    elif source == 'twelvedata' and yf_error:
+    if yf_error and source == 'twelvedata':
         output['fallback_reason'] = yf_error
 
     if output_json == 'true':
         print(json.dumps(output, indent=2))
         return
 
-    banner_source = source
-    if source == 'massive':
-        banner_source = 'Massive/Polygon'
-    elif source == 'twelvedata':
-        banner_source = 'twelvedata'
-    elif source == 'yfinance':
-        banner_source = 'yfinance'
-
     print(f"=== {ticker} Breakout Analysis ({display}, {periods} periods) ===")
     print(f"Last Known Market Price: ${output['current_price']:.2f}")
-    print(f"Source: {banner_source}")
+    print(f"Source: {source}")
     print()
 
     print('## Upper Resistance Levels')
