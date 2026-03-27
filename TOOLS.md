@@ -52,3 +52,25 @@ Add whatever helps you do your job. This is your cheat sheet.
 - **Handle:** @pengosky
 - **Password:** rum55Bus!
 - **Status:** Stored securely in workspace (local only)
+
+### Twelve Data API (Stock Breakout Analysis)
+- **API Key:** 43cb03fd841048c9ab1a95069f9461ac
+- **Use:** Breakout analysis for TSLA, NVDA, AAPL, AMZN, etc.
+- **Endpoint:** https://api.twelvedata.com/
+
+### brk Command (Breakout Calculator)
+- **Usage:** `brk <time> [ticker]`
+- **Time params:** 1m, 5m, 1h, 1d
+- **Ticker default:** TSLA if not provided
+- **Examples:**
+  - `brk 5m` → TSLA analysis
+  - `brk 1h NVDA` → NVIDIA 1-hour breakout
+  - `brk 5m AAPL` → Apple analysis
+
+### HackTrader Dev Server
+- **Host:** `dev.hacktrader.com`
+- **SSH User:** `agent`
+- **SSH Key:** `~/.ssh/id_ed25519_hacktrader`
+- **SSH Command:** `ssh -i ~/.ssh/id_ed25519_hacktrader agent@dev.hacktrader.com`
+- **Web Root:** `/var/www/html`
+- **State:** Fresh install; nothing on the server needs to be preserved.
