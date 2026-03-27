@@ -8,7 +8,12 @@ from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
-secrets_path = os.path.join(script_dir, 'secrets.json')
+secrets_candidates = [
+    os.path.join(script_dir, 'secrets.json'),
+    os.path.join(os.path.dirname(script_dir), 'secrets.json'),
+    '/var/www/secrets.json',
+]
+secrets_path = next((path for path in secrets_candidates if os.path.exists(path)), secrets_candidates[0])
 cache_path = os.path.join(script_dir, 'market-data-cache.json')
 
 home = Path.home()
