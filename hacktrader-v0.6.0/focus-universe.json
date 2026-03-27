@@ -1,0 +1,29 @@
+{
+  "symbols": [
+    "AAPL",
+    "AMZN",
+    "AMD",
+    "GLD",
+    "GOOGL",
+    "IWM",
+    "META",
+    "MSFT",
+    "NFLX",
+    "NVDA",
+    "QQQ",
+    "SLV",
+    "SMH",
+    "SPY",
+    "TLT",
+    "TSLA",
+    "UNG",
+    "UUP",
+    "WTI",
+    "XLC",
+    "XLF",
+    "XLK",
+    "XLY",
+    "XOP"
+  ],
+  "seen": {}
+}

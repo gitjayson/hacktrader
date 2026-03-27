@@ -23,9 +23,17 @@ HackTrader is a market dashboard for tracking a focus ticker, breakout probabili
 - `api.php` — ticker data API endpoint
 - `run-brk.py` / `run-brk.sh` — breakout calculations and CLI wrapper
 - `correlate.php` / `correlations.json` — correlated symbol mapping
+- `generate-correlations.py` — auto-builds ticker relationship baskets from market history
+- `focus-universe.json` — persisted set of known/auto-learned focus tickers
 - `callback.php` — OAuth callback handling
 - `market-cache-updater.py` — minute-cadence market quote cache builder
 - `market-watchlist.json` — deduped watchlist for cache population
+
+## Auto-generated correlation flow
+- Valid focus ticker requests are persisted into `focus-universe.json`.
+- Newly seen valid focus symbols are also appended into `market-watchlist.json`.
+- `generate-correlations.py` can build/update `correlations.json` from recent daily market history.
+- If a requested ticker has no generated basket yet, `correlate.php` returns a macro/thematic fallback set immediately while a background generation task is queued.
 
 ## Notes
 - The v0.6.0 release hardens the deployment against market-data request spikes.
