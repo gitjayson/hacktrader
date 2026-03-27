@@ -14,7 +14,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>HackTrader | v0.5.0 FUI</title>
+    <title>HackTrader | v0.7.1 FUI</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -26,6 +26,13 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             --panel-border: rgba(255, 255, 255, 0.12);
             --grid-color: rgba(255, 255, 255, 0.05);
         }
+        * {
+            box-sizing: border-box;
+        }
+        html {
+            min-height: 100%;
+            background: var(--bg-color);
+        }
         body { 
             margin: 0; 
             font-family: 'Roboto Mono', monospace; 
@@ -33,8 +40,10 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             color: #fff; 
             display: flex; 
             flex-direction: column; 
-            height: 100vh; 
-            overflow: hidden;
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: hidden;
+            overflow-y: auto;
             background-image: linear-gradient(var(--grid-color) 1px, transparent 1px),
                               linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
             background-size: 40px 40px;
@@ -45,6 +54,8 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             display: flex; 
             gap: 15px; 
             align-items: center; 
+            flex-wrap: wrap;
+            justify-content: center;
             border-bottom: 1px solid var(--accent-blue);
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -81,7 +92,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         }
         button { cursor: pointer; border: 1px solid var(--accent-blue); color: var(--accent-blue); transition: 0.3s; }
         button:hover { background: var(--accent-blue); color: #000; }
-        .clock-container { flex-grow: 1; display: flex; justify-content: center; align-items: center; position: relative; padding: 20px 24px 40px; box-sizing: border-box; }
+        .clock-container { flex-grow: 1; display: flex; justify-content: center; align-items: flex-start; position: relative; padding: 20px 24px 72px; }
         .clock-shell {
             position: relative;
             width: min(1160px, 100%);
@@ -89,8 +100,9 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             display: flex;
             justify-content: center;
             align-items: center;
+            padding: 120px 0 220px;
         }
-        .clock-face { position: relative; width: 440px; height: 440px; border: 1px dashed #333; border-radius: 50%; flex: 0 0 440px; box-shadow: inset 0 0 40px rgba(255,255,255,0.03), 0 0 30px rgba(0,243,255,0.05); }
+        .clock-face { position: relative; width: min(440px, 72vw); aspect-ratio: 1 / 1; border: 1px dashed #333; border-radius: 50%; flex: 0 0 auto; box-shadow: inset 0 0 40px rgba(255,255,255,0.03), 0 0 30px rgba(0,243,255,0.05); }
         .clock-face::before,
         .clock-face::after {
             content: '';
@@ -106,29 +118,34 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             border-color: rgba(255,255,255,0.06);
         }
         .center-ticker { 
-            width: 132px; height: 132px; 
+            width: 30%; min-width: 108px; max-width: 132px; aspect-ratio: 1 / 1;
             border: 1px solid #666; 
             box-shadow: 0 0 18px rgba(255,255,255,0.08), inset 0 0 24px rgba(255,255,255,0.04);
             border-radius: 50%; 
             display: flex; flex-direction: column; 
             justify-content: center; align-items: center; 
             font-weight: 700; font-size: 11px; 
-            position: absolute; top: 154px; left: 154px; 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             background: radial-gradient(circle at center, rgba(20,20,20,0.96) 0%, rgba(0,0,0,0.94) 68%, rgba(255,255,255,0.04) 100%);
             z-index: 10;
             overflow: hidden;
             text-align: center;
             letter-spacing: 0.08em;
+            padding: 12px;
         }
         .indicator { 
-            width: 82px; height: 82px; 
+            width: 82px; min-width: 82px; height: 82px; 
             border: 1px solid #666; 
             border-radius: 50%; 
             position: absolute; display: flex; flex-direction: column; 
             justify-content: center; align-items: center; 
             font-size: 9px; background: rgba(0,0,0,0.8);
             text-align: center;
+            -webkit-backdrop-filter: blur(2px);
             backdrop-filter: blur(2px);
+            padding: 8px;
+            z-index: 12;
+            overflow: hidden;
         }
         .indicator.green { border-color: var(--accent-blue); box-shadow: 0 0 10px var(--accent-blue); }
         .indicator.red { border-color: var(--accent-red); box-shadow: 0 0 10px var(--accent-red); }
@@ -165,6 +182,22 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         .status-banner.error {
             border-color: var(--accent-red);
             color: var(--accent-red);
+        }
+        .debug-banner {
+            position: fixed;
+            top: 108px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.92);
+            border: 1px solid rgba(0, 243, 255, 0.5);
+            color: var(--accent-blue);
+            padding: 6px 10px;
+            font-size: 10px;
+            z-index: 51;
+            max-width: 86vw;
+            text-align: center;
+            display: none;
+            white-space: pre-wrap;
         }
         .focus-panel {
             position: absolute;
@@ -206,7 +239,9 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             border: 1px solid var(--panel-border);
             padding: 8px 10px;
             background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.018) 100%);
+            -webkit-clip-path: polygon(8% 0, 92% 0, 100% 50%, 92% 100%, 8% 100%, 0 50%);
             clip-path: polygon(8% 0, 92% 0, 100% 50%, 92% 100%, 8% 100%, 0 50%);
+            -webkit-backdrop-filter: blur(4px);
             backdrop-filter: blur(4px);
             box-shadow: inset 0 0 20px rgba(255,255,255,0.03);
             box-sizing: border-box;
@@ -268,6 +303,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             border: 1px solid #2f2f2f;
             padding: 12px 14px;
             background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.015) 100%);
+            -webkit-clip-path: polygon(4% 0, 96% 0, 100% 50%, 96% 100%, 4% 100%, 0 50%);
             clip-path: polygon(4% 0, 96% 0, 100% 50%, 96% 100%, 4% 100%, 0 50%);
             box-shadow: inset 0 0 18px rgba(255,255,255,0.025);
         }
@@ -316,23 +352,40 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             }
         }
         @media (max-width: 1100px) {
-            body {
-                height: auto;
-                overflow: auto;
+            .clock-container {
+                padding: 20px 16px 84px;
             }
             .clock-shell {
                 width: 100%;
-                min-height: 920px;
+                min-height: auto;
+                padding: 0;
+                display: grid;
+                gap: 18px;
+                justify-items: center;
+            }
+            .focus-panel {
+                position: static;
+                width: 100%;
+                pointer-events: auto;
+                display: contents;
+            }
+            .clock-face {
+                width: min(440px, 88vw);
             }
             .stats-grid {
-                width: min(92vw, 760px);
-            }
-            .top-rail {
                 position: static;
                 transform: none;
                 width: min(92vw, 760px);
-                margin: 0 auto 14px;
                 grid-template-columns: 1fr;
+            }
+            .top-rail {
+                position: static;
+                left: auto;
+                transform: none;
+                width: min(92vw, 760px);
+                margin: 0 auto;
+                grid-template-columns: 1fr;
+                pointer-events: auto;
             }
             .side-rail {
                 position: static;
@@ -352,6 +405,45 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             }
             .price-diff {
                 font-size: 10px;
+            }
+        }
+        @media (max-width: 720px) {
+            header {
+                gap: 10px;
+                padding: 12px;
+                justify-content: stretch;
+            }
+            header > * {
+                width: 100%;
+            }
+            input, select, button {
+                width: 100%;
+                min-height: 42px;
+            }
+            .slider-wrap {
+                min-width: 0;
+                width: 100%;
+            }
+            input[type='range'] {
+                width: 100%;
+            }
+            .focus-symbol {
+                font-size: 22px;
+            }
+            .center-ticker {
+                font-size: 10px;
+            }
+            .indicator {
+                width: 72px;
+                min-width: 72px;
+                height: 72px;
+                font-size: 8px;
+            }
+            .status-banner {
+                top: auto;
+                bottom: 12px;
+                width: calc(100vw - 24px);
+                max-width: none;
             }
         }
     </style>
@@ -380,8 +472,10 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             <span class='slider-value' id='toleranceValue'>90</span>
         </div>
         <button onclick='resetDashboard()'>RESET</button>
+        <button onclick='window.location.href="logout.php"'>LOGOUT</button>
     </header>
     <div id='statusBanner' class='status-banner'></div>
+    <div id='debugBanner' class='debug-banner'></div>
     <div class='clock-container'>
         <div class='clock-shell'>
             <div class='clock-face' id='clock'>
@@ -458,6 +552,18 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             banner.textContent = message;
             banner.style.display = 'block';
             banner.classList.toggle('error', !!isError);
+        }
+
+        function showDebug(message) {
+            const banner = document.getElementById('debugBanner');
+            if (!banner) return;
+            if (!message) {
+                banner.style.display = 'none';
+                banner.textContent = '';
+                return;
+            }
+            banner.textContent = message;
+            banner.style.display = 'block';
         }
 
         function formatSourceMeta(data) {
@@ -544,9 +650,12 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             if (barVolumeSubtext) barVolumeSubtext.textContent = `Current bar ${formatVolume(volume.current_bar)} vs avg slot ${formatVolume(volume.expected_bar)} (${formatRatio(volume.bar_ratio)})`;
 
             if (indicatorSummary) {
-                const total = indicatorSummary.up + indicatorSummary.down + indicatorSummary.neutral;
-                if (indicatorBiasValue) indicatorBiasValue.innerHTML = `<span style="color: var(--accent-green)">${indicatorSummary.up} ↑</span> / <span style="color: var(--accent-red)">${indicatorSummary.down} ↓</span>`;
-                if (indicatorBiasSubtext) indicatorBiasSubtext.textContent = `${total} processed · ${indicatorSummary.neutral} neutral/inside tolerance`;
+                const up = Number(indicatorSummary.up || 0);
+                const down = Number(indicatorSummary.down || 0);
+                const neutral = Number(indicatorSummary.neutral || 0);
+                const total = up + down + neutral;
+                if (indicatorBiasValue) indicatorBiasValue.innerHTML = `<span style="color: var(--accent-green)">${up} ↑</span> / <span style="color: var(--accent-red)">${down} ↓</span>`;
+                if (indicatorBiasSubtext) indicatorBiasSubtext.textContent = `${total} processed · ${neutral} neutral/inside tolerance`;
             }
         }
 
@@ -597,6 +706,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             const triggerRefresh = () => {
                 const nextTicker = tickerEl.value.trim().toUpperCase();
                 if (!nextTicker) return;
+                tickerEl.value = nextTicker;
                 clearTimeout(tickerInputDebounce);
                 tickerInputDebounce = setTimeout(() => updateDashboard(nextTicker), 250);
             };
@@ -630,13 +740,17 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             return '#444444';
         }
 
-        function summarizeRelationshipBias(data, indicators, tolerance) {
-            const summary = { green: 0, red: 0, neutral: 0 };
-            (indicators || []).forEach((indObj) => {
-                const relation = indObj.relation || indObj.relationship || indObj.sign;
-                const color = computeLineColor(data, relation, tolerance);
-                if (color === '#27ae60') summary.green += 1;
-                else if (color === '#c0392b') summary.red += 1;
+        function summarizeRelationshipBias(indicatorStates, tolerance) {
+            const summary = { up: 0, down: 0, neutral: 0 };
+            (indicatorStates || []).forEach((item) => {
+                if (!item || !item.data) {
+                    summary.neutral += 1;
+                    return;
+                }
+                const relation = item.relation || item.relationship || item.sign;
+                const color = computeLineColor(item.data, relation, tolerance);
+                if (color === '#27ae60') summary.up += 1;
+                else if (color === '#c0392b') summary.down += 1;
                 else summary.neutral += 1;
             });
             return summary;
@@ -644,46 +758,78 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 
         function drawOrUpdateLine(lineId, x, y, lineColor) {
             const lines = document.getElementById('lines');
+            const clock = document.getElementById('clock');
+            const size = clock ? clock.getBoundingClientRect().width : 440;
+            const center = size / 2;
             let line = document.getElementById(lineId);
             if (!line) {
                 line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
                 line.setAttribute('id', lineId);
-                line.setAttribute('x1', '200');
-                line.setAttribute('y1', '200');
-                line.setAttribute('x2', 200 + x);
-                line.setAttribute('y2', 200 + y);
                 lines.appendChild(line);
             }
+            line.setAttribute('x1', String(center));
+            line.setAttribute('y1', String(center));
+            line.setAttribute('x2', String(center + x));
+            line.setAttribute('y2', String(center + y));
             line.setAttribute('stroke', lineColor);
             line.setAttribute('stroke-width', lineColor === '#444444' ? '1' : '2');
             if (lineColor === '#444444') line.setAttribute('stroke-dasharray', '4,4');
             else line.removeAttribute('stroke-dasharray');
         }
 
-        async function updateDashboard(newTicker = null) {
+        let correlationPollTimer = null;
+        let dashboardRequestSeq = 0;
+
+        function clearCorrelationPoll() {
+            if (correlationPollTimer) {
+                clearTimeout(correlationPollTimer);
+                correlationPollTimer = null;
+            }
+        }
+
+        function scheduleCorrelationRefresh(activeRequestId, ticker, delayMs = 4000) {
+            clearCorrelationPoll();
+            correlationPollTimer = setTimeout(() => {
+                if (activeRequestId !== dashboardRequestSeq) return;
+                const currentTicker = (document.getElementById('ticker').value || '').toUpperCase();
+                if (currentTicker !== ticker) return;
+                updateDashboard(ticker, { preserveInput: true, silentFocus: true });
+            }, delayMs);
+        }
+
+        async function updateDashboard(newTicker = null, options = {}) {
             const clock = document.getElementById('clock');
-            if (newTicker) document.getElementById('ticker').value = newTicker;
-            const ticker = document.getElementById('ticker').value.toUpperCase() || 'TSLA';
+            const { preserveInput = false, silentFocus = false } = options;
+            if (newTicker && !preserveInput) document.getElementById('ticker').value = newTicker;
+            const ticker = (newTicker || document.getElementById('ticker').value || 'TSLA').toUpperCase();
+            if (!preserveInput) document.getElementById('ticker').value = ticker;
             const period = document.getElementById('period').value;
             const lookback = document.getElementById('lookback').value || 100;
             const tolerance = parseFloat(document.getElementById('tolerance').value || '90');
+            const requestId = ++dashboardRequestSeq;
 
+            clearCorrelationPoll();
             clearInterval(refreshInterval);
             let ms = period === '1d' ? 3600000 : 30000;
-            refreshInterval = setInterval(updateDashboard, ms);
+            refreshInterval = setInterval(() => updateDashboard(null, { preserveInput: true, silentFocus: true }), ms);
 
             const focus = document.getElementById('focus');
-            focus.className = 'center-ticker';
-            focus.innerHTML = `<div class="focus-logo-badge"><div class="focus-logo-fallback">${ticker.slice(0, 2)}</div></div><div class="focus-symbol">${ticker}</div><div>SCANNING</div>`;
+            if (!silentFocus) {
+                focus.className = 'center-ticker';
+                focus.innerHTML = `<div class="focus-logo-badge"><div class="focus-logo-fallback">${ticker.slice(0, 2)}</div></div><div class="focus-symbol">${ticker}</div><div>SCANNING</div>`;
+            }
             showBanner('');
+            showDebug('');
 
             let currentFocus = null;
             try {
                 currentFocus = await fetchTickerData(ticker, period, lookback);
+                if (requestId !== dashboardRequestSeq) return;
                 setTickerDisplay(focus, ticker, currentFocus, tolerance);
                 updateFocusPanel(currentFocus);
                 showBanner(formatSourceMeta(currentFocus), false);
             } catch (e) {
+                if (requestId !== dashboardRequestSeq) return;
                 const detail = e?.details ? JSON.stringify(e.details) : (e?.error || 'Unknown error');
                 focus.innerHTML = `${ticker}<br>ERR`;
                 showBanner(`MARKET DATA ERROR: ${detail}`, true);
@@ -691,52 +837,74 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             }
 
             try {
-                const corrRes = await fetch(`correlate.php?ticker=${ticker}`);
-                const indicators = await corrRes.json();
+                const corrRes = await fetch(`correlate.php?ticker=${encodeURIComponent(ticker)}&t=${Date.now()}`, { cache: 'no-store' });
+                const corrPayload = await corrRes.json();
+                if (requestId !== dashboardRequestSeq) return;
+                const rawIndicators = Array.isArray(corrPayload) ? corrPayload : (Array.isArray(corrPayload.indicators) ? corrPayload.indicators : []);
+                const indicators = rawIndicators
+                    .map(ind => ({
+                        symbol: String(ind?.symbol || '').toUpperCase().trim(),
+                        relation: String(ind?.relation || ind?.relationship || ind?.sign || 'positive').toLowerCase() === 'negative' ? 'negative' : 'positive'
+                    }))
+                    .filter(ind => ind.symbol);
+                const corrStatus = Array.isArray(corrPayload) ? { status: 'ready' } : (corrPayload.status || { status: 'ready' });
+                const usedFallback = !Array.isArray(corrPayload) && !!corrPayload.used_fallback;
                 const activeSymbols = new Set(indicators.map(ind => ind.symbol));
-                const indicatorSummary = summarizeRelationshipBias(currentFocus, indicators, tolerance);
 
-                document.querySelectorAll('.indicator').forEach(el => {
-                    if (!activeSymbols.has(el.dataset.symbol)) {
-                        const lineId = `line-${el.dataset.symbol}`;
-                        document.getElementById(lineId)?.remove();
-                        el.remove();
-                    }
-                });
+                if (!indicators.length) {
+                    console.error('Empty or invalid correlation payload', corrPayload);
+                    showDebug(`corr: 0 indicators | fallback=${usedFallback} | status=${corrStatus.status || 'unknown'}`);
+                    showBanner(`No indicator basket available for ${ticker}.`, true);
+                    return;
+                }
+
+                showDebug(`focus=${ticker} | corr=${indicators.length} | ${indicators.slice(0, 5).map(ind => ind.symbol).join(', ')} | fallback=${usedFallback} | status=${corrStatus.status || 'unknown'}`);
+
+                if (usedFallback && corrStatus.status === 'pending') {
+                    showBanner(`Researching ${ticker} indicator basket… showing fallback set for now.`, false);
+                    scheduleCorrelationRefresh(requestId, ticker, 4000);
+                }
+
+                document.querySelectorAll('.indicator').forEach(el => el.remove());
+                document.querySelectorAll('#lines line[id^="line-"]').forEach(line => line.remove());
+
+                const clockRect = clock.getBoundingClientRect();
+                const indicatorHalf = window.innerWidth <= 720 ? 36 : 40;
+                const usableRadius = (clockRect.width / 2) - indicatorHalf - 10;
+                const radius = Math.max(72, Math.min(usableRadius, 150));
 
                 indicators.forEach((indObj, i) => {
                     const ind = indObj.symbol;
-                    const angle = (i / indicators.length) * 2 * Math.PI;
-                    const x = Math.cos(angle) * 180;
-                    const y = Math.sin(angle) * 180;
-                    let el = document.querySelector(`.indicator[data-symbol="${ind}"]`);
-
-                    if (!el) {
-                        el = document.createElement('div');
-                        el.className = 'indicator';
-                        el.style.cursor = 'pointer';
-                        el.setAttribute('title', ind);
-                        el.dataset.symbol = ind;
-                        el.onclick = () => updateDashboard(ind);
-                        el.innerHTML = `${ind}<br>...`;
-                        clock.appendChild(el);
-                    }
-
-                    el.style.left = `calc(50% + ${x}px - 40px)`;
-                    el.style.top = `calc(50% + ${y}px - 40px)`;
+                    const angle = (i / Math.max(indicators.length, 1)) * 2 * Math.PI;
+                    const x = Math.cos(angle) * radius;
+                    const y = Math.sin(angle) * radius;
+                    const el = document.createElement('div');
+                    el.className = 'indicator';
+                    el.style.cursor = 'pointer';
+                    el.setAttribute('title', ind);
+                    el.dataset.symbol = ind;
+                    el.dataset.relation = indObj.relation || 'positive';
+                    el.onclick = () => updateDashboard(ind);
+                    el.innerHTML = `${ind}<br>...`;
+                    el.style.left = `calc(50% + ${x}px - ${indicatorHalf}px)`;
+                    el.style.top = `calc(50% + ${y}px - ${indicatorHalf}px)`;
+                    clock.appendChild(el);
                 });
 
+                showDebug(`focus=${ticker} | corr=${indicators.length} | ${indicators.slice(0, 5).map(ind => ind.symbol).join(', ')} | fallback=${usedFallback} | status=${corrStatus.status || 'unknown'} | rendering ring`);
+                const indicatorStates = [];
                 const promises = indicators.map(async (indObj, i) => {
                     const ind = indObj.symbol;
                     const relation = indObj.relation;
-                    const angle = (i / indicators.length) * 2 * Math.PI;
-                    const x = Math.cos(angle) * 180;
-                    const y = Math.sin(angle) * 180;
+                    const angle = (i / Math.max(indicators.length, 1)) * 2 * Math.PI;
+                    const x = Math.cos(angle) * radius;
+                    const y = Math.sin(angle) * radius;
                     const el = document.querySelector(`.indicator[data-symbol="${ind}"]`);
                     const lineId = `line-${ind}`;
 
                     try {
                         const data = await fetchTickerData(ind, period, lookback);
+                        if (requestId !== dashboardRequestSeq) return;
                         const nextHtml = buildTickerMarkup(ind, data);
                         const lineColor = computeLineColor(data, relation, tolerance);
 
@@ -744,8 +912,10 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                         el.className = 'indicator';
                         applyTickerState(el, data, tolerance);
                         drawOrUpdateLine(lineId, x, y, lineColor);
-
+                        indicatorStates.push({ symbol: ind, relation, data });
                     } catch (e) {
+                        if (requestId !== dashboardRequestSeq) return;
+                        indicatorStates.push({ symbol: ind, relation, data: null, error: e });
                         if (!el.innerHTML || el.innerHTML.includes('<br>...')) {
                             const detail = e?.error ? String(e.error).slice(0, 16) : 'DATA ERR';
                             el.innerHTML = `${ind}<br>${detail}`;
@@ -753,9 +923,11 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                     }
                 });
                 await Promise.all(promises);
-                const relationshipSummary = summarizeRelationshipBias(currentFocus, indicators, tolerance);
+                if (requestId !== dashboardRequestSeq) return;
+                const relationshipSummary = summarizeRelationshipBias(indicatorStates, tolerance);
                 updateFocusPanel(currentFocus, relationshipSummary);
             } catch (e) {
+                if (requestId !== dashboardRequestSeq) return;
                 console.error(e);
                 showBanner('Correlation fetch failed.', true);
             }
@@ -763,6 +935,6 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 
         attachTickerAutoRefresh();
     </script>
-    <footer style='position: fixed; bottom: 10px; width: 100%; text-align: center; font-size: 10px; color: #444;'>v0.5.0</footer>
+    <footer style='position: fixed; bottom: 10px; width: 100%; text-align: center; font-size: 10px; color: #444;'>v0.7.1</footer>
 </body>
 </html>
