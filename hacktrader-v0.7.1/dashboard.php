@@ -619,9 +619,12 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             if (barVolumeSubtext) barVolumeSubtext.textContent = `Current bar ${formatVolume(volume.current_bar)} vs avg slot ${formatVolume(volume.expected_bar)} (${formatRatio(volume.bar_ratio)})`;
 
             if (indicatorSummary) {
-                const total = indicatorSummary.up + indicatorSummary.down + indicatorSummary.neutral;
-                if (indicatorBiasValue) indicatorBiasValue.innerHTML = `<span style="color: var(--accent-green)">${indicatorSummary.up} ↑</span> / <span style="color: var(--accent-red)">${indicatorSummary.down} ↓</span>`;
-                if (indicatorBiasSubtext) indicatorBiasSubtext.textContent = `${total} processed · ${indicatorSummary.neutral} neutral/inside tolerance`;
+                const up = Number(indicatorSummary.up || 0);
+                const down = Number(indicatorSummary.down || 0);
+                const neutral = Number(indicatorSummary.neutral || 0);
+                const total = up + down + neutral;
+                if (indicatorBiasValue) indicatorBiasValue.innerHTML = `<span style="color: var(--accent-green)">${up} ↑</span> / <span style="color: var(--accent-red)">${down} ↓</span>`;
+                if (indicatorBiasSubtext) indicatorBiasSubtext.textContent = `${total} processed · ${neutral} neutral/inside tolerance`;
             }
         }
 
@@ -707,7 +710,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         }
 
         function summarizeRelationshipBias(indicatorStates, tolerance) {
-            const summary = { green: 0, red: 0, neutral: 0 };
+            const summary = { up: 0, down: 0, neutral: 0 };
             (indicatorStates || []).forEach((item) => {
                 if (!item || !item.data) {
                     summary.neutral += 1;
@@ -715,8 +718,8 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 }
                 const relation = item.relation || item.relationship || item.sign;
                 const color = computeLineColor(item.data, relation, tolerance);
-                if (color === '#27ae60') summary.green += 1;
-                else if (color === '#c0392b') summary.red += 1;
+                if (color === '#27ae60') summary.up += 1;
+                else if (color === '#c0392b') summary.down += 1;
                 else summary.neutral += 1;
             });
             return summary;
