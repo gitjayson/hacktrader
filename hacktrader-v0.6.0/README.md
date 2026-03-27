@@ -1,12 +1,12 @@
 # HackTrader Dashboard
 
-- **Version:** v0.6.0
+- **Version:** v0.7.0
 - **Status:** Active
 - **Codebase:** HackTrader FUI dashboard
 
 HackTrader is a market dashboard for tracking a focus ticker, breakout probabilities, support/resistance ladders, volume context, and correlated indicators in a sci-fi control-panel interface.
 
-## Highlights in v0.6.0
+## Highlights in v0.7.0
 - **Centralized market data cache:** A minute-cadence updater can populate a shared lookup table for reuse across the system.
 - **Reduced Twelve Data pressure:** Breakout analysis can prefer cached quotes before falling back to live fetches.
 - **Concurrency guard:** Duplicate BRK jobs for the same ticker/interval now fail fast instead of piling up CGI workers.
@@ -36,6 +36,6 @@ HackTrader is a market dashboard for tracking a focus ticker, breakout probabili
 - If a requested ticker has no generated basket yet, `correlate.php` returns a macro/thematic fallback set immediately while a background generation task is queued.
 
 ## Notes
-- The v0.6.0 release hardens the deployment against market-data request spikes.
+- The v0.7.0 release adds dynamic correlation generation, learned focus symbols, and fallback indicator baskets.
 - Logo rendering currently uses a lightweight web logo approach with graceful fallback.
 - A future polish pass could add true curved arc panels and more refined animation.
