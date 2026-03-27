@@ -706,11 +706,15 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             return '#444444';
         }
 
-        function summarizeRelationshipBias(data, indicators, tolerance) {
+        function summarizeRelationshipBias(indicatorStates, tolerance) {
             const summary = { green: 0, red: 0, neutral: 0 };
-            (indicators || []).forEach((indObj) => {
-                const relation = indObj.relation || indObj.relationship || indObj.sign;
-                const color = computeLineColor(data, relation, tolerance);
+            (indicatorStates || []).forEach((item) => {
+                if (!item || !item.data) {
+                    summary.neutral += 1;
+                    return;
+                }
+                const relation = item.relation || item.relationship || item.sign;
+                const color = computeLineColor(item.data, relation, tolerance);
                 if (color === '#27ae60') summary.green += 1;
                 else if (color === '#c0392b') summary.red += 1;
                 else summary.neutral += 1;
@@ -845,6 +849,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                     el.style.top = `calc(50% + ${y}px - ${indicatorHalf}px)`;
                 });
 
+                const indicatorStates = [];
                 const promises = indicators.map(async (indObj, i) => {
                     const ind = indObj.symbol;
                     const relation = indObj.relation;
@@ -864,8 +869,10 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                         el.className = 'indicator';
                         applyTickerState(el, data, tolerance);
                         drawOrUpdateLine(lineId, x, y, lineColor);
+                        indicatorStates.push({ symbol: ind, relation, data });
                     } catch (e) {
                         if (requestId !== dashboardRequestSeq) return;
+                        indicatorStates.push({ symbol: ind, relation, data: null, error: e });
                         if (!el.innerHTML || el.innerHTML.includes('<br>...')) {
                             const detail = e?.error ? String(e.error).slice(0, 16) : 'DATA ERR';
                             el.innerHTML = `${ind}<br>${detail}`;
@@ -874,7 +881,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 });
                 await Promise.all(promises);
                 if (requestId !== dashboardRequestSeq) return;
-                const relationshipSummary = summarizeRelationshipBias(currentFocus, indicators, tolerance);
+                const relationshipSummary = summarizeRelationshipBias(indicatorStates, tolerance);
                 updateFocusPanel(currentFocus, relationshipSummary);
             } catch (e) {
                 if (requestId !== dashboardRequestSeq) return;
