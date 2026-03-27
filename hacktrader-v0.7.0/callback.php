@@ -1,14 +1,14 @@
 <?php
 session_start();
 
-$autoloadPath = __DIR__ . '/../../vendor/autoload.php';
+$autoloadPath = dirname(__DIR__) . '/vendor/autoload.php';
 if (!file_exists($autoloadPath)) {
     http_response_code(500);
     die('Missing vendor autoload at expected path: ' . $autoloadPath);
 }
 require_once $autoloadPath;
 
-$secretsPath = __DIR__ . '/../../secrets.json';
+$secretsPath = dirname(__DIR__) . '/secrets.json';
 if (!file_exists($secretsPath)) {
     http_response_code(500);
     die('Missing secrets.json at expected path: ' . $secretsPath);
