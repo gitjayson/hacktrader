@@ -779,6 +779,43 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 
         let correlationPollTimer = null;
         let dashboardRequestSeq = 0;
+        let currentRingFocusTicker = null;
+        let currentRingIndicators = [];
+
+        function clearRingElements() {
+            document.querySelectorAll('.indicator').forEach(el => el.remove());
+            document.querySelectorAll('#lines line[id^="line-"]').forEach(line => line.remove());
+        }
+
+        function buildRingLayout(indicators) {
+            clearRingElements();
+            currentRingIndicators = indicators.map(ind => ({ ...ind }));
+
+            const clockRect = clock.getBoundingClientRect();
+            const indicatorHalf = window.innerWidth <= 720 ? 36 : 40;
+            const usableRadius = (clockRect.width / 2) - indicatorHalf - 10;
+            const radius = Math.max(72, Math.min(usableRadius, 150));
+
+            currentRingIndicators.forEach((indObj, i) => {
+                const ind = indObj.symbol;
+                const angle = (i / Math.max(currentRingIndicators.length, 1)) * 2 * Math.PI;
+                const x = Math.cos(angle) * radius;
+                const y = Math.sin(angle) * radius;
+                const el = document.createElement('div');
+                el.className = 'indicator';
+                el.style.cursor = 'pointer';
+                el.setAttribute('title', ind);
+                el.dataset.symbol = ind;
+                el.dataset.relation = indObj.relation || 'positive';
+                el.dataset.x = String(x);
+                el.dataset.y = String(y);
+                el.onclick = () => updateDashboard(ind);
+                el.innerHTML = `${ind}<br>...`;
+                el.style.left = `calc(50% + ${x}px - ${indicatorHalf}px)`;
+                el.style.top = `calc(50% + ${y}px - ${indicatorHalf}px)`;
+                clock.appendChild(el);
+            });
+        }
 
         function clearCorrelationPoll() {
             if (correlationPollTimer) {
@@ -849,7 +886,6 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                     .filter(ind => ind.symbol);
                 const corrStatus = Array.isArray(corrPayload) ? { status: 'ready' } : (corrPayload.status || { status: 'ready' });
                 const usedFallback = !Array.isArray(corrPayload) && !!corrPayload.used_fallback;
-                const activeSymbols = new Set(indicators.map(ind => ind.symbol));
 
                 if (!indicators.length) {
                     console.error('Empty or invalid correlation payload', corrPayload);
@@ -865,42 +901,24 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                     scheduleCorrelationRefresh(requestId, ticker, 4000);
                 }
 
-                document.querySelectorAll('.indicator').forEach(el => el.remove());
-                document.querySelectorAll('#lines line[id^="line-"]').forEach(line => line.remove());
+                const ringChanged = currentRingFocusTicker !== ticker
+                    || currentRingIndicators.length !== indicators.length
+                    || currentRingIndicators.some((existing, index) => existing.symbol !== indicators[index]?.symbol || existing.relation !== indicators[index]?.relation);
 
-                const clockRect = clock.getBoundingClientRect();
-                const indicatorHalf = window.innerWidth <= 720 ? 36 : 40;
-                const usableRadius = (clockRect.width / 2) - indicatorHalf - 10;
-                const radius = Math.max(72, Math.min(usableRadius, 150));
+                if (ringChanged) {
+                    currentRingFocusTicker = ticker;
+                    buildRingLayout(indicators);
+                }
 
-                indicators.forEach((indObj, i) => {
-                    const ind = indObj.symbol;
-                    const angle = (i / Math.max(indicators.length, 1)) * 2 * Math.PI;
-                    const x = Math.cos(angle) * radius;
-                    const y = Math.sin(angle) * radius;
-                    const el = document.createElement('div');
-                    el.className = 'indicator';
-                    el.style.cursor = 'pointer';
-                    el.setAttribute('title', ind);
-                    el.dataset.symbol = ind;
-                    el.dataset.relation = indObj.relation || 'positive';
-                    el.onclick = () => updateDashboard(ind);
-                    el.innerHTML = `${ind}<br>...`;
-                    el.style.left = `calc(50% + ${x}px - ${indicatorHalf}px)`;
-                    el.style.top = `calc(50% + ${y}px - ${indicatorHalf}px)`;
-                    clock.appendChild(el);
-                });
-
-                showDebug(`focus=${ticker} | corr=${indicators.length} | ${indicators.slice(0, 5).map(ind => ind.symbol).join(', ')} | fallback=${usedFallback} | status=${corrStatus.status || 'unknown'} | rendering ring`);
+                showDebug(`focus=${ticker} | corr=${indicators.length} | ${indicators.slice(0, 5).map(ind => ind.symbol).join(', ')} | fallback=${usedFallback} | status=${corrStatus.status || 'unknown'} | ${ringChanged ? 'repopulating ring' : 'updating ring data only'}`);
                 const indicatorStates = [];
-                const promises = indicators.map(async (indObj, i) => {
+                const promises = indicators.map(async (indObj) => {
                     const ind = indObj.symbol;
                     const relation = indObj.relation;
-                    const angle = (i / Math.max(indicators.length, 1)) * 2 * Math.PI;
-                    const x = Math.cos(angle) * radius;
-                    const y = Math.sin(angle) * radius;
                     const el = document.querySelector(`.indicator[data-symbol="${ind}"]`);
                     const lineId = `line-${ind}`;
+                    const x = Number(el?.dataset.x || 0);
+                    const y = Number(el?.dataset.y || 0);
 
                     try {
                         const data = await fetchTickerData(ind, period, lookback);
