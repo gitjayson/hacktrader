@@ -82,8 +82,25 @@ function sanitize_relationships($ticker, $list) {
 }
 
 function merge_relationships($ticker, $defaults, $specific) {
-    $finalList = array_merge($defaults, $specific);
-    return sanitize_relationships($ticker, $finalList);
+    $specific = sanitize_relationships($ticker, $specific);
+    $merged = $specific;
+    $seen = [$ticker => true];
+    foreach ($specific as $item) {
+        $seen[$item['symbol']] = true;
+    }
+    foreach ($defaults as $item) {
+        $symbol = normalize_symbol($item['symbol'] ?? '');
+        if ($symbol === '' || isset($seen[$symbol])) {
+            continue;
+        }
+        $relation = strtolower((string)($item['relation'] ?? 'positive')) === 'negative' ? 'negative' : 'positive';
+        $merged[] = ['symbol' => $symbol, 'relation' => $relation];
+        $seen[$symbol] = true;
+        if (count($merged) >= 12) {
+            break;
+        }
+    }
+    return array_slice($merged, 0, 12);
 }
 
 function remember_focus_symbol($ticker, $focusUniverseFile, $marketWatchlistFile) {
