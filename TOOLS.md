@@ -27,8 +27,12 @@ Things like:
 - **Status:** Added to known_hosts. Private key generated at `~/.ssh/id_ed25519_pengo`. Need to add public key to server.
 
 ### Infrastructure
-- **Host:** 2014 Mac Pro (The Trashcan!) 🗑️✨
-- **Local AI:** Ollama (coming soon!)
+- **Current Host:** `MacBook Pro M3 Max` with **64GB RAM**
+- **Current Wi‑Fi IP:** `192.168.0.102`
+- **Fallback Host:** `2014 Mac Pro (The Trashcan!)` 🗑️✨
+- **Remote Inference Box:** `192.168.0.16` = `Mac Studio M3 Ultra` with **96GB RAM**
+- **Planned Remote Model:** `Qwen3.5-35B-A3B-Q8_0`
+- **Local AI:** local model planned on M3 Max; Ollama/API on `.16` was not reachable over LAN during latest test
 - **Primary Thinking:** Gemini 3 Flash
 - **Search Key:** Perplexity (in config)
 
