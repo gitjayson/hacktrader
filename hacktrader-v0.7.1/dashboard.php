@@ -697,7 +697,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         <section class='topbar glass'>
             <div class='brand'>
                 <div class='eyebrow'>HackTrader v0.7.2</div>
-                <strong>Signal cockpit</strong>
+                <strong>🐧 Signal cockpit</strong>
                 <span>Breakouts, channels, and market pressure at a glance</span>
             </div>
             <div class='controls'>
