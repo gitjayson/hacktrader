@@ -1,0 +1,35 @@
+{
+    "symbols": [
+        "AAPL",
+        "AMD",
+        "AMZN",
+        "GLD",
+        "GOOGL",
+        "IWM",
+        "META",
+        "MSFT",
+        "NFLX",
+        "NVDA",
+        "QQQ",
+        "SHOP",
+        "SLV",
+        "SMH",
+        "SPY",
+        "TLT",
+        "TSLA",
+        "UNG",
+        "UUP",
+        "WTI",
+        "XLC",
+        "XLF",
+        "XLK",
+        "XLY",
+        "XOP",
+        "ZZZTST"
+    ],
+    "seen": {
+        "SHOP": "2026-03-27T14:22:14+00:00",
+        "ZZZTST": "2026-03-27T19:34:59+00:00",
+        "AMD": "2026-03-27T20:12:05+00:00"
+    }
+}
