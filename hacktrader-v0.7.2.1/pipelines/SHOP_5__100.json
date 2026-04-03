@@ -1,0 +1,44 @@
+{
+    "ticker": "SHOP",
+    "display": "5-min",
+    "periods": 100,
+    "interval": "5min",
+    "current_price": 112.37,
+    "focus_price": 112.37,
+    "quote_time_eastern": "2026-03-27 06:20 AM",
+    "quote_timezone": "EDT",
+    "upper_resistances": [
+        {
+            "price": 112.44,
+            "diff": 0.07
+        },
+        {
+            "price": 112.47,
+            "diff": 0.1
+        }
+    ],
+    "lower_supports": [
+        {
+            "price": 112.255,
+            "diff": 0.12
+        },
+        {
+            "price": 112.03,
+            "diff": 0.34
+        }
+    ],
+    "probabilities": {
+        "up": 62.2,
+        "down": 37.8
+    },
+    "volume": {
+        "current_bar": 677,
+        "expected_bar": 132620,
+        "bar_ratio": 0.01,
+        "current_day": 45968,
+        "expected_day": 3999583,
+        "day_ratio": 0.01
+    },
+    "source": "twelvedata",
+    "fallback_reason": "yfinance import failed: No module named 'yfinance'"
+}
