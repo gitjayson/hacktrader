@@ -88,17 +88,20 @@
             box-shadow: 0 0 16px rgba(94,234,212,0.6);
         }
         h1 {
-            font-size: clamp(44px, 6.4vw, 76px);
-            line-height: 0.92;
             margin: 0 0 16px;
             letter-spacing: -0.045em;
         }
         .hero-title-main,
         .hero-title-sub {
             display: block;
-            font-size: 1em;
             font-weight: 800;
-            line-height: 0.92;
+            line-height: 0.9;
+        }
+        .hero-title-main {
+            font-size: clamp(44px, 6.4vw, 76px);
+        }
+        .hero-title-sub {
+            font-size: clamp(46px, 6.55vw, 78px);
         }
         .gradient {
             background: linear-gradient(135deg, #ffffff, #9bd6ff 48%, #5eead4 100%);
