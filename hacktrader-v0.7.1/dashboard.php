@@ -103,6 +103,12 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            font-size: 24px;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+        .brand-title .title-text {
+            display: inline-block;
         }
         .pengo-trigger {
             display: inline-flex;
@@ -759,7 +765,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         <section class='topbar glass'>
             <div class='brand'>
                 <div class='eyebrow'>HackTrader v0.7.2.3 (by @gitjayson)</div>
-                <strong class='brand-title'><span class='pengo-trigger' id='pengoTrigger' title='Activate pengo'>🐧</span><span>Signal cockpit</span></strong>
+                <strong class='brand-title'><span class='pengo-trigger' id='pengoTrigger' title='Activate pengo'>🐧</span><span class='title-text'>Signal cockpit</span></strong>
                 <span>Breakouts, channels, and market pressure at a glance</span>
             </div>
             <div class='controls'>
