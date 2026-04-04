@@ -109,6 +109,10 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         }
         .brand-title .title-text {
             display: inline-block;
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            line-height: 0.98;
         }
         .pengo-trigger {
             display: inline-flex;
