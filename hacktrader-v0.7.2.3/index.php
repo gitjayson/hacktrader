@@ -88,10 +88,15 @@
             box-shadow: 0 0 16px rgba(94,234,212,0.6);
         }
         h1 {
-            font-size: clamp(40px, 6vw, 72px);
-            line-height: 0.98;
+            font-size: clamp(44px, 6.4vw, 76px);
+            line-height: 0.96;
             margin: 0 0 16px;
-            letter-spacing: -0.04em;
+            letter-spacing: -0.045em;
+        }
+        .hero-title-sub {
+            display: inline-block;
+            font-size: 1.06em;
+            font-weight: 800;
         }
         .gradient {
             background: linear-gradient(135deg, #ffffff, #9bd6ff 48%, #5eead4 100%);
@@ -209,7 +214,7 @@
         <section class='hero'>
             <div>
                 <div class='eyebrow'>Realtime market intelligence</div>
-                <h1><span class='gradient'>HackTrader</span><br>Signal cockpit</h1>
+                <h1><span class='gradient'>HackTrader</span><br><span class='hero-title-sub'>Signal cockpit</span></h1>
                 <p>
                     Monitor breakout pressure, channel structure, sector correlation, and focus-symbol momentum in one modern command view.
                     Built for fast scans, cleaner reads, and fewer fishy false signals.
@@ -218,7 +223,7 @@
             <div class='hero-metrics'>
                 <div class='metric'>
                     <div class='metric-label'>Breakout engine</div>
-                    <div class='metric-value'>v0.7.2.3.3.2</div>
+                    <div class='metric-value'>v0.7.2.3</div>
                 </div>
                 <div class='metric'>
                     <div class='metric-label'>Visual system</div>
@@ -243,6 +248,6 @@
             <div class='signin-note'>Protected dev environment · visual refresh enabled</div>
         </section>
     </main>
-    <footer>HackTrader · v0.7.2.3.3.2</footer>
+    <footer>HackTrader · v0.7.2.3</footer>
 </body>
 </html>
