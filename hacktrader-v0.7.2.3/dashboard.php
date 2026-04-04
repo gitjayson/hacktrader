@@ -14,7 +14,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>HackTrader | v0.7.2.3.3</title>
+    <title>HackTrader | v0.7.2.3</title>
     <link rel='preconnect' href='https://fonts.googleapis.com'>
     <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
     <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap' rel='stylesheet'>
@@ -103,6 +103,12 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            font-size: 24px;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+        .brand-title .title-text {
+            display: inline-block;
         }
         .pengo-trigger {
             display: inline-flex;
@@ -758,8 +764,8 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
     <main class='app-shell'>
         <section class='topbar glass'>
             <div class='brand'>
-                <div class='eyebrow'>HackTrader v0.7.2.3.3 (by @gitjayson)</div>
-                <strong class='brand-title'><span class='pengo-trigger' id='pengoTrigger' title='Activate pengo'>🐧</span><span>Signal cockpit</span></strong>
+                <div class='eyebrow'>HackTrader v0.7.2.3 (by @gitjayson)</div>
+                <strong class='brand-title'><span class='pengo-trigger' id='pengoTrigger' title='Activate pengo'>🐧</span><span class='title-text'>Signal cockpit</span></strong>
                 <span>Breakouts, channels, and market pressure at a glance</span>
             </div>
             <div class='controls'>
@@ -937,7 +943,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 </section>
             </div>
         </section>
-        <footer>HackTrader · visual refresh · v0.7.2.3.3</footer>
+        <footer>HackTrader · visual refresh · v0.7.2.3</footer>
     </main>
 
     <script>
