@@ -14,7 +14,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>HackTrader | v0.7.2.4</title>
+    <title>HackTrader | v0.7.2.5</title>
     <link rel='preconnect' href='https://fonts.googleapis.com'>
     <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
     <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap' rel='stylesheet'>
@@ -75,6 +75,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             display: flex;
             align-items: center;
             justify-content: space-between;
+            flex-wrap: wrap;
             gap: 16px;
             padding: 16px 18px;
             border-radius: 24px;
@@ -166,7 +167,94 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             grid-template-columns: 1.2fr auto auto auto 1fr auto auto;
             gap: 12px;
             align-items: center;
-            flex: 1;
+            flex: 1 1 780px;
+            min-width: min(780px, 100%);
+        }
+        .api-usage-card {
+            min-width: 300px;
+            max-width: 340px;
+            margin-left: auto;
+            padding: 14px 16px;
+            border-radius: 20px;
+            background: rgba(3, 9, 17, 0.78);
+            border: 1px solid rgba(94,234,212,0.2);
+            display: grid;
+            gap: 12px;
+        }
+        .api-usage-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .api-usage-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: var(--cyan);
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .api-usage-kpi {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.05em;
+            line-height: 0.95;
+        }
+        .api-usage-sub {
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        .api-usage-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 7px 10px;
+            border-radius: 999px;
+            background: rgba(96,165,250,0.16);
+            color: #bfdbfe;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            white-space: nowrap;
+        }
+        .api-usage-pill.warn {
+            background: rgba(248,113,113,0.16);
+            color: #fecaca;
+        }
+        .api-usage-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+        }
+        .api-usage-stat {
+            padding: 10px 12px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(148,163,184,0.12);
+            display: grid;
+            gap: 6px;
+        }
+        .api-usage-stat .label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--muted);
+            font-weight: 700;
+        }
+        .api-usage-stat .value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .api-usage-meta {
+            color: var(--muted);
+            font-size: 11px;
+            line-height: 1.45;
         }
         input, select, button {
             border: 1px solid rgba(148, 163, 184, 0.22);
@@ -700,6 +788,11 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 grid-template-columns: 1fr 1fr 1fr 1fr;
             }
             .controls .slider-wrap { grid-column: span 2; }
+            .api-usage-card {
+                max-width: none;
+                width: 100%;
+                margin-left: 0;
+            }
             .hero-grid { grid-template-columns: minmax(520px, 1fr); }
             .radar-card { min-width: 520px; }
         }
@@ -723,6 +816,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             .app-shell { width: min(100vw - 16px, 100%); margin-top: 8px; }
             .topbar, .hero-panel, .stack-card { border-radius: 22px; }
             .controls { grid-template-columns: 1fr; }
+            .api-usage-grid { grid-template-columns: 1fr; }
             .slider-wrap { min-width: 0; }
             .hero-top { flex-direction: column; }
             .breakout-grid, .compact-grid, .metric-grid, .microchart-grid { grid-template-columns: 1fr; }
@@ -768,7 +862,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
     <main class='app-shell'>
         <section class='topbar glass'>
             <div class='brand'>
-                <div class='eyebrow'>HackTrader v0.7.2.4 (by @gitjayson)</div>
+                <div class='eyebrow'>HackTrader v0.7.2.5 (by @gitjayson)</div>
                 <strong class='brand-title'><span class='pengo-trigger' id='pengoTrigger' title='Activate pengo'>🐧</span><span class='title-text'>Signal cockpit</span></strong>
                 <span>Breakouts, channels, and market pressure at a glance</span>
             </div>
@@ -788,6 +882,31 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 <button class='ghost-btn' onclick='resetDashboard()'>Reset</button>
                 <button class='ghost-btn' onclick='window.location.href="logout.php"'>Logout</button>
             </div>
+            <aside class='api-usage-card' id='apiUsageCard' aria-live='polite'>
+                <div class='api-usage-head'>
+                    <div>
+                        <div class='api-usage-label'>Attributed API usage</div>
+                        <div class='api-usage-kpi' id='apiUsageTotal'>--</div>
+                        <div class='api-usage-sub' id='apiUsageSub'>Waiting for your first counted request.</div>
+                    </div>
+                    <div class='api-usage-pill' id='apiUsagePill'>idle</div>
+                </div>
+                <div class='api-usage-grid'>
+                    <div class='api-usage-stat'>
+                        <div class='label'>Success rate</div>
+                        <div class='value' id='apiUsageSuccessRate'>--</div>
+                    </div>
+                    <div class='api-usage-stat'>
+                        <div class='label'>Errors</div>
+                        <div class='value' id='apiUsageErrors'>--</div>
+                    </div>
+                    <div class='api-usage-stat'>
+                        <div class='label'>Last scan</div>
+                        <div class='value' id='apiUsageLast'>--</div>
+                    </div>
+                </div>
+                <div class='api-usage-meta' id='apiUsageMeta'>Billed to the signed-in user behind this dashboard session.</div>
+            </aside>
         </section>
 
         <section class='banner-wrap'>
@@ -947,7 +1066,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 </section>
             </div>
         </section>
-        <footer>HackTrader · visual refresh · v0.7.2.4</footer>
+        <footer>HackTrader · visual refresh · v0.7.2.5</footer>
     </main>
 
     <script>
@@ -1033,6 +1152,46 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             return Number.isFinite(num) ? `${num.toFixed(2)}x` : '--';
         }
 
+        function formatRelativeTime(value) {
+            if (!value) return 'just now';
+            const parsed = new Date(value);
+            if (Number.isNaN(parsed.getTime())) return 'recently';
+            const deltaSeconds = Math.max(0, Math.round((Date.now() - parsed.getTime()) / 1000));
+            if (deltaSeconds < 60) return `${deltaSeconds}s ago`;
+            if (deltaSeconds < 3600) return `${Math.round(deltaSeconds / 60)}m ago`;
+            if (deltaSeconds < 86400) return `${Math.round(deltaSeconds / 3600)}h ago`;
+            return `${Math.round(deltaSeconds / 86400)}d ago`;
+        }
+
+        function updateApiUsageCard(usage) {
+            const totalEl = document.getElementById('apiUsageTotal');
+            if (!totalEl) return;
+
+            const attempts = Number(usage?.attempts);
+            const errors = Number(usage?.errors);
+            const successRate = Number(usage?.success_rate);
+            const lastTicker = usage?.last_ticker ? String(usage.last_ticker).toUpperCase() : null;
+            const lastInterval = usage?.last_interval ? String(usage.last_interval) : null;
+            const hasUsage = usage && Number.isFinite(attempts);
+            const pill = document.getElementById('apiUsagePill');
+
+            totalEl.textContent = hasUsage ? `${attempts} calls` : '--';
+            document.getElementById('apiUsageSub').textContent = hasUsage
+                ? 'Provider requests attributed to your signed-in dashboard session.'
+                : 'Waiting for your first counted request.';
+            document.getElementById('apiUsageSuccessRate').textContent = hasUsage && Number.isFinite(successRate) ? `${Math.round(successRate)}%` : '--';
+            document.getElementById('apiUsageErrors').textContent = hasUsage && Number.isFinite(errors) ? `${errors}` : '--';
+            document.getElementById('apiUsageLast').textContent = hasUsage && lastTicker ? `${lastTicker}${lastInterval ? ` ${lastInterval}` : ''}` : '--';
+
+            pill.classList.toggle('warn', hasUsage && Number.isFinite(errors) && errors > 0);
+            pill.textContent = !hasUsage ? 'idle' : (errors > 0 ? `${errors} issue${errors === 1 ? '' : 's'}` : 'tracked');
+
+            const lastWhen = formatRelativeTime(usage?.last_request_at);
+            document.getElementById('apiUsageMeta').textContent = hasUsage
+                ? `Updated ${lastWhen}. ${lastTicker ? `Last counted request: ${lastTicker}${lastInterval ? ` ${lastInterval}` : ''}. ` : ''}Attributed to the current signed-in user.`
+                : 'Billed to the signed-in user behind this dashboard session.';
+        }
+
         function formatSigned(value) {
             const num = Number(value);
             if (!Number.isFinite(num)) return '--';
@@ -1043,6 +1202,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             return fetch(`api.php?ticker=${encodeURIComponent(ticker)}&period=${encodeURIComponent(period)}&lookback=${encodeURIComponent(lookback)}&t=${Date.now()}`)
                 .then(async (response) => {
                     const data = await response.json();
+                    updateApiUsageCard(data?.usage);
                     if (!response.ok || data.error) throw data;
                     return data;
                 });

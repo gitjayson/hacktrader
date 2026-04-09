@@ -86,6 +86,43 @@ function save_json_file($path, $payload) {
     rename($tmp, $path);
 }
 
+function build_usage_summary($trackerPath, $sessionId) {
+    $tracker = load_json_file($trackerPath, [
+        'meta' => [],
+        'sessions' => [],
+        'recent_events' => [],
+    ]);
+
+    $sessionEntry = $tracker['sessions'][$sessionId] ?? [];
+    $providerEntry = $sessionEntry['providers']['twelvedata'] ?? [];
+    $attempts = (int) ($providerEntry['attempts'] ?? 0);
+    $successes = (int) ($providerEntry['successes'] ?? 0);
+    $errors = (int) ($providerEntry['errors'] ?? 0);
+
+    return [
+        'session_id' => $sessionId,
+        'provider' => 'twelvedata',
+        'attempts' => $attempts,
+        'successes' => $successes,
+        'errors' => $errors,
+        'success_rate' => $attempts > 0 ? round(($successes / $attempts) * 100, 1) : null,
+        'last_request_at' => $sessionEntry['last_request_at'] ?? null,
+        'last_ticker' => $sessionEntry['last_ticker'] ?? null,
+        'last_interval' => $sessionEntry['last_interval'] ?? null,
+        'last_periods' => $sessionEntry['last_periods'] ?? null,
+        'last_outcome' => $sessionEntry['last_outcome'] ?? null,
+        'updated_at' => $tracker['meta']['updated_at'] ?? null,
+    ];
+}
+
+function with_usage_summary($payload, $sessionId) {
+    if (!is_array($payload)) {
+        return $payload;
+    }
+    $payload['usage'] = build_usage_summary(__DIR__ . '/api_usage_tracker.json', $sessionId);
+    return $payload;
+}
+
 function remember_focus_symbol($ticker, $focusUniverseFile, $marketWatchlistFile, $correlationGenerator) {
     $ticker = strtoupper(trim((string) $ticker));
     if ($ticker === '') {
@@ -148,7 +185,7 @@ if ($freshCache !== null) {
         'stale' => false,
         'age_seconds' => time() - filemtime($pipeline),
     ];
-    respond_json($freshCache, 200);
+    respond_json(with_usage_summary($freshCache, $requesterIdentity), 200);
 }
 
 $encodedRequesterIdentity = str_replace(["\n", "\r"], '', $requesterIdentity);
@@ -174,7 +211,7 @@ if ($isValidJson && !$hasError) {
     $status = 'Success via ' . ($decoded['source'] ?? 'unknown');
     $logEntry = '[' . date('Y-m-d H:i:s') . "] Requester: $usageActor, Ticker: $ticker, Period: $period, Lookback: $lookback. Status: $status\n";
     file_put_contents('api.log', $logEntry, FILE_APPEND);
-    respond_json($decoded, 200);
+    respond_json(with_usage_summary($decoded, $requesterIdentity), 200);
 }
 
 $staleCache = read_cached_payload($pipeline);
@@ -192,7 +229,7 @@ if ($staleCache !== null) {
     $status = 'Served stale cache after fetch failure';
     $logEntry = '[' . date('Y-m-d H:i:s') . "] Requester: $usageActor, Ticker: $ticker, Period: $period, Lookback: $lookback. Status: $status\n";
     file_put_contents('api.log', $logEntry, FILE_APPEND);
-    respond_json($staleCache, 200);
+    respond_json(with_usage_summary($staleCache, $requesterIdentity), 200);
 }
 
 $errorPayload = [
@@ -206,4 +243,4 @@ $errorPayload = [
 $status = 'Error: ' . json_encode($errorPayload);
 $logEntry = '[' . date('Y-m-d H:i:s') . "] Requester: $usageActor, Ticker: $ticker, Period: $period, Lookback: $lookback. Status: $status\n";
 file_put_contents('api.log', $logEntry, FILE_APPEND);
-respond_json($errorPayload, 503);
+respond_json(with_usage_summary($errorPayload, $requesterIdentity), 503);
