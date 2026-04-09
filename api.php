@@ -1,11 +1,19 @@
 <?php
 session_start();
 
+$apiAuthPath = __DIR__ . '/api_auth.php';
+if (file_exists($apiAuthPath)) {
+    require_once $apiAuthPath;
+}
+
 $ticker = strtoupper($_GET['ticker'] ?? 'TSLA');
 $period = $_GET['period'] ?? '5m';
 $lookback = $_GET['lookback'] ?? '100';
 
 $pipelineDir = 'pipelines';
+$focusUniverseFile = __DIR__ . '/focus-universe.json';
+$marketWatchlistFile = __DIR__ . '/market-watchlist.json';
+$correlationGenerator = __DIR__ . '/generate-correlations.py';
 if (!is_dir($pipelineDir)) {
     mkdir($pipelineDir, 0755, true);
 }
@@ -34,6 +42,9 @@ function current_requester_identity() {
     if (!empty($_SESSION['session_user_name'])) {
         return 'session:' . sanitize_session_label($_SESSION['session_user_name']);
     }
+    if (!empty($_SESSION['user_email'])) {
+        return 'session:' . sanitize_session_label($_SESSION['user_email']);
+    }
     if (!empty($_SESSION['user_name'])) {
         return 'session:' . sanitize_session_label($_SESSION['user_name']);
     }
@@ -57,7 +68,79 @@ function read_cached_payload($pipeline, $maxAgeSeconds = null) {
     return is_array($decoded) ? $decoded : null;
 }
 
+function load_json_file($path, $default) {
+    if (!file_exists($path)) {
+        return $default;
+    }
+    $contents = file_get_contents($path);
+    if ($contents === false || trim($contents) === '') {
+        return $default;
+    }
+    $decoded = json_decode($contents, true);
+    return is_array($decoded) ? $decoded : $default;
+}
+
+function save_json_file($path, $payload) {
+    $tmp = $path . '.tmp';
+    file_put_contents($tmp, json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n");
+    rename($tmp, $path);
+}
+
+function remember_focus_symbol($ticker, $focusUniverseFile, $marketWatchlistFile, $correlationGenerator) {
+    $ticker = strtoupper(trim((string) $ticker));
+    if ($ticker === '') {
+        return;
+    }
+
+    $now = gmdate('c');
+    $universe = load_json_file($focusUniverseFile, ['symbols' => [], 'seen' => []]);
+    $symbols = $universe['symbols'] ?? [];
+    $seen = $universe['seen'] ?? [];
+
+    if (!in_array($ticker, $symbols, true)) {
+        $symbols[] = $ticker;
+        sort($symbols);
+    }
+    $seen[$ticker] = $now;
+    $universe['symbols'] = array_values($symbols);
+    $universe['seen'] = $seen;
+    save_json_file($focusUniverseFile, $universe);
+
+    $watchlist = load_json_file($marketWatchlistFile, []);
+    if (!in_array($ticker, $watchlist, true)) {
+        $watchlist[] = $ticker;
+        sort($watchlist);
+        save_json_file($marketWatchlistFile, array_values($watchlist));
+    }
+
+    if (file_exists($correlationGenerator)) {
+        $cmd = 'python3 ' . escapeshellarg($correlationGenerator) . ' ' . escapeshellarg($ticker) . ' > /dev/null 2>&1 &';
+        @exec($cmd);
+    }
+}
+
+$apiKey = $_GET['api_key'] ?? $_SERVER['HTTP_X_API_KEY'] ?? null;
+$sessionAuthorized = !empty($_SESSION['user_name']) && !empty($_SESSION['agreed']);
 $requesterIdentity = current_requester_identity();
+
+if ($sessionAuthorized && !$apiKey) {
+    $account = ['owner' => $_SESSION['user_email'] ?? ($_SESSION['user_name'] ?? 'browser-session'), 'tier' => 'session'];
+    $usageActor = $requesterIdentity;
+} else {
+    $account = function_exists('authenticate_api_key') ? authenticate_api_key($apiKey) : false;
+    if (!$account) {
+        http_response_code(401);
+        header('Content-Type: application/json');
+        echo json_encode(['error' => 'Unauthorized. Invalid or missing API key.']);
+        exit;
+    }
+    $usageActor = $apiKey;
+}
+
+if (function_exists('log_api_usage')) {
+    log_api_usage($usageActor, '/api.php', $ticker);
+}
+
 $freshCache = read_cached_payload($pipeline, $maxCacheAgeSeconds);
 if ($freshCache !== null) {
     $freshCache['cache'] = [
@@ -81,6 +164,7 @@ $hasError = $isValidJson && isset($decoded['error']);
 
 if ($isValidJson && !$hasError) {
     file_put_contents($pipeline, json_encode($decoded, JSON_PRETTY_PRINT));
+    remember_focus_symbol($ticker, $focusUniverseFile, $marketWatchlistFile, $correlationGenerator);
     $decoded['cache'] = [
         'hit' => false,
         'stale' => false,
@@ -88,7 +172,7 @@ if ($isValidJson && !$hasError) {
     ];
 
     $status = 'Success via ' . ($decoded['source'] ?? 'unknown');
-    $logEntry = '[' . date('Y-m-d H:i:s') . "] Requester: $requesterIdentity, Ticker: $ticker, Period: $period, Lookback: $lookback. Status: $status\n";
+    $logEntry = '[' . date('Y-m-d H:i:s') . "] Requester: $usageActor, Ticker: $ticker, Period: $period, Lookback: $lookback. Status: $status\n";
     file_put_contents('api.log', $logEntry, FILE_APPEND);
     respond_json($decoded, 200);
 }
@@ -106,7 +190,7 @@ if ($staleCache !== null) {
     }
 
     $status = 'Served stale cache after fetch failure';
-    $logEntry = '[' . date('Y-m-d H:i:s') . "] Requester: $requesterIdentity, Ticker: $ticker, Period: $period, Lookback: $lookback. Status: $status\n";
+    $logEntry = '[' . date('Y-m-d H:i:s') . "] Requester: $usageActor, Ticker: $ticker, Period: $period, Lookback: $lookback. Status: $status\n";
     file_put_contents('api.log', $logEntry, FILE_APPEND);
     respond_json($staleCache, 200);
 }
@@ -120,6 +204,6 @@ $errorPayload = [
 ];
 
 $status = 'Error: ' . json_encode($errorPayload);
-$logEntry = '[' . date('Y-m-d H:i:s') . "] Requester: $requesterIdentity, Ticker: $ticker, Period: $period, Lookback: $lookback. Status: $status\n";
+$logEntry = '[' . date('Y-m-d H:i:s') . "] Requester: $usageActor, Ticker: $ticker, Period: $period, Lookback: $lookback. Status: $status\n";
 file_put_contents('api.log', $logEntry, FILE_APPEND);
 respond_json($errorPayload, 503);

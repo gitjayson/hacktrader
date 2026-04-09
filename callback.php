@@ -49,17 +49,39 @@ function resolve_persistent_session_user_name(string $email, string $displayName
     return $candidate;
 }
 
-$autoloadPath = __DIR__ . '/../../vendor/autoload.php';
-if (!file_exists($autoloadPath)) {
+$autoloadCandidates = [
+    __DIR__ . '/vendor/autoload.php',
+    dirname(__DIR__) . '/vendor/autoload.php',
+    __DIR__ . '/../../vendor/autoload.php',
+];
+$autoloadPath = null;
+foreach ($autoloadCandidates as $candidate) {
+    if (file_exists($candidate)) {
+        $autoloadPath = $candidate;
+        break;
+    }
+}
+if ($autoloadPath === null) {
     http_response_code(500);
-    die('Missing vendor autoload at expected path: ' . $autoloadPath);
+    die('Missing vendor autoload in expected locations.');
 }
 require_once $autoloadPath;
 
-$secretsPath = __DIR__ . '/../../secrets.json';
-if (!file_exists($secretsPath)) {
+$secretsCandidates = [
+    __DIR__ . '/secrets.json',
+    dirname(__DIR__) . '/secrets.json',
+    __DIR__ . '/../../secrets.json',
+];
+$secretsPath = null;
+foreach ($secretsCandidates as $candidate) {
+    if (file_exists($candidate)) {
+        $secretsPath = $candidate;
+        break;
+    }
+}
+if ($secretsPath === null) {
     http_response_code(500);
-    die('Missing secrets.json at expected path: ' . $secretsPath);
+    die('Missing secrets.json in expected locations.');
 }
 
 $secrets = json_decode(file_get_contents($secretsPath), true);

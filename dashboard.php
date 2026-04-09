@@ -15,436 +15,743 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
     <title>HackTrader | v0.7.2.4</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel='preconnect' href='https://fonts.googleapis.com'>
+    <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
+    <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap' rel='stylesheet'>
     <style>
         :root {
-            --bg-color: #0a0a0a;
-            --accent-blue: #00f3ff;
-            --accent-amber: #ffb400;
-            --accent-red: #ff3e3e;
-            --accent-green: #27ae60;
-            --panel-border: rgba(255, 255, 255, 0.12);
-            --grid-color: rgba(255, 255, 255, 0.05);
+            --bg: #05101a;
+            --bg-soft: #091827;
+            --panel: rgba(9, 22, 35, 0.78);
+            --panel-2: rgba(15, 28, 45, 0.72);
+            --border: rgba(148, 163, 184, 0.16);
+            --text: #e8f1ff;
+            --muted: #96a9c4;
+            --cyan: #5eead4;
+            --blue: #60a5fa;
+            --green: #22c55e;
+            --red: #f87171;
+            --amber: #fbbf24;
+            --shadow: 0 24px 70px rgba(0,0,0,0.35);
         }
-        * {
-            box-sizing: border-box;
-        }
-        html {
-            min-height: 100%;
-            background: var(--bg-color);
-        }
-        body { 
-            margin: 0; 
-            font-family: 'Roboto Mono', monospace; 
-            background: var(--bg-color); 
-            color: #fff; 
-            display: flex; 
-            flex-direction: column; 
+        * { box-sizing: border-box; }
+        html, body { min-height: 100%; }
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top left, rgba(96,165,250,0.12), transparent 28%),
+                radial-gradient(circle at top right, rgba(94,234,212,0.08), transparent 24%),
+                linear-gradient(180deg, #06111d 0%, #081420 100%);
             min-height: 100vh;
-            min-height: 100dvh;
             overflow-x: hidden;
-            overflow-y: auto;
-            background-image: linear-gradient(var(--grid-color) 1px, transparent 1px),
-                              linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
-            background-size: 40px 40px;
         }
-        header { 
-            background: #111; 
-            padding: 15px; 
-            display: flex; 
-            gap: 15px; 
-            align-items: center; 
-            flex-wrap: wrap;
-            justify-content: center;
-            border-bottom: 1px solid var(--accent-blue);
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 36px 36px;
+            pointer-events: none;
+            mask-image: radial-gradient(circle at center, black 42%, transparent 100%);
+        }
+        .app-shell {
+            width: min(1520px, calc(100vw - 28px));
+            margin: 16px auto 32px;
+            display: grid;
+            gap: 18px;
+        }
+        .glass {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            box-shadow: var(--shadow);
+        }
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 16px 18px;
+            border-radius: 24px;
+            position: sticky;
+            top: 12px;
+            z-index: 20;
+        }
+        .brand {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 170px;
+        }
+        .eyebrow {
+            font-size: 11px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.18em;
+            color: var(--cyan);
+            font-weight: 700;
         }
-        input, select, button { 
-            background: #000; 
-            border: 1px solid #444; 
-            color: #fff; 
-            padding: 8px; 
-            font-family: inherit;
+        .brand strong {
+            font-size: 24px;
+            letter-spacing: -0.04em;
         }
-        input[type='range'] {
-            padding: 0;
-            width: 140px;
-            accent-color: var(--accent-blue);
+        .brand-title {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 24px;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+        .brand-title .title-text {
+            display: inline-block;
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            line-height: 0.98;
+        }
+        .pengo-trigger {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 999px;
             cursor: pointer;
+            user-select: none;
+            transition: transform 0.15s ease, background 0.15s ease;
+        }
+        .pengo-trigger:hover {
+            transform: translateY(-1px) scale(1.05);
+            background: rgba(255,255,255,0.08);
+        }
+        .pengo-popup {
+            position: fixed;
+            inset: auto 20px 20px auto;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border-radius: 18px;
+            border: 1px solid rgba(94,234,212,0.35);
+            background: rgba(6, 17, 29, 0.94);
+            color: var(--text);
+            box-shadow: 0 22px 50px rgba(0,0,0,0.35);
+            z-index: 60;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        .pengo-popup.show {
+            display: inline-flex;
+        }
+        .pengo-popup .emoji {
+            font-size: 24px;
+            line-height: 1;
+        }
+        .pengo-popup .copy {
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+        }
+        .brand span:last-child {
+            color: var(--muted);
+            font-size: 13px;
+        }
+        .controls {
+            display: grid;
+            grid-template-columns: 1.2fr auto auto auto 1fr auto auto;
+            gap: 12px;
+            align-items: center;
+            flex: 1;
+        }
+        input, select, button {
+            border: 1px solid rgba(148, 163, 184, 0.22);
+            background: rgba(3, 9, 17, 0.72);
+            color: var(--text);
+            padding: 12px 14px;
+            border-radius: 14px;
+            font: inherit;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: rgba(96,165,250,0.7);
+            box-shadow: 0 0 0 3px rgba(96,165,250,0.14);
+        }
+        button {
+            cursor: pointer;
+            font-weight: 700;
+            transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+        }
+        button:hover {
+            transform: translateY(-1px);
+            border-color: rgba(94,234,212,0.7);
+        }
+        .primary-btn {
+            background: linear-gradient(135deg, rgba(96,165,250,0.96), rgba(94,234,212,0.96));
+            color: #06111d;
+            border: none;
+        }
+        .ghost-btn {
+            background: rgba(255,255,255,0.03);
         }
         .slider-wrap {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            padding: 10px 14px;
+            border: 1px solid rgba(148,163,184,0.22);
+            border-radius: 14px;
+            background: rgba(3, 9, 17, 0.72);
             min-width: 220px;
         }
-        .slider-label {
-            color: var(--accent-amber);
-            font-size: 12px;
-            min-width: 84px;
+        .slider-wrap label {
+            font-size: 11px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-weight: 700;
+        }
+        .slider-wrap input[type='range'] {
+            flex: 1;
+            accent-color: var(--cyan);
+            padding: 0;
+            background: transparent;
         }
         .slider-value {
-            color: var(--accent-blue);
-            font-weight: 700;
-            min-width: 28px;
+            min-width: 34px;
             text-align: right;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--cyan);
+            font-weight: 700;
         }
-        button { cursor: pointer; border: 1px solid var(--accent-blue); color: var(--accent-blue); transition: 0.3s; }
-        button:hover { background: var(--accent-blue); color: #000; }
-        .clock-container { flex-grow: 1; display: flex; justify-content: center; align-items: flex-start; position: relative; padding: 20px 24px 72px; }
-        .clock-shell {
-            position: relative;
-            width: min(1160px, 100%);
-            min-height: 720px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 120px 0 220px;
-        }
-        .clock-face { position: relative; width: min(440px, 72vw); aspect-ratio: 1 / 1; border: 1px dashed #333; border-radius: 50%; flex: 0 0 auto; box-shadow: inset 0 0 40px rgba(255,255,255,0.03), 0 0 30px rgba(0,243,255,0.05); }
-        .clock-face::before,
-        .clock-face::after {
-            content: '';
-            position: absolute;
-            inset: 22px;
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 50%;
-            pointer-events: none;
-        }
-        .clock-face::after {
-            inset: 52px;
-            border-style: dashed;
-            border-color: rgba(255,255,255,0.06);
-        }
-        .center-ticker { 
-            width: 30%; min-width: 108px; max-width: 132px; aspect-ratio: 1 / 1;
-            border: 1px solid #666; 
-            box-shadow: 0 0 18px rgba(255,255,255,0.08), inset 0 0 24px rgba(255,255,255,0.04);
-            border-radius: 50%; 
-            display: flex; flex-direction: column; 
-            justify-content: center; align-items: center; 
-            font-weight: 700; font-size: 11px; 
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: radial-gradient(circle at center, rgba(20,20,20,0.96) 0%, rgba(0,0,0,0.94) 68%, rgba(255,255,255,0.04) 100%);
-            z-index: 10;
-            overflow: hidden;
-            text-align: center;
-            letter-spacing: 0.08em;
-            padding: 12px;
-        }
-        .indicator { 
-            width: 82px; min-width: 82px; height: 82px; 
-            border: 1px solid #666; 
-            border-radius: 50%; 
-            position: absolute; display: flex; flex-direction: column; 
-            justify-content: center; align-items: center; 
-            font-size: 9px; background: rgba(0,0,0,0.8);
-            text-align: center;
-            -webkit-backdrop-filter: blur(2px);
-            backdrop-filter: blur(2px);
-            padding: 8px;
-            z-index: 12;
-            overflow: hidden;
-        }
-        .indicator.green { border-color: var(--accent-blue); box-shadow: 0 0 10px var(--accent-blue); }
-        .indicator.red { border-color: var(--accent-red); box-shadow: 0 0 10px var(--accent-red); }
-        .center-ticker.green { border-color: var(--accent-blue); box-shadow: 0 0 20px var(--accent-blue), inset 0 0 25px rgba(0,243,255,0.08); }
-        .center-ticker.red { border-color: var(--accent-red); box-shadow: 0 0 20px var(--accent-red), inset 0 0 25px rgba(255,62,62,0.08); }
-        .focus-symbol {
-            font-size: 26px;
-            line-height: 1;
-            margin-bottom: 8px;
-            letter-spacing: 0.12em;
-            color: var(--accent-blue);
-            padding-left: 0.12em;
-        }
-        .focus-meta {
-            font-size: 9px;
-            color: #bdbdbd;
-            margin-top: 4px;
-        }
-        .status-banner {
+        .banner-wrap {
             position: fixed;
-            top: 72px;
+            top: 84px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.92);
-            border: 1px solid var(--accent-amber);
-            color: var(--accent-amber);
-            padding: 8px 12px;
-            font-size: 11px;
-            z-index: 50;
-            max-width: 80vw;
-            text-align: center;
+            width: min(960px, calc(100vw - 32px));
+            display: grid;
+            gap: 10px;
+            z-index: 40;
+            pointer-events: none;
+        }
+        .status-banner, .debug-banner {
+            padding: 12px 16px;
+            border-radius: 16px;
+            border: 1px solid rgba(251, 191, 36, 0.32);
+            background: rgba(15, 12, 4, 0.86);
+            color: var(--amber);
+            font-size: 13px;
             display: none;
+            box-shadow: 0 18px 44px rgba(0,0,0,0.25);
+            pointer-events: auto;
         }
         .status-banner.error {
-            border-color: var(--accent-red);
-            color: var(--accent-red);
+            border-color: rgba(248, 113, 113, 0.38);
+            background: rgba(48, 12, 12, 0.44);
+            color: var(--red);
         }
         .debug-banner {
-            position: fixed;
-            top: 108px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.92);
-            border: 1px solid rgba(0, 243, 255, 0.5);
-            color: var(--accent-blue);
-            padding: 6px 10px;
-            font-size: 10px;
-            z-index: 51;
-            max-width: 86vw;
-            text-align: center;
-            display: none;
+            border-color: rgba(96,165,250,0.28);
+            background: rgba(8, 18, 31, 0.9);
+            color: var(--blue);
             white-space: pre-wrap;
         }
-        .focus-panel {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-        }
-        .top-rail {
-            position: absolute;
-            top: 18px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: min(980px, 100%);
+        .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(5, minmax(0, 1fr));
-            gap: 10px;
-            pointer-events: none;
-            z-index: 20;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 18px;
+            align-items: start;
         }
-        .panel-title {
-            color: var(--accent-blue);
-            font-weight: 700;
-            font-size: 12px;
-            letter-spacing: 0.18em;
-            text-transform: uppercase;
-            margin-bottom: 8px;
+        .main-column, .side-column {
+            display: grid;
+            gap: 18px;
         }
-        .side-rail {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            width: 100%;
+        .hero-panel {
+            border-radius: 28px;
+            padding: 24px;
         }
-        .focus-stack {
-            display: contents;
+        .hero-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            align-items: flex-start;
+            margin-bottom: 20px;
         }
-        .price-box {
-            position: absolute;
-            width: 112px;
-            border: 1px solid var(--panel-border);
-            padding: 8px 10px;
-            background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.018) 100%);
-            -webkit-clip-path: polygon(8% 0, 92% 0, 100% 50%, 92% 100%, 8% 100%, 0 50%);
-            clip-path: polygon(8% 0, 92% 0, 100% 50%, 92% 100%, 8% 100%, 0 50%);
-            -webkit-backdrop-filter: blur(4px);
-            backdrop-filter: blur(4px);
-            box-shadow: inset 0 0 20px rgba(255,255,255,0.03);
-            box-sizing: border-box;
-            transform: translate(-50%, -50%);
+        .focus-meta h1 {
+            margin: 0 0 8px;
+            font-size: clamp(36px, 4vw, 56px);
+            line-height: 0.94;
+            letter-spacing: -0.05em;
         }
-        .price-box.focus {
-            border-color: rgba(0,243,255,0.58);
-            box-shadow: 0 0 18px rgba(0, 243, 255, 0.16), inset 0 0 20px rgba(255,255,255,0.03);
+        .focus-meta p {
+            margin: 0;
+            color: var(--muted);
+            max-width: 56ch;
+            line-height: 1.7;
+            font-size: 14px;
         }
-        .price-box.support {
-            border-color: rgba(255,62,62,0.45);
+        .quote-pill {
+            padding: 14px 16px;
+            border-radius: 18px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(148,163,184,0.16);
+            min-width: 220px;
         }
-        .price-box.resistance {
-            border-color: rgba(39,174,96,0.45);
-        }
-        .price-box.r2 { position: static; transform: none; width: 100%; }
-        .price-box.r1 { position: static; transform: none; width: 100%; }
-        .price-box.cp { position: static; transform: none; width: 100%; }
-        .price-box.s1 { position: static; transform: none; width: 100%; }
-        .price-box.s2 { position: static; transform: none; width: 100%; }
-        .price-label {
-            font-size: 9px;
-            color: #8f8f8f;
+        .quote-pill .label {
+            font-size: 11px;
+            color: var(--muted);
             text-transform: uppercase;
             letter-spacing: 0.14em;
-            margin-bottom: 3px;
-        }
-        .price-value {
-            font-size: 16px;
+            margin-bottom: 8px;
             font-weight: 700;
-            color: #fff;
         }
-        .price-box.resistance .price-value {
-            color: var(--accent-green);
+        .quote-pill .value {
+            font-size: 30px;
+            font-weight: 800;
+            letter-spacing: -0.04em;
         }
-        .price-box.support .price-value {
-            color: var(--accent-red);
+        .quote-pill .sub {
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: 13px;
         }
-        .price-box.focus .price-value {
-            color: var(--accent-blue);
-        }
-        .price-diff {
-            font-size: 9px;
-            color: #bbb;
-            margin-top: 3px;
-        }
-        .stats-grid {
-            position: absolute;
-            left: 50%;
-            bottom: 12px;
-            transform: translateX(-50%);
-            width: 760px;
+        .hero-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: minmax(560px, 1.15fr) minmax(320px, 0.85fr);
+            gap: 18px;
+            align-items: stretch;
+        }
+        .radar-card, .breakout-card {
+            border-radius: 24px;
+            padding: 20px;
+            background: var(--panel-2);
+            border: 1px solid rgba(148, 163, 184, 0.14);
+        }
+        .radar-card {
+            min-width: 560px;
+        }
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             gap: 12px;
+            margin-bottom: 14px;
+        }
+        .section-title h2 {
+            margin: 0;
+            font-size: 16px;
+            letter-spacing: -0.02em;
+        }
+        .section-title span {
+            color: var(--muted);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+        }
+        .radar-stage {
+            position: relative;
+            width: min(560px, 100%);
+            aspect-ratio: 1 / 1;
+            margin: 0 auto;
+            border-radius: 50%;
+            border: 1px solid rgba(148,163,184,0.14);
+            background:
+                radial-gradient(circle at center, rgba(255,255,255,0.03), rgba(255,255,255,0.01) 48%, rgba(255,255,255,0) 72%),
+                radial-gradient(circle, rgba(94,234,212,0.06) 0%, transparent 60%);
+            overflow: visible;
+            padding: 22px;
+        }
+        .radar-stage::before,
+        .radar-stage::after {
+            content: '';
+            position: absolute;
+            inset: 10%;
+            border-radius: 50%;
+            border: 1px dashed rgba(148,163,184,0.14);
             pointer-events: none;
         }
-        .stat-card {
-            border: 1px solid #2f2f2f;
-            padding: 12px 14px;
-            background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.015) 100%);
-            -webkit-clip-path: polygon(4% 0, 96% 0, 100% 50%, 96% 100%, 4% 100%, 0 50%);
-            clip-path: polygon(4% 0, 96% 0, 100% 50%, 96% 100%, 4% 100%, 0 50%);
-            box-shadow: inset 0 0 18px rgba(255,255,255,0.025);
+        .radar-stage::after {
+            inset: 24%;
         }
-        .stat-card.wide {
-            grid-column: auto;
+        .radar-lines {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
         }
-        .stat-label {
-            font-size: 10px;
-            color: #8f8f8f;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 6px;
+        .focus-node {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: clamp(128px, 28%, 170px);
+            min-height: clamp(128px, 28%, 170px);
+            border-radius: 28px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: linear-gradient(180deg, rgba(4, 10, 18, 0.92), rgba(11, 20, 31, 0.94));
+            border: 1px solid rgba(94,234,212,0.28);
+            box-shadow: 0 22px 50px rgba(0,0,0,0.34);
+            z-index: 3;
         }
-        .stat-value {
-            font-size: 18px;
-            font-weight: 700;
-            color: #fff;
+        .focus-node.up { border-color: rgba(34,197,94,0.45); box-shadow: 0 0 24px rgba(34,197,94,0.18); }
+        .focus-node.down { border-color: rgba(248,113,113,0.45); box-shadow: 0 0 24px rgba(248,113,113,0.18); }
+        .focus-node.neutral { border-color: rgba(96,165,250,0.4); }
+        .focus-symbol { font-size: 34px; font-weight: 800; letter-spacing: -0.04em; }
+        .focus-price { font-size: 22px; font-weight: 700; margin-top: 8px; }
+        .focus-bias { margin-top: 10px; font-size: 12px; color: var(--muted); }
+        .indicator-node {
+            position: absolute;
+            width: clamp(78px, 16vw, 106px);
+            min-height: clamp(70px, 14vw, 94px);
+            padding: 10px 8px;
+            border-radius: 20px;
+            background: rgba(5, 12, 21, 0.88);
+            border: 1px solid rgba(148,163,184,0.15);
+            box-shadow: 0 16px 30px rgba(0,0,0,0.22);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 4px;
+            text-align: center;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            z-index: 4;
         }
-        .stat-subtext {
+        .indicator-node .ticker { font-size: 14px; font-weight: 800; }
+        .indicator-node .price { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted); }
+        .indicator-node .mini-bias { font-size: 11px; font-weight: 700; }
+        .indicator-node.green { border-color: rgba(34,197,94,0.42); }
+        .indicator-node.red { border-color: rgba(248,113,113,0.42); }
+        .indicator-node.neutral { border-color: rgba(96,165,250,0.3); }
+        .breakout-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .signal-card {
+            border-radius: 18px;
+            padding: 16px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(148,163,184,0.12);
+        }
+        .signal-card .label {
             font-size: 11px;
-            color: #b8b8b8;
-            margin-top: 4px;
-            line-height: 1.4;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--muted);
+            margin-bottom: 10px;
+            font-weight: 700;
         }
-        @media (max-width: 1280px) {
-            .clock-shell {
-                width: min(1080px, 100%);
-                min-height: 700px;
-            }
-            .top-rail {
-                width: min(920px, 100%);
-                gap: 8px;
-            }
-            .price-box {
-                width: 100%;
-                padding: 7px 8px;
-            }
-            .price-value {
-                font-size: 15px;
-            }
-            .price-diff {
-                font-size: 8px;
-            }
-            .stats-grid {
-                width: 700px;
-            }
+        .signal-card .value {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.04em;
         }
-        @media (max-width: 1100px) {
-            .clock-container {
-                padding: 20px 16px 84px;
+        .signal-card .sub {
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+        .signal-card.up .value { color: var(--green); }
+        .signal-card.down .value { color: var(--red); }
+        .bias-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+            padding: 10px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .bias-chip.up { background: rgba(34,197,94,0.12); color: #86efac; }
+        .bias-chip.down { background: rgba(248,113,113,0.12); color: #fca5a5; }
+        .bias-chip.neutral { background: rgba(96,165,250,0.12); color: #bfdbfe; }
+        .range-grid {
+            display: grid;
+            gap: 10px;
+        }
+        .microchart-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .microchart-card {
+            border-radius: 18px;
+            padding: 14px 16px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(148,163,184,0.12);
+        }
+        .microchart-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--muted);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .microchart-value {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+        .meter {
+            position: relative;
+            width: 100%;
+            height: 10px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.08);
+            overflow: hidden;
+        }
+        .meter-fill {
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 0%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, rgba(96,165,250,0.72), rgba(94,234,212,0.9));
+        }
+        .meter-fill.red {
+            background: linear-gradient(90deg, rgba(248,113,113,0.92), rgba(251,191,36,0.72));
+        }
+        .meter-fill.green {
+            background: linear-gradient(90deg, rgba(74,222,128,0.92), rgba(94,234,212,0.72));
+        }
+        .meter-subtext {
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.45;
+        }
+        .driver-impact-bar {
+            width: 96px;
+            height: 8px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.08);
+            overflow: hidden;
+            margin-left: auto;
+            margin-top: 6px;
+        }
+        .driver-impact-fill {
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, rgba(96,165,250,0.82), rgba(94,234,212,0.82));
+        }
+        .driver-impact-fill.neg {
+            background: linear-gradient(90deg, rgba(248,113,113,0.92), rgba(251,191,36,0.72));
+        }
+        .range-card {
+            border-radius: 18px;
+            padding: 14px 16px;
+            background: rgba(255,255,255,0.025);
+            border: 1px solid rgba(148,163,184,0.12);
+        }
+        .range-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+        .range-name {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--muted);
+            font-weight: 700;
+        }
+        .range-width {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text);
+            font-size: 12px;
+        }
+        .range-track {
+            position: relative;
+            height: 12px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.08);
+            overflow: hidden;
+        }
+        .range-fill {
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: linear-gradient(90deg, rgba(96,165,250,0.52), rgba(94,234,212,0.72));
+        }
+        .range-meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .compact-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+        .stack-card {
+            border-radius: 24px;
+            padding: 20px;
+        }
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+        .metric-card {
+            border-radius: 18px;
+            padding: 16px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(148,163,184,0.12);
+        }
+        .metric-card .label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--muted);
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        .metric-card .value {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+        }
+        .metric-card .sub {
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .levels-list, .drivers-list, .attempt-list {
+            display: grid;
+            gap: 10px;
+        }
+        .level-row, .driver-row, .attempt-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+            padding: 12px 14px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.025);
+            border: 1px solid rgba(148,163,184,0.1);
+        }
+        .level-row .left, .driver-row .left, .attempt-row .left {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .row-title {
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .row-meta {
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .row-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            text-align: right;
+        }
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            background: rgba(255,255,255,0.05);
+            color: var(--muted);
+        }
+        .pill.up { color: #86efac; background: rgba(34,197,94,0.12); }
+        .pill.down { color: #fca5a5; background: rgba(248,113,113,0.12); }
+        .pill.neutral { color: #bfdbfe; background: rgba(96,165,250,0.12); }
+        footer {
+            text-align: center;
+            font-size: 11px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: rgba(150,169,196,0.72);
+            padding: 4px 0 12px;
+        }
+        @media (max-width: 1260px) {
+            .controls {
+                grid-template-columns: 1fr 1fr 1fr 1fr;
             }
-            .clock-shell {
-                width: 100%;
-                min-height: auto;
-                padding: 0;
-                display: grid;
-                gap: 18px;
-                justify-items: center;
+            .controls .slider-wrap { grid-column: span 2; }
+            .hero-grid { grid-template-columns: minmax(520px, 1fr); }
+            .radar-card { min-width: 520px; }
+        }
+        @media (max-width: 980px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .topbar { position: static; }
+            .controls { grid-template-columns: 1fr 1fr; }
+            .controls > * { min-width: 0; }
+            .hero-grid { grid-template-columns: 1fr; }
+            .radar-card { min-width: 0; }
+            .radar-stage {
+                width: min(500px, 100%);
+                min-width: 500px;
+                padding: 18px;
             }
-            .focus-panel {
-                position: static;
-                width: 100%;
-                pointer-events: auto;
-                display: contents;
-            }
-            .clock-face {
-                width: min(440px, 88vw);
-            }
-            .stats-grid {
-                position: static;
-                transform: none;
-                width: min(92vw, 760px);
-                grid-template-columns: 1fr;
-            }
-            .top-rail {
-                position: static;
-                left: auto;
-                transform: none;
-                width: min(92vw, 760px);
-                margin: 0 auto;
-                grid-template-columns: 1fr;
-                pointer-events: auto;
-            }
-            .side-rail {
-                position: static;
-                width: min(520px, 92vw);
-                margin: 0 auto 18px;
-                gap: 10px;
-            }
-            .price-box {
-                position: static;
-                width: 100%;
-                transform: none;
-                margin-bottom: 10px;
-                padding: 10px 14px;
-            }
-            .price-value {
-                font-size: 19px;
-            }
-            .price-diff {
-                font-size: 10px;
+            .radar-card {
+                overflow-x: auto;
             }
         }
         @media (max-width: 720px) {
-            header {
-                gap: 10px;
-                padding: 12px;
-                justify-content: stretch;
-            }
-            header > * {
-                width: 100%;
-            }
-            input, select, button {
-                width: 100%;
-                min-height: 42px;
-            }
-            .slider-wrap {
-                min-width: 0;
-                width: 100%;
-            }
-            input[type='range'] {
-                width: 100%;
-            }
-            .focus-symbol {
-                font-size: 22px;
-            }
-            .center-ticker {
-                font-size: 10px;
-            }
-            .indicator {
-                width: 72px;
-                min-width: 72px;
-                height: 72px;
-                font-size: 8px;
-            }
-            .status-banner {
+            .app-shell { width: min(100vw - 16px, 100%); margin-top: 8px; }
+            .topbar, .hero-panel, .stack-card { border-radius: 22px; }
+            .controls { grid-template-columns: 1fr; }
+            .slider-wrap { min-width: 0; }
+            .hero-top { flex-direction: column; }
+            .breakout-grid, .compact-grid, .metric-grid, .microchart-grid { grid-template-columns: 1fr; }
+            .banner-wrap {
                 top: auto;
                 bottom: 12px;
                 width: calc(100vw - 24px);
-                max-width: none;
             }
+            .radar-stage {
+                width: 420px;
+                min-width: 420px;
+                padding: 14px;
+            }
+            .focus-node {
+                width: 122px;
+                min-height: 122px;
+                padding: 12px;
+            }
+            .focus-symbol { font-size: 26px; }
+            .focus-price { font-size: 18px; }
+            .focus-bias { font-size: 11px; }
+            .indicator-node {
+                width: 78px;
+                min-height: 72px;
+                padding: 8px 6px;
+            }
+            .indicator-node .ticker { font-size: 12px; }
+            .indicator-node .price { font-size: 10px; }
+            .indicator-node .mini-bias { font-size: 9px; }
         }
     </style>
 </head>
@@ -458,87 +765,200 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         $logoManifest = json_decode(file_get_contents('logos.json'), true) ?: [];
     }
     ?>
-    <header>
-        <input type='text' id='ticker' list='ticker-list' placeholder='TICKER' size='6'>
-        <datalist id='ticker-list'>
-            <?php foreach($allTickers as $t) echo "<option value='$t'>"; ?>
-        </datalist>
-        <button onclick='updateDashboard()'>EXECUTE</button>
-        <select id='period'><option selected>5m</option><option>1m</option><option>1h</option><option>1d</option></select>
-        <input type='number' id='lookback' value='100' placeholder='LOOKBACK' size='5'>
-        <div class='slider-wrap'>
-            <span class='slider-label'>TOLERANCE</span>
-            <input type='range' id='tolerance' min='0' max='100' value='90' oninput='syncToleranceValue()'>
-            <span class='slider-value' id='toleranceValue'>90</span>
-        </div>
-        <button onclick='resetDashboard()'>RESET</button>
-        <button onclick='window.location.href="logout.php"'>LOGOUT</button>
-    </header>
-    <div id='statusBanner' class='status-banner'></div>
-    <div id='debugBanner' class='debug-banner'></div>
-    <div class='clock-container'>
-        <div class='clock-shell'>
-            <div class='clock-face' id='clock'>
-                <svg id='lines' style='position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;'></svg>
-                <div class='center-ticker' id='focus' onclick='resetDashboard()' style='cursor:pointer;'>INIT<br>SCAN</div>
+    <main class='app-shell'>
+        <section class='topbar glass'>
+            <div class='brand'>
+                <div class='eyebrow'>HackTrader v0.7.2.4 (by @gitjayson)</div>
+                <strong class='brand-title'><span class='pengo-trigger' id='pengoTrigger' title='Activate pengo'>🐧</span><span class='title-text'>Signal cockpit</span></strong>
+                <span>Breakouts, channels, and market pressure at a glance</span>
             </div>
-            <aside class='focus-panel'>
-                <div class='top-rail'>
-                    <div class='price-box resistance r2'>
-                        <div class='price-label'>Resistance 2</div>
-                        <div class='price-value' id='resistance2'>--</div>
-                        <div class='price-diff' id='resistance2Diff'>Awaiting signal</div>
-                    </div>
-                    <div class='price-box resistance r1'>
-                        <div class='price-label'>Resistance 1</div>
-                        <div class='price-value' id='resistance1'>--</div>
-                        <div class='price-diff' id='resistance1Diff'>Awaiting signal</div>
-                    </div>
-                    <div class='price-box focus cp'>
-                        <div class='price-label'>Current Price</div>
-                        <div class='price-value' id='focusPriceBox'>--</div>
-                        <div class='price-diff' id='focusTimeBox'>Awaiting quote</div>
-                    </div>
-                    <div class='price-box support s1'>
-                        <div class='price-label'>Support 1</div>
-                        <div class='price-value' id='support1'>--</div>
-                        <div class='price-diff' id='support1Diff'>Awaiting signal</div>
-                    </div>
-                    <div class='price-box support s2'>
-                        <div class='price-label'>Support 2</div>
-                        <div class='price-value' id='support2'>--</div>
-                        <div class='price-diff' id='support2Diff'>Awaiting signal</div>
-                    </div>
+            <div class='controls'>
+                <input type='text' id='ticker' list='ticker-list' placeholder='Ticker'>
+                <datalist id='ticker-list'>
+                    <?php foreach($allTickers as $t) echo "<option value='$t'>"; ?>
+                </datalist>
+                <select id='period'><option selected>5m</option><option>1m</option><option>1h</option><option>1d</option></select>
+                <input type='number' id='lookback' value='100' placeholder='Lookback'>
+                <div class='slider-wrap'>
+                    <label for='tolerance'>Tolerance</label>
+                    <input type='range' id='tolerance' min='0' max='100' value='90' oninput='syncToleranceValue()'>
+                    <span class='slider-value' id='toleranceValue'>90</span>
                 </div>
-                <div class='stats-grid'>
-                    <div class='stat-card'>
-                        <div class='stat-label'>Day Volume</div>
-                        <div class='stat-value' id='dayVolumeValue'>--</div>
-                        <div class='stat-subtext' id='dayVolumeSubtext'>Waiting on market data</div>
-                    </div>
-                    <div class='stat-card wide'>
-                        <div class='stat-label'>Indicator Bias</div>
-                        <div class='stat-value' id='indicatorBiasValue'>--</div>
-                        <div class='stat-subtext' id='indicatorBiasSubtext'>0 of 12 processed</div>
-                    </div>
-                    <div class='stat-card'>
-                        <div class='stat-label'>Volume Ratio</div>
-                        <div class='stat-value' id='dayVolumeRatio'>--</div>
-                        <div class='stat-subtext' id='barVolumeSubtext'>Current bar vs expected bar pending</div>
-                    </div>
-                </div>
-            </aside>
+                <button class='primary-btn' onclick='updateDashboard()'>Scan</button>
+                <button class='ghost-btn' onclick='resetDashboard()'>Reset</button>
+                <button class='ghost-btn' onclick='window.location.href="logout.php"'>Logout</button>
+            </div>
+        </section>
+
+        <section class='banner-wrap'>
+            <div id='statusBanner' class='status-banner'></div>
+            <div id='debugBanner' class='debug-banner'></div>
+        </section>
+
+        <div id='pengoPopup' class='pengo-popup' role='status' aria-live='polite'>
+            <span class='emoji'>🐧</span>
+            <span class='copy'>make money bitches</span>
         </div>
-    </div>
+
+        <section class='dashboard-grid'>
+            <div class='main-column'>
+                <section class='hero-panel glass'>
+                    <div class='hero-top'>
+                        <div class='focus-meta'>
+                            <div class='eyebrow'>Focus symbol</div>
+                            <h1 id='focusHeadline'>TSLA breakout monitor</h1>
+                            <p id='focusNarrative'>Scanning live market structure for breakout pressure, failed attempts, and correlation confirmation.</p>
+                        </div>
+                        <div class='quote-pill'>
+                            <div class='label'>Live quote</div>
+                            <div class='value' id='focusPriceBox'>$--</div>
+                            <div class='sub' id='focusTimeBox'>Awaiting quote</div>
+                        </div>
+                    </div>
+                    <div class='hero-grid'>
+                        <div class='radar-card'>
+                            <div class='section-title'>
+                                <h2>Correlation radar</h2>
+                                <span id='indicatorBiasSubtext'>0 processed</span>
+                            </div>
+                            <div class='radar-stage' id='clock'>
+                                <svg id='lines' class='radar-lines'></svg>
+                                <div class='focus-node neutral' id='focus' onclick='resetDashboard()' style='cursor:pointer;'>
+                                    <div class='focus-symbol'>INIT</div>
+                                    <div class='focus-price'>SCAN</div>
+                                    <div class='focus-bias'>Awaiting data</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class='breakout-card'>
+                            <div class='section-title'>
+                                <h2>Breakout bias</h2>
+                                <span id='analysisMeta'>Channel structure</span>
+                            </div>
+                            <div class='breakout-grid'>
+                                <div class='signal-card up'>
+                                    <div class='label'>Upside probability</div>
+                                    <div class='value' id='upProbability'>--</div>
+                                    <div class='sub' id='upProbabilitySub'>Awaiting breakout model</div>
+                                </div>
+                                <div class='signal-card down'>
+                                    <div class='label'>Downside probability</div>
+                                    <div class='value' id='downProbability'>--</div>
+                                    <div class='sub' id='downProbabilitySub'>Awaiting breakout model</div>
+                                </div>
+                            </div>
+                            <div id='biasChip' class='bias-chip neutral'>Neutral bias</div>
+                            <div class='microchart-grid'>
+                                <div class='microchart-card'>
+                                    <div class='microchart-label'>Breakout pressure</div>
+                                    <div class='microchart-value' id='pressureValue'>--</div>
+                                    <div class='meter'><div class='meter-fill green' id='pressureFill'></div></div>
+                                    <div class='meter-subtext' id='pressureSubtext'>Awaiting breakout pressure</div>
+                                </div>
+                                <div class='microchart-card'>
+                                    <div class='microchart-label'>Channel width</div>
+                                    <div class='microchart-value' id='channelWidthValue'>--</div>
+                                    <div class='meter'><div class='meter-fill' id='channelWidthFill'></div></div>
+                                    <div class='meter-subtext' id='channelWidthSubtext'>Awaiting channel structure</div>
+                                </div>
+                                <div class='microchart-card'>
+                                    <div class='microchart-label'>Attempt stress</div>
+                                    <div class='microchart-value' id='attemptStressValue'>--</div>
+                                    <div class='meter'><div class='meter-fill red' id='attemptStressFill'></div></div>
+                                    <div class='meter-subtext' id='attemptStressSubtext'>Awaiting failed attempt count</div>
+                                </div>
+                            </div>
+                            <div class='range-grid' id='channelList'>
+                                <div class='range-card'>
+                                    <div class='range-top'>
+                                        <div class='range-name'>Current channel</div>
+                                        <div class='range-width'>Waiting on levels</div>
+                                    </div>
+                                    <div class='range-track'><div class='range-fill' style='width: 0%'></div></div>
+                                    <div class='range-meta'><span>--</span><span>--</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class='stack-card glass'>
+                    <div class='section-title'>
+                        <h2>Price structure</h2>
+                        <span id='sourceMeta'>Awaiting source</span>
+                    </div>
+                    <div class='compact-grid'>
+                        <div>
+                            <div class='section-title'><h2>Resistance stack</h2><span>R1 / R2</span></div>
+                            <div class='levels-list' id='resistanceList'></div>
+                        </div>
+                        <div>
+                            <div class='section-title'><h2>Support stack</h2><span>S1 / S2</span></div>
+                            <div class='levels-list' id='supportList'></div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class='side-column'>
+                <section class='stack-card glass'>
+                    <div class='section-title'>
+                        <h2>Volume + context</h2>
+                        <span id='quoteTimezone'>ET</span>
+                    </div>
+                    <div class='metric-grid'>
+                        <div class='metric-card'>
+                            <div class='label'>Day volume</div>
+                            <div class='value' id='dayVolumeValue'>--</div>
+                            <div class='sub' id='dayVolumeSubtext'>Waiting on market data</div>
+                        </div>
+                        <div class='metric-card'>
+                            <div class='label'>Day ratio</div>
+                            <div class='value' id='dayVolumeRatio'>--</div>
+                            <div class='sub' id='barVolumeSubtext'>Current bar vs expected slot pending</div>
+                        </div>
+                        <div class='metric-card'>
+                            <div class='label'>Indicator bias</div>
+                            <div class='value' id='indicatorBiasValue'>--</div>
+                            <div class='sub'>Correlation basket disposition</div>
+                        </div>
+                        <div class='metric-card'>
+                            <div class='label'>Recent extremes</div>
+                            <div class='value' id='recentExtremesValue'>--</div>
+                            <div class='sub' id='previousDayValue'>Previous day waiting</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class='stack-card glass'>
+                    <div class='section-title'>
+                        <h2>Attempt monitor</h2>
+                        <span>Rule of three</span>
+                    </div>
+                    <div class='attempt-list' id='attemptList'></div>
+                </section>
+
+                <section class='stack-card glass'>
+                    <div class='section-title'>
+                        <h2>Score drivers</h2>
+                        <span>Model factors</span>
+                    </div>
+                    <div class='drivers-list' id='driversList'></div>
+                </section>
+            </div>
+        </section>
+        <footer>HackTrader · visual refresh · v0.7.2.4</footer>
+    </main>
+
     <script>
-        const logoManifest = <?php echo json_encode($logoManifest, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>;
         let refreshInterval = setInterval(updateDashboard, 30000);
         let tickerInputDebounce = null;
+        let correlationPollTimer = null;
+        let dashboardRequestSeq = 0;
+        let pengoPopupTimer = null;
 
         function syncToleranceValue() {
-            const slider = document.getElementById('tolerance');
-            const value = document.getElementById('toleranceValue');
-            value.textContent = slider.value;
+            document.getElementById('toleranceValue').textContent = document.getElementById('tolerance').value;
         }
 
         function showBanner(message, isError = false) {
@@ -556,7 +976,6 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 
         function showDebug(message) {
             const banner = document.getElementById('debugBanner');
-            if (!banner) return;
             if (!message) {
                 banner.style.display = 'none';
                 banner.textContent = '';
@@ -566,20 +985,38 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             banner.style.display = 'block';
         }
 
+        function showPengoPopup() {
+            const popup = document.getElementById('pengoPopup');
+            if (!popup) return;
+            popup.classList.add('show');
+            if (pengoPopupTimer) clearTimeout(pengoPopupTimer);
+            pengoPopupTimer = setTimeout(() => popup.classList.remove('show'), 10000);
+        }
+
+        function attachPengoTrigger() {
+            const trigger = document.getElementById('pengoTrigger');
+            if (!trigger) return;
+            trigger.addEventListener('click', showPengoPopup);
+        }
+
         function formatSourceMeta(data) {
             const parts = [];
-            if (data.source) parts.push(`SOURCE: ${String(data.source).toUpperCase()}`);
-            if (data.cache?.stale) parts.push(`STALE CACHE · ${data.cache.age_seconds}s OLD`);
-            else if (data.cache?.hit) parts.push(`CACHE HIT · ${data.cache.age_seconds}s OLD`);
-            if (data.fallback_reason && data.source === 'yfinance') parts.push('TWELVEDATA EXHAUSTED → YFINANCE FALLBACK');
-            if (data.warning) parts.push(data.warning.toUpperCase());
-            return parts.join(' | ');
+            if (data.source) parts.push(`SOURCE ${String(data.source).toUpperCase()}`);
+            if (data.cache?.stale) parts.push(`STALE ${data.cache.age_seconds}s`);
+            else if (data.cache?.hit) parts.push(`CACHE ${data.cache.age_seconds}s`);
+            if (data.fallback_reason) parts.push('FALLBACK ACTIVE');
+            if (data.warning) parts.push('LIVE FETCH WARNING');
+            return parts.join(' · ');
         }
 
         function formatPrice(value) {
             const num = Number(value);
-            if (!Number.isFinite(num)) return '--';
-            return num.toFixed(2);
+            return Number.isFinite(num) ? num.toFixed(2) : '--';
+        }
+
+        function formatPercent(value) {
+            const num = Number(value);
+            return Number.isFinite(num) ? `${num.toFixed(1)}%` : '--';
         }
 
         function formatVolume(value) {
@@ -593,230 +1030,22 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 
         function formatRatio(value) {
             const num = Number(value);
+            return Number.isFinite(num) ? `${num.toFixed(2)}x` : '--';
+        }
+
+        function formatSigned(value) {
+            const num = Number(value);
             if (!Number.isFinite(num)) return '--';
-            return `${num.toFixed(2)}x`;
+            return `${num >= 0 ? '+' : ''}${num.toFixed(2)}`;
         }
 
-        function getLogoUrl(symbol) {
-            return logoManifest[symbol] || null;
-        }
-
-        function buildFocusMarkup(symbol, data) {
-            return `<div class="focus-symbol">${symbol}</div><div style="font-size:18px; margin-bottom:4px;">$${formatPrice(data.current_price)}</div><div class="focus-meta"><span style='color: var(--accent-green)'>↑ ${data.probabilities.up}%</span> · <span style='color: var(--accent-red)'>↓ ${data.probabilities.down}%</span></div>`;
-        }
-
-        function setPriceBox(idPrefix, entry, kind) {
-            const valueEl = document.getElementById(idPrefix);
-            const diffEl = document.getElementById(`${idPrefix}Diff`);
-            if (!entry) {
-                valueEl.textContent = '--';
-                diffEl.textContent = 'Not available';
-                return;
-            }
-            valueEl.textContent = `$${formatPrice(entry.price)}`;
-            const sign = kind === 'resistance' ? '+' : '-';
-            diffEl.textContent = `${sign}$${formatPrice(entry.diff)} from focus`;
-        }
-
-        function updateFocusPanel(data, indicatorSummary = null) {
-            const focusPriceBox = document.getElementById('focusPriceBox');
-            const focusTimeBox = document.getElementById('focusTimeBox');
-            const dayVolumeValue = document.getElementById('dayVolumeValue');
-            const dayVolumeSubtext = document.getElementById('dayVolumeSubtext');
-            const dayVolumeRatio = document.getElementById('dayVolumeRatio');
-            const barVolumeSubtext = document.getElementById('barVolumeSubtext');
-            const indicatorBiasValue = document.getElementById('indicatorBiasValue');
-            const indicatorBiasSubtext = document.getElementById('indicatorBiasSubtext');
-
-            if (focusPriceBox) {
-                focusPriceBox.textContent = `$${formatPrice(data.focus_price ?? data.current_price)}`;
-            }
-            const timeText = data.quote_time_eastern ? `${data.quote_time_eastern} ${data.quote_timezone || 'ET'}` : 'Time unavailable';
-            if (focusTimeBox) {
-                focusTimeBox.textContent = timeText;
-            }
-
-            const upper = data.upper_resistances || [];
-            const lower = data.lower_supports || [];
-            setPriceBox('resistance1', upper[0], 'resistance');
-            setPriceBox('resistance2', upper[1], 'resistance');
-            setPriceBox('support1', lower[0], 'support');
-            setPriceBox('support2', lower[1], 'support');
-
-            const volume = data.volume || {};
-            if (dayVolumeValue) dayVolumeValue.textContent = formatVolume(volume.current_day);
-            if (dayVolumeSubtext) dayVolumeSubtext.textContent = `Avg day ${formatVolume(volume.expected_day)}`;
-            if (dayVolumeRatio) dayVolumeRatio.textContent = formatRatio(volume.day_ratio);
-            if (barVolumeSubtext) barVolumeSubtext.textContent = `Current bar ${formatVolume(volume.current_bar)} vs avg slot ${formatVolume(volume.expected_bar)} (${formatRatio(volume.bar_ratio)})`;
-
-            if (indicatorSummary) {
-                const up = Number(indicatorSummary.up || 0);
-                const down = Number(indicatorSummary.down || 0);
-                const neutral = Number(indicatorSummary.neutral || 0);
-                const total = up + down + neutral;
-                if (indicatorBiasValue) indicatorBiasValue.innerHTML = `<span style="color: var(--accent-green)">${up} ↑</span> / <span style="color: var(--accent-red)">${down} ↓</span>`;
-                if (indicatorBiasSubtext) indicatorBiasSubtext.textContent = `${total} processed · ${neutral} neutral/inside tolerance`;
-            }
-        }
-
-        function buildTickerMarkup(symbol, data) {
-            return `${symbol}<br>$${formatPrice(data.current_price)}<br><span style='color: var(--accent-blue)'>+${data.probabilities.up}%</span> | <span style='color: var(--accent-red)'>-${data.probabilities.down}%</span>`;
-        }
-
-        function applyTickerState(el, data, tolerance) {
-            el.classList.remove('green', 'red');
-            if (data.probabilities.up > tolerance) el.classList.add('green');
-            else if (data.probabilities.down > tolerance) el.classList.add('red');
-        }
-
-        function setTickerDisplay(el, symbol, data, tolerance) {
-            el.className = el.id === 'focus' ? 'center-ticker' : 'indicator';
-            if (!data || data.error || !data.probabilities) {
-                const detail = data?.error ? String(data.error).slice(0, 24) : 'DATA ERR';
-                el.innerHTML = `${symbol}<br>${detail}`;
-                return;
-            }
-
-            el.innerHTML = el.id === 'focus' ? buildFocusMarkup(symbol, data) : buildTickerMarkup(symbol, data);
-            applyTickerState(el, data, tolerance);
-        }
-
-        async function fetchTickerData(ticker, period, lookback) {
-            const response = await fetch(`api.php?ticker=${ticker}&period=${period}&lookback=${lookback}&t=${Date.now()}`);
-            const data = await response.json();
-            if (!response.ok || data.error) {
-                throw data;
-            }
-            return data;
-        }
-        
-        function resetDashboard() {
-            document.getElementById('ticker').value = 'TSLA';
-            document.getElementById('period').value = '5m';
-            document.getElementById('lookback').value = '100';
-            document.getElementById('tolerance').value = '90';
-            syncToleranceValue();
-            updateDashboard('TSLA');
-        }
-
-        function attachTickerAutoRefresh() {
-            const tickerEl = document.getElementById('ticker');
-            if (!tickerEl) return;
-
-            const triggerRefresh = () => {
-                const nextTicker = tickerEl.value.trim().toUpperCase();
-                if (!nextTicker) return;
-                tickerEl.value = nextTicker;
-                clearTimeout(tickerInputDebounce);
-                tickerInputDebounce = setTimeout(() => updateDashboard(nextTicker), 250);
-            };
-
-            tickerEl.addEventListener('change', triggerRefresh);
-            tickerEl.addEventListener('blur', triggerRefresh);
-            tickerEl.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    triggerRefresh();
-                }
-            });
-        }
-
-        function computeLineColor(data, relation, tolerance) {
-            const upwardTrend = data.probabilities.up >= tolerance;
-            const downwardTrend = data.probabilities.down >= tolerance;
-
-            if (relation === 'positive') {
-                if (upwardTrend) return '#27ae60';
-                if (downwardTrend) return '#c0392b';
-                return '#444444';
-            }
-
-            if (relation === 'negative') {
-                if (downwardTrend) return '#27ae60';
-                if (upwardTrend) return '#c0392b';
-                return '#444444';
-            }
-
-            return '#444444';
-        }
-
-        function summarizeRelationshipBias(indicatorStates, tolerance) {
-            const summary = { up: 0, down: 0, neutral: 0 };
-            (indicatorStates || []).forEach((item) => {
-                if (!item || !item.data) {
-                    summary.neutral += 1;
-                    return;
-                }
-                const relation = item.relation || item.relationship || item.sign;
-                const color = computeLineColor(item.data, relation, tolerance);
-                if (color === '#27ae60') summary.up += 1;
-                else if (color === '#c0392b') summary.down += 1;
-                else summary.neutral += 1;
-            });
-            return summary;
-        }
-
-        function drawOrUpdateLine(lineId, x, y, lineColor) {
-            const lines = document.getElementById('lines');
-            const clock = document.getElementById('clock');
-            const size = clock ? clock.getBoundingClientRect().width : 440;
-            const center = size / 2;
-            let line = document.getElementById(lineId);
-            if (!line) {
-                line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                line.setAttribute('id', lineId);
-                lines.appendChild(line);
-            }
-            line.setAttribute('x1', String(center));
-            line.setAttribute('y1', String(center));
-            line.setAttribute('x2', String(center + x));
-            line.setAttribute('y2', String(center + y));
-            line.setAttribute('stroke', lineColor);
-            line.setAttribute('stroke-width', lineColor === '#444444' ? '1' : '2');
-            if (lineColor === '#444444') line.setAttribute('stroke-dasharray', '4,4');
-            else line.removeAttribute('stroke-dasharray');
-        }
-
-        let correlationPollTimer = null;
-        let dashboardRequestSeq = 0;
-        let currentRingFocusTicker = null;
-        let currentRingIndicators = [];
-
-        function clearRingElements() {
-            document.querySelectorAll('.indicator').forEach(el => el.remove());
-            document.querySelectorAll('#lines line[id^="line-"]').forEach(line => line.remove());
-        }
-
-        function buildRingLayout(indicators) {
-            const clock = document.getElementById('clock');
-            clearRingElements();
-            currentRingIndicators = indicators.map(ind => ({ ...ind }));
-
-            const clockRect = clock.getBoundingClientRect();
-            const indicatorHalf = window.innerWidth <= 720 ? 36 : 40;
-            const usableRadius = (clockRect.width / 2) - indicatorHalf - 10;
-            const radius = Math.max(72, Math.min(usableRadius, 150));
-
-            currentRingIndicators.forEach((indObj, i) => {
-                const ind = indObj.symbol;
-                const angle = (i / Math.max(currentRingIndicators.length, 1)) * 2 * Math.PI;
-                const x = Math.cos(angle) * radius;
-                const y = Math.sin(angle) * radius;
-                const el = document.createElement('div');
-                el.className = 'indicator';
-                el.style.cursor = 'pointer';
-                el.setAttribute('title', ind);
-                el.dataset.symbol = ind;
-                el.dataset.relation = indObj.relation || 'positive';
-                el.dataset.x = String(x);
-                el.dataset.y = String(y);
-                el.onclick = () => updateDashboard(ind);
-                el.innerHTML = `${ind}<br>...`;
-                el.style.left = `calc(50% + ${x}px - ${indicatorHalf}px)`;
-                el.style.top = `calc(50% + ${y}px - ${indicatorHalf}px)`;
-                clock.appendChild(el);
-                drawOrUpdateLine(`line-${ind}`, x, y, '#444444');
-            });
+        function fetchTickerData(ticker, period, lookback) {
+            return fetch(`api.php?ticker=${encodeURIComponent(ticker)}&period=${encodeURIComponent(period)}&lookback=${encodeURIComponent(lookback)}&t=${Date.now()}`)
+                .then(async (response) => {
+                    const data = await response.json();
+                    if (!response.ok || data.error) throw data;
+                    return data;
+                });
         }
 
         function clearCorrelationPoll() {
@@ -836,8 +1065,255 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             }, delayMs);
         }
 
-        async function updateDashboard(newTicker = null, options = {}) {
+        function summarizeRelationshipBias(indicatorStates, tolerance) {
+            const summary = { up: 0, down: 0, neutral: 0 };
+            (indicatorStates || []).forEach((item) => {
+                if (!item || !item.data) {
+                    summary.neutral += 1;
+                    return;
+                }
+                const relation = item.relation || 'positive';
+                const up = Number(item.data?.probabilities?.up || 0);
+                const down = Number(item.data?.probabilities?.down || 0);
+                const isUp = relation === 'positive' ? up >= tolerance : down >= tolerance;
+                const isDown = relation === 'positive' ? down >= tolerance : up >= tolerance;
+                if (isUp) summary.up += 1;
+                else if (isDown) summary.down += 1;
+                else summary.neutral += 1;
+            });
+            return summary;
+        }
+
+        function resetDashboard() {
+            document.getElementById('ticker').value = 'TSLA';
+            document.getElementById('period').value = '5m';
+            document.getElementById('lookback').value = '100';
+            document.getElementById('tolerance').value = '90';
+            syncToleranceValue();
+            updateDashboard('TSLA');
+        }
+
+        function attachTickerAutoRefresh() {
+            const tickerEl = document.getElementById('ticker');
+            const triggerRefresh = () => {
+                const nextTicker = tickerEl.value.trim().toUpperCase();
+                if (!nextTicker) return;
+                tickerEl.value = nextTicker;
+                clearTimeout(tickerInputDebounce);
+                tickerInputDebounce = setTimeout(() => updateDashboard(nextTicker), 250);
+            };
+            tickerEl.addEventListener('change', triggerRefresh);
+            tickerEl.addEventListener('blur', triggerRefresh);
+            tickerEl.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    triggerRefresh();
+                }
+            });
+        }
+
+        function setBiasChip(probabilities) {
+            const el = document.getElementById('biasChip');
+            const bias = probabilities?.bias || 'neutral';
+            const confidence = probabilities?.confidence || 'low';
+            el.className = `bias-chip ${bias}`;
+            el.textContent = `${bias} bias · ${confidence} confidence`;
+        }
+
+        function renderLevelList(targetId, titlePrefix, levels) {
+            const container = document.getElementById(targetId);
+            if (!levels || !levels.length) {
+                container.innerHTML = `<div class='level-row'><div class='left'><div class='row-title'>No validated levels</div><div class='row-meta'>The model did not find enough clustered structure here.</div></div><div class='row-value'>--</div></div>`;
+                return;
+            }
+            container.innerHTML = levels.map((level, index) => `
+                <div class='level-row'>
+                    <div class='left'>
+                        <div class='row-title'>${titlePrefix}${index + 1} · $${formatPrice(level.price)}</div>
+                        <div class='row-meta'>Touches ${level.touches ?? '--'} · Range ${Array.isArray(level.range) ? `$${formatPrice(level.range[0])} to $${formatPrice(level.range[1])}` : 'n/a'}</div>
+                    </div>
+                    <div class='row-value'>${titlePrefix === 'R' ? '+' : '-'}$${formatPrice(level.diff)}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderChannels(channels) {
+            const container = document.getElementById('channelList');
+            if (!channels || !channels.length) {
+                container.innerHTML = `<div class='range-card'><div class='range-top'><div class='range-name'>Channels unavailable</div><div class='range-width'>--</div></div><div class='range-track'><div class='range-fill' style='width:0%'></div></div><div class='range-meta'><span>No usable bounds</span><span>Awaiting structure</span></div></div>`;
+                return;
+            }
+            const maxWidth = Math.max(...channels.map(channel => Number(channel.width || 0)), 0.01);
+            container.innerHTML = channels.map(channel => {
+                const pct = Math.max(8, Math.round((Number(channel.width || 0) / maxWidth) * 100));
+                return `
+                    <div class='range-card'>
+                        <div class='range-top'>
+                            <div class='range-name'>${String(channel.name || 'channel').replaceAll('_', ' ')}</div>
+                            <div class='range-width'>Width $${formatPrice(channel.width)}</div>
+                        </div>
+                        <div class='range-track'><div class='range-fill' style='width:${pct}%'></div></div>
+                        <div class='range-meta'><span>$${formatPrice(channel.lower)}</span><span>${channel.location || '--'}</span><span>$${formatPrice(channel.upper)}</span></div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderAttempts(attempts) {
+            const container = document.getElementById('attemptList');
+            container.innerHTML = `
+                <div class='attempt-row'>
+                    <div class='left'>
+                        <div class='row-title'>Failed upside attempts</div>
+                        <div class='row-meta'>Repeated pushes into resistance that could not hold</div>
+                    </div>
+                    <div class='row-value'>${attempts?.failed_up_today ?? 0}${attempts?.rule_of_three_block_up ? ' · blocked' : ''}</div>
+                </div>
+                <div class='attempt-row'>
+                    <div class='left'>
+                        <div class='row-title'>Failed downside attempts</div>
+                        <div class='row-meta'>Repeated probes below support that snapped back</div>
+                    </div>
+                    <div class='row-value'>${attempts?.failed_down_today ?? 0}${attempts?.rule_of_three_block_down ? ' · blocked' : ''}</div>
+                </div>
+            `;
+        }
+
+        function renderDrivers(drivers) {
+            const container = document.getElementById('driversList');
+            if (!drivers || !drivers.length) {
+                container.innerHTML = `<div class='driver-row'><div class='left'><div class='row-title'>No drivers available</div><div class='row-meta'>The model needs validated support and resistance first.</div></div><div class='row-value'>--</div></div>`;
+                return;
+            }
+            container.innerHTML = drivers.slice(0, 8).map((driver) => `
+                <div class='driver-row'>
+                    <div class='left'>
+                        <div class='row-title'>${String(driver.factor || 'factor').replaceAll('_', ' ')}</div>
+                        <div class='row-meta'>Value: ${driver.value ?? '--'}</div>
+                    </div>
+                    <div class='row-value'>
+                        ${formatSigned(driver.impact)}
+                        <div class='driver-impact-bar'>
+                            <div class='driver-impact-fill ${Number(driver.impact || 0) < 0 ? 'neg' : ''}' style='width:${Math.max(6, Math.min(100, Math.abs(Number(driver.impact || 0)) * 4))}%'></div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateFocusNarrative(symbol, data) {
+            const headline = document.getElementById('focusHeadline');
+            const narrative = document.getElementById('focusNarrative');
+            const bias = data?.probabilities?.bias || 'neutral';
+            const confidence = data?.probabilities?.confidence || 'low';
+            const upAttempts = data?.attempts?.failed_up_today ?? 0;
+            const downAttempts = data?.attempts?.failed_down_today ?? 0;
+            headline.textContent = `${symbol} breakout monitor`;
+            narrative.textContent = `${symbol} is showing a ${bias} breakout posture with ${confidence} confidence. Failed upside attempts: ${upAttempts}. Failed downside attempts: ${downAttempts}.`; 
+        }
+
+        function updateFocusPanel(data, indicatorSummary = null, symbol = 'TSLA') {
+            document.getElementById('focusPriceBox').textContent = `$${formatPrice(data.focus_price ?? data.current_price)}`;
+            document.getElementById('focusTimeBox').textContent = data.quote_time_eastern ? `${data.quote_time_eastern} ${data.quote_timezone || 'ET'}` : 'Time unavailable';
+            document.getElementById('sourceMeta').textContent = formatSourceMeta(data) || 'Live source pending';
+            document.getElementById('quoteTimezone').textContent = data.quote_timezone || 'ET';
+            document.getElementById('analysisMeta').textContent = `${data.interval || '--'} · ${data.periods || '--'} bars`;
+            document.getElementById('upProbability').textContent = formatPercent(data?.probabilities?.up);
+            document.getElementById('downProbability').textContent = formatPercent(data?.probabilities?.down);
+            document.getElementById('upProbabilitySub').textContent = `Bias ${data?.probabilities?.bias || 'neutral'}`;
+            document.getElementById('downProbabilitySub').textContent = `Confidence ${data?.probabilities?.confidence || 'low'}`;
+            setBiasChip(data?.probabilities || {});
+
+            const upProb = Number(data?.probabilities?.up || 0);
+            const downProb = Number(data?.probabilities?.down || 0);
+            const pressureDirection = upProb >= downProb ? 'Upside' : 'Downside';
+            const pressureStrength = Math.max(upProb, downProb);
+            document.getElementById('pressureValue').textContent = `${pressureDirection} ${formatPercent(pressureStrength)}`;
+            document.getElementById('pressureFill').style.width = `${Math.max(4, Math.min(100, pressureStrength))}%`;
+            document.getElementById('pressureSubtext').textContent = `Spread ${Math.abs(upProb - downProb).toFixed(1)} pts between up/down scenarios`;
+
+            const currentChannel = (data?.channels || []).find(channel => channel.name === 'current') || (data?.channels || [])[0];
+            const channelWidth = Number(currentChannel?.width || 0);
+            const atr = Number(data?.analysis_parameters?.atr || 0);
+            const widthRatio = atr > 0 ? Math.min(100, (channelWidth / atr) * 50) : 0;
+            document.getElementById('channelWidthValue').textContent = channelWidth ? `$${formatPrice(channelWidth)}` : '--';
+            document.getElementById('channelWidthFill').style.width = `${Math.max(4, widthRatio)}%`;
+            document.getElementById('channelWidthSubtext').textContent = currentChannel ? `${currentChannel.location} · ATR ${formatPrice(atr)}` : 'No current channel detected';
+
+            const stress = Math.min(100, ((Number(data?.attempts?.failed_up_today || 0) + Number(data?.attempts?.failed_down_today || 0)) / 6) * 100);
+            document.getElementById('attemptStressValue').textContent = `${Number(data?.attempts?.failed_up_today || 0) + Number(data?.attempts?.failed_down_today || 0)} probes`;
+            document.getElementById('attemptStressFill').style.width = `${Math.max(4, stress)}%`;
+            document.getElementById('attemptStressSubtext').textContent = `Up ${data?.attempts?.failed_up_today || 0} · Down ${data?.attempts?.failed_down_today || 0} · Rule-of-three ${(data?.attempts?.rule_of_three_block_up || data?.attempts?.rule_of_three_block_down) ? 'active' : 'inactive'}`;
+
+            renderChannels(data?.channels || []);
+            renderLevelList('resistanceList', 'R', data?.upper_resistances || []);
+            renderLevelList('supportList', 'S', data?.lower_supports || []);
+            renderAttempts(data?.attempts || {});
+            renderDrivers(data?.score_drivers || []);
+            document.getElementById('dayVolumeValue').textContent = formatVolume(data?.volume?.current_day);
+            document.getElementById('dayVolumeSubtext').textContent = `Expected ${formatVolume(data?.volume?.expected_day)} · Current bar ${formatVolume(data?.volume?.current_bar)}`;
+            document.getElementById('dayVolumeRatio').textContent = formatRatio(data?.volume?.day_ratio);
+            document.getElementById('barVolumeSubtext').textContent = `Bar ratio ${formatRatio(data?.volume?.bar_ratio)} · slot avg ${formatVolume(data?.volume?.expected_bar)}`;
+            document.getElementById('recentExtremesValue').textContent = data?.recent_extremes ? `$${formatPrice(data.recent_extremes.recent_low)} → $${formatPrice(data.recent_extremes.recent_high)}` : '--';
+            document.getElementById('previousDayValue').textContent = data?.previous_day?.date ? `Prev day ${data.previous_day.date}: H $${formatPrice(data.previous_day.high)} · L $${formatPrice(data.previous_day.low)}` : 'Previous day unavailable';
+            if (indicatorSummary) {
+                const up = Number(indicatorSummary.up || 0);
+                const down = Number(indicatorSummary.down || 0);
+                const neutral = Number(indicatorSummary.neutral || 0);
+                const total = up + down + neutral;
+                document.getElementById('indicatorBiasValue').textContent = `${up}↑ / ${down}↓`;
+                document.getElementById('indicatorBiasSubtext').textContent = `${total} processed · ${neutral} neutral`;
+            }
+            updateFocusNarrative(symbol, data);
+        }
+
+        function setFocusNode(symbol, data, tolerance) {
+            const focus = document.getElementById('focus');
+            const probs = data?.probabilities || {};
+            const bias = probs.bias || 'neutral';
+            focus.className = `focus-node ${bias}`;
+            focus.innerHTML = `
+                <div class='focus-symbol'>${symbol}</div>
+                <div class='focus-price'>$${formatPrice(data?.current_price)}</div>
+                <div class='focus-bias'>↑ ${formatPercent(probs.up)} · ↓ ${formatPercent(probs.down)} · ${bias}</div>
+            `;
+        }
+
+        function drawOrUpdateLine(lineId, x, y, lineColor) {
+            const lines = document.getElementById('lines');
             const clock = document.getElementById('clock');
+            const size = clock ? clock.getBoundingClientRect().width : 560;
+            const center = size / 2;
+            let line = document.getElementById(lineId);
+            if (!line) {
+                line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('id', lineId);
+                lines.appendChild(line);
+            }
+            line.setAttribute('x1', String(center));
+            line.setAttribute('y1', String(center));
+            line.setAttribute('x2', String(center + x));
+            line.setAttribute('y2', String(center + y));
+            line.setAttribute('stroke', lineColor);
+            line.setAttribute('stroke-width', lineColor === '#64748b' ? '1' : '2');
+            if (lineColor === '#64748b') line.setAttribute('stroke-dasharray', '4,4');
+            else line.removeAttribute('stroke-dasharray');
+        }
+
+        function computeLineColor(data, relation, tolerance) {
+            const upwardTrend = Number(data?.probabilities?.up || 0) >= tolerance;
+            const downwardTrend = Number(data?.probabilities?.down || 0) >= tolerance;
+            if (relation === 'negative') {
+                if (downwardTrend) return '#22c55e';
+                if (upwardTrend) return '#f87171';
+                return '#64748b';
+            }
+            if (upwardTrend) return '#22c55e';
+            if (downwardTrend) return '#f87171';
+            return '#64748b';
+        }
+
+        async function updateDashboard(newTicker = null, options = {}) {
             const { preserveInput = false, silentFocus = false } = options;
             if (newTicker && !preserveInput) document.getElementById('ticker').value = newTicker;
             const ticker = (newTicker || document.getElementById('ticker').value || 'TSLA').toUpperCase();
@@ -846,118 +1322,100 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             const lookback = document.getElementById('lookback').value || 100;
             const tolerance = parseFloat(document.getElementById('tolerance').value || '90');
             const requestId = ++dashboardRequestSeq;
-
             clearCorrelationPoll();
             clearInterval(refreshInterval);
-            let ms = period === '1d' ? 3600000 : 30000;
-            refreshInterval = setInterval(() => updateDashboard(null, { preserveInput: true, silentFocus: true }), ms);
-
-            const focus = document.getElementById('focus');
-            if (!silentFocus) {
-                focus.className = 'center-ticker';
-                focus.innerHTML = `<div class="focus-logo-badge"><div class="focus-logo-fallback">${ticker.slice(0, 2)}</div></div><div class="focus-symbol">${ticker}</div><div>SCANNING</div>`;
-            }
+            refreshInterval = setInterval(() => updateDashboard(null, { preserveInput: true, silentFocus: true }), period === '1d' ? 3600000 : 30000);
             showBanner('');
             showDebug('');
-
-            let currentFocus = null;
+            if (!silentFocus) {
+                document.getElementById('focus').className = 'focus-node neutral';
+                document.getElementById('focus').innerHTML = `<div class='focus-symbol'>${ticker}</div><div class='focus-price'>SCANNING</div><div class='focus-bias'>Loading live market structure</div>`;
+            }
+            let currentFocus;
             try {
                 currentFocus = await fetchTickerData(ticker, period, lookback);
                 if (requestId !== dashboardRequestSeq) return;
-                setTickerDisplay(focus, ticker, currentFocus, tolerance);
-                updateFocusPanel(currentFocus);
+                setFocusNode(ticker, currentFocus, tolerance);
+                updateFocusPanel(currentFocus, null, ticker);
                 showBanner(formatSourceMeta(currentFocus), false);
             } catch (e) {
                 if (requestId !== dashboardRequestSeq) return;
-                const detail = e?.details ? JSON.stringify(e.details) : (e?.error || 'Unknown error');
-                focus.innerHTML = `${ticker}<br>ERR`;
-                showBanner(`MARKET DATA ERROR: ${detail}`, true);
+                document.getElementById('focus').className = 'focus-node neutral';
+                document.getElementById('focus').innerHTML = `<div class='focus-symbol'>${ticker}</div><div class='focus-price'>ERR</div><div class='focus-bias'>Market data unavailable</div>`;
+                showBanner(`Market data error: ${e?.error || 'Unknown error'}`, true);
                 return;
             }
-
             try {
                 const corrRes = await fetch(`correlate.php?ticker=${encodeURIComponent(ticker)}&t=${Date.now()}`, { cache: 'no-store' });
                 const corrPayload = await corrRes.json();
                 if (requestId !== dashboardRequestSeq) return;
                 const rawIndicators = Array.isArray(corrPayload) ? corrPayload : (Array.isArray(corrPayload.indicators) ? corrPayload.indicators : []);
-                const indicators = rawIndicators
-                    .map(ind => ({
-                        symbol: String(ind?.symbol || '').toUpperCase().trim(),
-                        relation: String(ind?.relation || ind?.relationship || ind?.sign || 'positive').toLowerCase() === 'negative' ? 'negative' : 'positive'
-                    }))
-                    .filter(ind => ind.symbol);
+                const indicators = rawIndicators.map(ind => ({
+                    symbol: String(ind?.symbol || '').toUpperCase().trim(),
+                    relation: String(ind?.relation || ind?.relationship || ind?.sign || 'positive').toLowerCase() === 'negative' ? 'negative' : 'positive'
+                })).filter(ind => ind.symbol);
                 const corrStatus = Array.isArray(corrPayload) ? { status: 'ready' } : (corrPayload.status || { status: 'ready' });
                 const usedFallback = !Array.isArray(corrPayload) && !!corrPayload.used_fallback;
-
                 if (!indicators.length) {
-                    console.error('Empty or invalid correlation payload', corrPayload);
-                    showDebug(`corr: 0 indicators | fallback=${usedFallback} | status=${corrStatus.status || 'unknown'}`);
                     showBanner(`No indicator basket available for ${ticker}.`, true);
                     return;
                 }
-
-                showDebug(`focus=${ticker} | corr=${indicators.length} | ${indicators.slice(0, 5).map(ind => ind.symbol).join(', ')} | fallback=${usedFallback} | status=${corrStatus.status || 'unknown'}`);
-
                 if (usedFallback && corrStatus.status === 'pending') {
                     showBanner(`Researching ${ticker} indicator basket… showing fallback set for now.`, false);
                     scheduleCorrelationRefresh(requestId, ticker, 4000);
                 }
-
-                const currentIndicators = currentRingIndicators || [];
-                const hasRingForTicker = currentRingFocusTicker === ticker && currentIndicators.length > 0;
-                const indicatorsChanged = currentIndicators.length !== indicators.length
-                    || currentIndicators.some((existing, index) => existing.symbol !== indicators[index]?.symbol || existing.relation !== indicators[index]?.relation);
-                const shouldRebuildRing = !hasRingForTicker || indicatorsChanged;
-
-                if (shouldRebuildRing) {
-                    currentRingFocusTicker = ticker;
-                    buildRingLayout(indicators);
-                }
-
-                const activeIndicators = currentRingIndicators;
-                showDebug(`focus=${ticker} | corr=${activeIndicators.length} | ${activeIndicators.slice(0, 5).map(ind => ind.symbol).join(', ')} | fallback=${usedFallback} | status=${corrStatus.status || 'unknown'} | ${shouldRebuildRing ? 'repopulating ring' : 'updating ring data only'}`);
+                document.querySelectorAll('.indicator-node').forEach(el => el.remove());
+                document.querySelectorAll('#lines line[id^="line-"]').forEach(line => line.remove());
+                const clock = document.getElementById('clock');
+                const clockRect = clock.getBoundingClientRect();
+                const smallWindow = window.innerWidth <= 720;
+                const mediumWindow = window.innerWidth <= 980;
+                const indicatorHalf = smallWindow ? 39 : (mediumWindow ? 44 : 52);
+                const usableRadius = (clockRect.width / 2) - indicatorHalf - (smallWindow ? 28 : (mediumWindow ? 24 : 18));
+                const radius = Math.max(smallWindow ? 74 : 88, Math.min(usableRadius, smallWindow ? 150 : 205));
                 const indicatorStates = [];
-                const promises = activeIndicators.map(async (indObj) => {
-                    const ind = indObj.symbol;
-                    const relation = indObj.relation;
-                    const el = document.querySelector(`.indicator[data-symbol="${ind}"]`);
-                    const lineId = `line-${ind}`;
-                    const x = Number(el?.dataset.x || 0);
-                    const y = Number(el?.dataset.y || 0);
-
+                const promises = indicators.map(async (indObj, i) => {
+                    const angle = (i / Math.max(indicators.length, 1)) * Math.PI * 2;
+                    const x = Math.cos(angle) * radius;
+                    const y = Math.sin(angle) * radius;
+                    const el = document.createElement('button');
+                    el.type = 'button';
+                    el.className = 'indicator-node neutral';
+                    el.dataset.symbol = indObj.symbol;
+                    el.style.left = `calc(50% + ${x}px)`;
+                    el.style.top = `calc(50% + ${y}px)`;
+                    el.onclick = () => updateDashboard(indObj.symbol);
+                    el.innerHTML = `<div class='ticker'>${indObj.symbol}</div><div class='price'>Loading…</div><div class='mini-bias'>Scanning</div>`;
+                    clock.appendChild(el);
                     try {
-                        const data = await fetchTickerData(ind, period, lookback);
+                        const data = await fetchTickerData(indObj.symbol, period, lookback);
                         if (requestId !== dashboardRequestSeq) return;
-                        const nextHtml = buildTickerMarkup(ind, data);
-                        const lineColor = computeLineColor(data, relation, tolerance);
-
-                        el.innerHTML = nextHtml;
-                        el.className = 'indicator';
-                        applyTickerState(el, data, tolerance);
-                        drawOrUpdateLine(lineId, x, y, lineColor);
-                        indicatorStates.push({ symbol: ind, relation, data });
-                    } catch (e) {
-                        if (requestId !== dashboardRequestSeq) return;
-                        indicatorStates.push({ symbol: ind, relation, data: null, error: e });
-                        if (!el.innerHTML || el.innerHTML.includes('<br>...')) {
-                            const detail = e?.error ? String(e.error).slice(0, 16) : 'DATA ERR';
-                            el.innerHTML = `${ind}<br>${detail}`;
-                        }
+                        const lineColor = computeLineColor(data, indObj.relation, tolerance);
+                        const probs = data?.probabilities || {};
+                        const bias = probs.bias || 'neutral';
+                        el.className = `indicator-node ${bias}`;
+                        el.innerHTML = `<div class='ticker'>${indObj.symbol}</div><div class='price'>$${formatPrice(data.current_price)}</div><div class='mini-bias'>↑ ${formatPercent(probs.up)} · ↓ ${formatPercent(probs.down)}</div>`;
+                        drawOrUpdateLine(`line-${indObj.symbol}`, x, y, lineColor);
+                        indicatorStates.push({ symbol: indObj.symbol, relation: indObj.relation, data });
+                    } catch (err) {
+                        indicatorStates.push({ symbol: indObj.symbol, relation: indObj.relation, data: null, error: err });
+                        el.className = 'indicator-node neutral';
+                        el.innerHTML = `<div class='ticker'>${indObj.symbol}</div><div class='price'>ERR</div><div class='mini-bias'>Data unavailable</div>`;
                     }
                 });
                 await Promise.all(promises);
                 if (requestId !== dashboardRequestSeq) return;
-                const relationshipSummary = summarizeRelationshipBias(indicatorStates, tolerance);
-                updateFocusPanel(currentFocus, relationshipSummary);
+                const summary = summarizeRelationshipBias(indicatorStates, tolerance);
+                updateFocusPanel(currentFocus, summary, ticker);
+                showDebug(`focus=${ticker} | corr=${indicators.length} | fallback=${usedFallback} | status=${corrStatus.status || 'unknown'}`);
             } catch (e) {
                 if (requestId !== dashboardRequestSeq) return;
-                console.error(e);
                 showBanner('Correlation fetch failed.', true);
             }
         }
 
         attachTickerAutoRefresh();
+        attachPengoTrigger();
     </script>
-    <footer style='position: fixed; bottom: 10px; width: 100%; text-align: center; font-size: 10px; color: #444;'>v0.7.2.4</footer>
 </body>
 </html>
