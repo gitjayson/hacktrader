@@ -1,0 +1,44 @@
+{
+    "ticker": "TSLA",
+    "display": "5-min",
+    "periods": 100,
+    "interval": "5min",
+    "current_price": 383.10999,
+    "focus_price": 383.10999,
+    "quote_time_eastern": "2026-03-24 11:55 AM",
+    "quote_timezone": "EDT",
+    "upper_resistances": [
+        {
+            "price": 383.1597,
+            "diff": 0.05
+        },
+        {
+            "price": 383.16,
+            "diff": 0.05
+        }
+    ],
+    "lower_supports": [
+        {
+            "price": 383.06189,
+            "diff": 0.05
+        },
+        {
+            "price": 382.9805,
+            "diff": 0.13
+        }
+    ],
+    "probabilities": {
+        "up": 49.2,
+        "down": 50.8
+    },
+    "volume": {
+        "current_bar": 1614587,
+        "expected_bar": 1628893,
+        "bar_ratio": 0.99,
+        "current_day": 56626519,
+        "expected_day": 12726596,
+        "day_ratio": 4.45
+    },
+    "source": "twelvedata",
+    "fallback_reason": "yfinance import failed: No module named 'yfinance'"
+}
