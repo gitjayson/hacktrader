@@ -92,7 +92,7 @@ def increment_api_usage(session_id, provider='twelvedata', ticker=None, interval
         tracker = {
             'meta': {
                 'updated_at': None,
-                'version': 'v0.7.2.4',
+                'version': 'v0.7.2.5',
             },
             'sessions': {},
             'recent_events': [],
@@ -138,7 +138,7 @@ def increment_api_usage(session_id, provider='twelvedata', ticker=None, interval
         tracker['recent_events'].append(event)
         tracker['recent_events'] = tracker['recent_events'][-200:]
         tracker['meta']['updated_at'] = event['timestamp']
-        tracker['meta']['version'] = 'v0.7.2.4'
+        tracker['meta']['version'] = 'v0.7.2.5'
 
         tracker_file.seek(0)
         tracker_file.truncate()
