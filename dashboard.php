@@ -14,7 +14,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>HackTrader | v0.7.2.8</title>
+    <title>HackTrader | v0.7.2.9</title>
     <link rel='preconnect' href='https://fonts.googleapis.com'>
     <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
     <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap' rel='stylesheet'>
@@ -923,7 +923,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
     <main class='app-shell'>
         <section class='topbar glass'>
             <div class='brand'>
-                <div class='eyebrow'>HackTrader v0.7.2.8 (by @gitjayson)</div>
+                <div class='eyebrow'>HackTrader v0.7.2.9 (by @gitjayson)</div>
                 <strong class='brand-title'><span class='pengo-trigger' id='pengoTrigger' title='Activate pengo'>🐧</span><span class='title-text'>Signal cockpit</span></strong>
                 <span>Breakouts, channels, and market pressure at a glance</span>
             </div>
@@ -1058,7 +1058,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             <div class='side-column'>
                 <section class='stack-card glass'>
                     <div class='section-title'>
-                        <h2>Volume + context</h2>
+                        <h2>Context + pressure</h2>
                         <span id='quoteTimezone'>ET</span>
                     </div>
                     <div class='api-usage-inline' aria-live='polite'>
@@ -1086,6 +1086,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                         </div>
                         <div class='api-usage-meta' id='apiUsageMeta'>No counted requests yet for this signed-in user.</div>
                     </div>
+                    <div id='probeGraphPanel'></div>
                     <div class='metric-grid'>
                         <div class='metric-card'>
                             <div class='label'>Day volume</div>
@@ -1127,7 +1128,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 </section>
             </div>
         </section>
-        <footer>HackTrader · visual refresh · v0.7.2.8</footer>
+        <footer>HackTrader · visual refresh · v0.7.2.9</footer>
     </main>
 
     <script>
@@ -1381,8 +1382,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             }).join('');
         }
 
-        function renderAttempts(attempts) {
-            const container = document.getElementById('attemptList');
+        function renderProbeGraph(attempts) {
             const up = Number(attempts?.failed_up_today || 0);
             const down = Number(attempts?.failed_down_today || 0);
             const maxProbe = Math.max(up, down, 3, 1);
@@ -1391,6 +1391,8 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             const blockedUp = !!attempts?.rule_of_three_block_up;
             const blockedDown = !!attempts?.rule_of_three_block_down;
             const ruleState = blockedUp || blockedDown ? 'active' : 'inactive';
+            const container = document.getElementById('probeGraphPanel');
+            if (!container) return;
             container.innerHTML = `
                 <div class='probe-visual'>
                     <div class='probe-visual-top'>
@@ -1408,6 +1410,16 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                     </div>
                     <div class='probe-meta'>Mirrored graph of failed breakout probes today. Rule-of-three status is ${ruleState}.</div>
                 </div>
+            `;
+        }
+
+        function renderAttempts(attempts) {
+            const container = document.getElementById('attemptList');
+            const up = Number(attempts?.failed_up_today || 0);
+            const down = Number(attempts?.failed_down_today || 0);
+            const blockedUp = !!attempts?.rule_of_three_block_up;
+            const blockedDown = !!attempts?.rule_of_three_block_down;
+            container.innerHTML = `
                 <div class='attempt-row'>
                     <div class='left'>
                         <div class='row-title'>Failed upside attempts</div>
@@ -1494,6 +1506,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             renderChannels(data?.channels || []);
             renderLevelList('resistanceList', 'R', data?.upper_resistances || []);
             renderLevelList('supportList', 'S', data?.lower_supports || []);
+            renderProbeGraph(data?.attempts || {});
             renderAttempts(data?.attempts || {});
             renderDrivers(data?.score_drivers || []);
             document.getElementById('dayVolumeValue').textContent = formatVolume(data?.volume?.current_day);
