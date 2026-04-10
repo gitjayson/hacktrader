@@ -1,12 +1,13 @@
 # HackTrader Dashboard
 
-- **Version:** v0.7.2.7
+- **Version:** v0.7.2.8
 - **Status:** Active
 - **Codebase:** HackTrader FUI dashboard
 
 HackTrader is a market dashboard for tracking a focus ticker, breakout probabilities, support/resistance ladders, volume context, and correlated indicators in a sci-fi control-panel interface.
 
-## Highlights in v0.7.2.7
+## Highlights in v0.7.2.8
+- **Probe pressure graph:** Attempt monitor now includes a mirrored up-vs-down probe graph so failed upside and downside tests are visible at a glance.
 - **Integrated API usage strip:** Attributed per-user API usage now lives inside the top-right context card instead of floating above the stack, reducing empty space and keeping the layout tighter.
 - **Persistent session identity:** Google-authenticated users now get a stable internal `session:user_name` derived from their account and reused across logins.
 - **Independent API accounting:** Twelve Data usage is now tracked in `api_usage_tracker.json` per persistent session identity, with recent event history and outcome counts.
@@ -40,6 +41,6 @@ HackTrader is a market dashboard for tracking a focus ticker, breakout probabili
 - If a requested ticker has no generated basket yet, `correlate.php` returns a macro/thematic fallback set immediately while a background generation task is queued.
 
 ## Notes
-- The v0.7.2.7 release keeps the v0.7.2.6 market workflow intact while integrating attributed API usage into the top-right context card and improving empty-state clarity.
+- The v0.7.2.8 release keeps the v0.7.2.7 market workflow intact while adding a probe-pressure graph to Attempt monitor and keeping the API usage strip integrated into the top-right context card.
 - Logo rendering currently uses a lightweight web logo approach with graceful fallback.
 - A future polish pass could add true curved arc panels and more refined animation.
