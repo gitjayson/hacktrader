@@ -1,13 +1,13 @@
 # HackTrader Dashboard
 
-- **Version:** v0.7.2.6
+- **Version:** v0.7.2.7
 - **Status:** Active
 - **Codebase:** HackTrader FUI dashboard
 
 HackTrader is a market dashboard for tracking a focus ticker, breakout probabilities, support/resistance ladders, volume context, and correlated indicators in a sci-fi control-panel interface.
 
-## Highlights in v0.7.2.6
-- **Top-right API usage card:** The dashboard now surfaces attributed per-user API usage in the top-right side panel, keeping the cockpit header clean while still exposing request count, success rate, errors, and the last counted scan.
+## Highlights in v0.7.2.7
+- **Integrated API usage strip:** Attributed per-user API usage now lives inside the top-right context card instead of floating above the stack, reducing empty space and keeping the layout tighter.
 - **Persistent session identity:** Google-authenticated users now get a stable internal `session:user_name` derived from their account and reused across logins.
 - **Independent API accounting:** Twelve Data usage is now tracked in `api_usage_tracker.json` per persistent session identity, with recent event history and outcome counts.
 - **Requester-aware logging:** `api.php` now preserves existing auth behavior while tagging live API activity with the resolved requester identity.
@@ -40,6 +40,6 @@ HackTrader is a market dashboard for tracking a focus ticker, breakout probabili
 - If a requested ticker has no generated basket yet, `correlate.php` returns a macro/thematic fallback set immediately while a background generation task is queued.
 
 ## Notes
-- The v0.7.2.6 release keeps the v0.7.2.5 market workflow intact while moving attributed API consumption into the dashboard's top-right panel for a cleaner layout.
+- The v0.7.2.7 release keeps the v0.7.2.6 market workflow intact while integrating attributed API usage into the top-right context card and improving empty-state clarity.
 - Logo rendering currently uses a lightweight web logo approach with graceful fallback.
 - A future polish pass could add true curved arc panels and more refined animation.
