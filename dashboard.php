@@ -14,7 +14,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>HackTrader | v0.7.2.6</title>
+    <title>HackTrader | v0.7.2.7</title>
     <link rel='preconnect' href='https://fonts.googleapis.com'>
     <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
     <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap' rel='stylesheet'>
@@ -163,25 +163,28 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         }
         .controls {
             display: grid;
-            grid-template-columns: 1.2fr auto auto auto 1fr auto auto;
-            gap: 12px;
+            grid-template-columns: minmax(120px, 1.15fr) 92px 108px minmax(220px, 1fr) auto auto auto;
+            gap: 14px;
             align-items: center;
             flex: 1;
         }
-        .api-usage-panel {
+        .api-usage-inline {
             display: grid;
-            gap: 14px;
-        }
-        .api-usage-hero {
-            padding: 16px;
+            gap: 12px;
+            padding: 14px;
+            margin-bottom: 14px;
             border-radius: 18px;
             background: rgba(3, 9, 17, 0.72);
-            border: 1px solid rgba(94,234,212,0.18);
-            display: grid;
-            gap: 8px;
+            border: 1px solid rgba(94,234,212,0.16);
+        }
+        .api-usage-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
         }
         .api-usage-kpi {
-            font-size: 34px;
+            font-size: 28px;
             font-weight: 800;
             letter-spacing: -0.05em;
             line-height: 0.95;
@@ -841,7 +844,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
     <main class='app-shell'>
         <section class='topbar glass'>
             <div class='brand'>
-                <div class='eyebrow'>HackTrader v0.7.2.6 (by @gitjayson)</div>
+                <div class='eyebrow'>HackTrader v0.7.2.7 (by @gitjayson)</div>
                 <strong class='brand-title'><span class='pengo-trigger' id='pengoTrigger' title='Activate pengo'>🐧</span><span class='title-text'>Signal cockpit</span></strong>
                 <span>Breakouts, channels, and market pressure at a glance</span>
             </div>
@@ -974,36 +977,35 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             </div>
 
             <div class='side-column'>
-                <section class='stack-card glass api-usage-panel' aria-live='polite'>
-                    <div class='section-title'>
-                        <h2>API usage</h2>
-                        <span class='api-usage-pill' id='apiUsagePill'>idle</span>
-                    </div>
-                    <div class='api-usage-hero'>
-                        <div class='api-usage-kpi' id='apiUsageTotal'>--</div>
-                        <div class='api-usage-sub' id='apiUsageSub'>Waiting for your first counted request.</div>
-                    </div>
-                    <div class='api-usage-grid'>
-                        <div class='api-usage-stat'>
-                            <div class='label'>Success rate</div>
-                            <div class='value' id='apiUsageSuccessRate'>--</div>
-                        </div>
-                        <div class='api-usage-stat'>
-                            <div class='label'>Errors</div>
-                            <div class='value' id='apiUsageErrors'>--</div>
-                        </div>
-                        <div class='api-usage-stat'>
-                            <div class='label'>Last scan</div>
-                            <div class='value' id='apiUsageLast'>--</div>
-                        </div>
-                    </div>
-                    <div class='api-usage-meta' id='apiUsageMeta'>Billed to the signed-in user behind this dashboard session.</div>
-                </section>
-
                 <section class='stack-card glass'>
                     <div class='section-title'>
                         <h2>Volume + context</h2>
                         <span id='quoteTimezone'>ET</span>
+                    </div>
+                    <div class='api-usage-inline' aria-live='polite'>
+                        <div class='api-usage-top'>
+                            <div>
+                                <div class='label'>API usage</div>
+                                <div class='api-usage-kpi' id='apiUsageTotal'>--</div>
+                            </div>
+                            <span class='api-usage-pill' id='apiUsagePill'>idle</span>
+                        </div>
+                        <div class='api-usage-sub' id='apiUsageSub'>Waiting for your first counted request.</div>
+                        <div class='api-usage-grid'>
+                            <div class='api-usage-stat'>
+                                <div class='label'>Success rate</div>
+                                <div class='value' id='apiUsageSuccessRate'>--</div>
+                            </div>
+                            <div class='api-usage-stat'>
+                                <div class='label'>Errors</div>
+                                <div class='value' id='apiUsageErrors'>--</div>
+                            </div>
+                            <div class='api-usage-stat'>
+                                <div class='label'>Last scan</div>
+                                <div class='value' id='apiUsageLast'>--</div>
+                            </div>
+                        </div>
+                        <div class='api-usage-meta' id='apiUsageMeta'>No counted requests yet for this signed-in user.</div>
                     </div>
                     <div class='metric-grid'>
                         <div class='metric-card'>
@@ -1046,7 +1048,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 </section>
             </div>
         </section>
-        <footer>HackTrader · visual refresh · v0.7.2.6</footer>
+        <footer>HackTrader · visual refresh · v0.7.2.7</footer>
     </main>
 
     <script>
@@ -1152,15 +1154,16 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             const successRate = Number(usage?.success_rate);
             const lastTicker = usage?.last_ticker ? String(usage.last_ticker).toUpperCase() : null;
             const lastInterval = usage?.last_interval ? String(usage.last_interval) : null;
-            const hasUsage = usage && Number.isFinite(attempts);
+            const hasTracker = usage && Number.isFinite(attempts);
+            const hasUsage = hasTracker && attempts > 0;
             const pill = document.getElementById('apiUsagePill');
 
-            totalEl.textContent = hasUsage ? `${attempts} calls` : '--';
+            totalEl.textContent = hasTracker ? `${attempts} calls` : '--';
             document.getElementById('apiUsageSub').textContent = hasUsage
-                ? 'Provider requests attributed to your signed-in dashboard session.'
-                : 'Waiting for your first counted request.';
+                ? 'Counted provider requests for the current signed-in user.'
+                : 'No counted requests yet for this signed-in user.';
             document.getElementById('apiUsageSuccessRate').textContent = hasUsage && Number.isFinite(successRate) ? `${Math.round(successRate)}%` : '--';
-            document.getElementById('apiUsageErrors').textContent = hasUsage && Number.isFinite(errors) ? `${errors}` : '--';
+            document.getElementById('apiUsageErrors').textContent = hasTracker && Number.isFinite(errors) ? `${errors}` : '--';
             document.getElementById('apiUsageLast').textContent = hasUsage && lastTicker ? `${lastTicker}${lastInterval ? ` ${lastInterval}` : ''}` : '--';
 
             pill.classList.toggle('warn', hasUsage && Number.isFinite(errors) && errors > 0);
@@ -1169,7 +1172,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             const lastWhen = formatRelativeTime(usage?.last_request_at);
             document.getElementById('apiUsageMeta').textContent = hasUsage
                 ? `Updated ${lastWhen}. ${lastTicker ? `Last counted request: ${lastTicker}${lastInterval ? ` ${lastInterval}` : ''}. ` : ''}Attributed to the current signed-in user.`
-                : 'Billed to the signed-in user behind this dashboard session.';
+                : 'No counted requests yet. Attribution is tied to the current signed-in user.';
         }
 
         function formatSigned(value) {
