@@ -1,15 +1,15 @@
 # HackTrader Dashboard
 
-- **Version:** v0.7.2.9
+- **Version:** v0.7.3.0
 - **Status:** Active
 - **Codebase:** HackTrader FUI dashboard
 
 HackTrader is a market dashboard for tracking a focus ticker, breakout probabilities, support/resistance ladders, volume context, and correlated indicators in a sci-fi control-panel interface.
 
-## Highlights in v0.7.2.9
-- **Probe graph moved higher:** The mirrored up-vs-down probe graph now renders in the top-right context card so it is visible without scrolling down to Attempt monitor.
+## Highlights in v0.7.3.0
+- **Tabbed right rail:** The top-right card now uses tabs for **Probes**, **Context**, and **Usage**, with **Probes** selected by default for better visibility.
 - **Attempt detail rows:** Attempt monitor continues to show the failed upside and downside probe counts with block-state detail underneath the higher-level probe graph.
-- **Integrated API usage strip:** Attributed per-user API usage now lives inside the top-right context card instead of floating above the stack, reducing empty space and keeping the layout tighter.
+- **Integrated API usage strip:** Attributed per-user API usage now lives inside the right-rail **Usage** tab instead of fighting for space in the default view.
 - **Persistent session identity:** Google-authenticated users now get a stable internal `session:user_name` derived from their account and reused across logins.
 - **Independent API accounting:** Twelve Data usage is now tracked in `api_usage_tracker.json` per persistent session identity, with recent event history and outcome counts.
 - **Requester-aware logging:** `api.php` now preserves existing auth behavior while tagging live API activity with the resolved requester identity.
@@ -42,6 +42,6 @@ HackTrader is a market dashboard for tracking a focus ticker, breakout probabili
 - If a requested ticker has no generated basket yet, `correlate.php` returns a macro/thematic fallback set immediately while a background generation task is queued.
 
 ## Notes
-- The v0.7.2.9 release keeps the v0.7.2.8 market workflow intact while moving the probe-pressure graph higher in the right column for immediate visibility.
+- The v0.7.3.0 release keeps the v0.7.2.9 market workflow intact while turning the top-right rail into a tabbed panel so probe pressure gets the default spotlight.
 - Logo rendering currently uses a lightweight web logo approach with graceful fallback.
 - A future polish pass could add true curved arc panels and more refined animation.

@@ -14,7 +14,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>HackTrader | v0.7.2.9</title>
+    <title>HackTrader | v0.7.3.0</title>
     <link rel='preconnect' href='https://fonts.googleapis.com'>
     <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
     <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap' rel='stylesheet'>
@@ -172,7 +172,6 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             display: grid;
             gap: 12px;
             padding: 14px;
-            margin-bottom: 14px;
             border-radius: 18px;
             background: rgba(3, 9, 17, 0.72);
             border: 1px solid rgba(94,234,212,0.16);
@@ -689,6 +688,34 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 12px;
         }
+        .panel-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .panel-tab {
+            padding: 10px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            background: rgba(255,255,255,0.03);
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+        }
+        .panel-tab.active {
+            border-color: transparent;
+            background: linear-gradient(135deg, rgba(96,165,250,0.96), rgba(94,234,212,0.96));
+            color: #06111d;
+        }
+        .tab-panel {
+            display: none;
+        }
+        .tab-panel.active {
+            display: block;
+        }
         .metric-card {
             border-radius: 18px;
             padding: 16px;
@@ -923,7 +950,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
     <main class='app-shell'>
         <section class='topbar glass'>
             <div class='brand'>
-                <div class='eyebrow'>HackTrader v0.7.2.9 (by @gitjayson)</div>
+                <div class='eyebrow'>HackTrader v0.7.3.0 (by @gitjayson)</div>
                 <strong class='brand-title'><span class='pengo-trigger' id='pengoTrigger' title='Activate pengo'>🐧</span><span class='title-text'>Signal cockpit</span></strong>
                 <span>Breakouts, channels, and market pressure at a glance</span>
             </div>
@@ -1058,55 +1085,66 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             <div class='side-column'>
                 <section class='stack-card glass'>
                     <div class='section-title'>
-                        <h2>Context + pressure</h2>
+                        <h2>Context stack</h2>
                         <span id='quoteTimezone'>ET</span>
                     </div>
-                    <div class='api-usage-inline' aria-live='polite'>
-                        <div class='api-usage-top'>
-                            <div>
-                                <div class='label'>API usage</div>
-                                <div class='api-usage-kpi' id='apiUsageTotal'>--</div>
-                            </div>
-                            <span class='api-usage-pill' id='apiUsagePill'>idle</span>
-                        </div>
-                        <div class='api-usage-sub' id='apiUsageSub'>Waiting for your first counted request.</div>
-                        <div class='api-usage-grid'>
-                            <div class='api-usage-stat'>
-                                <div class='label'>Success rate</div>
-                                <div class='value' id='apiUsageSuccessRate'>--</div>
-                            </div>
-                            <div class='api-usage-stat'>
-                                <div class='label'>Errors</div>
-                                <div class='value' id='apiUsageErrors'>--</div>
-                            </div>
-                            <div class='api-usage-stat'>
-                                <div class='label'>Last scan</div>
-                                <div class='value' id='apiUsageLast'>--</div>
-                            </div>
-                        </div>
-                        <div class='api-usage-meta' id='apiUsageMeta'>No counted requests yet for this signed-in user.</div>
+                    <div class='panel-tabs' role='tablist' aria-label='Right rail views'>
+                        <button type='button' class='panel-tab active' id='rightTab-probes' onclick="switchRightPanelTab('probes')">Probes</button>
+                        <button type='button' class='panel-tab' id='rightTab-context' onclick="switchRightPanelTab('context')">Context</button>
+                        <button type='button' class='panel-tab' id='rightTab-usage' onclick="switchRightPanelTab('usage')">Usage</button>
                     </div>
-                    <div id='probeGraphPanel'></div>
-                    <div class='metric-grid'>
-                        <div class='metric-card'>
-                            <div class='label'>Day volume</div>
-                            <div class='value' id='dayVolumeValue'>--</div>
-                            <div class='sub' id='dayVolumeSubtext'>Waiting on market data</div>
+                    <div class='tab-panel active' id='rightPanel-probes'>
+                        <div id='probeGraphPanel'></div>
+                    </div>
+                    <div class='tab-panel' id='rightPanel-context'>
+                        <div class='metric-grid'>
+                            <div class='metric-card'>
+                                <div class='label'>Day volume</div>
+                                <div class='value' id='dayVolumeValue'>--</div>
+                                <div class='sub' id='dayVolumeSubtext'>Waiting on market data</div>
+                            </div>
+                            <div class='metric-card'>
+                                <div class='label'>Day ratio</div>
+                                <div class='value' id='dayVolumeRatio'>--</div>
+                                <div class='sub' id='barVolumeSubtext'>Current bar vs expected slot pending</div>
+                            </div>
+                            <div class='metric-card'>
+                                <div class='label'>Indicator bias</div>
+                                <div class='value' id='indicatorBiasValue'>--</div>
+                                <div class='sub'>Correlation basket disposition</div>
+                            </div>
+                            <div class='metric-card'>
+                                <div class='label'>Recent extremes</div>
+                                <div class='value' id='recentExtremesValue'>--</div>
+                                <div class='sub' id='previousDayValue'>Previous day waiting</div>
+                            </div>
                         </div>
-                        <div class='metric-card'>
-                            <div class='label'>Day ratio</div>
-                            <div class='value' id='dayVolumeRatio'>--</div>
-                            <div class='sub' id='barVolumeSubtext'>Current bar vs expected slot pending</div>
-                        </div>
-                        <div class='metric-card'>
-                            <div class='label'>Indicator bias</div>
-                            <div class='value' id='indicatorBiasValue'>--</div>
-                            <div class='sub'>Correlation basket disposition</div>
-                        </div>
-                        <div class='metric-card'>
-                            <div class='label'>Recent extremes</div>
-                            <div class='value' id='recentExtremesValue'>--</div>
-                            <div class='sub' id='previousDayValue'>Previous day waiting</div>
+                    </div>
+                    <div class='tab-panel' id='rightPanel-usage'>
+                        <div class='api-usage-inline' aria-live='polite'>
+                            <div class='api-usage-top'>
+                                <div>
+                                    <div class='label'>API usage</div>
+                                    <div class='api-usage-kpi' id='apiUsageTotal'>--</div>
+                                </div>
+                                <span class='api-usage-pill' id='apiUsagePill'>idle</span>
+                            </div>
+                            <div class='api-usage-sub' id='apiUsageSub'>Waiting for your first counted request.</div>
+                            <div class='api-usage-grid'>
+                                <div class='api-usage-stat'>
+                                    <div class='label'>Success rate</div>
+                                    <div class='value' id='apiUsageSuccessRate'>--</div>
+                                </div>
+                                <div class='api-usage-stat'>
+                                    <div class='label'>Errors</div>
+                                    <div class='value' id='apiUsageErrors'>--</div>
+                                </div>
+                                <div class='api-usage-stat'>
+                                    <div class='label'>Last scan</div>
+                                    <div class='value' id='apiUsageLast'>--</div>
+                                </div>
+                            </div>
+                            <div class='api-usage-meta' id='apiUsageMeta'>No counted requests yet for this signed-in user.</div>
                         </div>
                     </div>
                 </section>
@@ -1128,7 +1166,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 </section>
             </div>
         </section>
-        <footer>HackTrader · visual refresh · v0.7.2.9</footer>
+        <footer>HackTrader · visual refresh · v0.7.3.0</footer>
     </main>
 
     <script>
@@ -1332,6 +1370,15 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                     e.preventDefault();
                     triggerRefresh();
                 }
+            });
+        }
+
+        function switchRightPanelTab(tabName) {
+            ['probes', 'context', 'usage'].forEach((name) => {
+                const tab = document.getElementById(`rightTab-${name}`);
+                const panel = document.getElementById(`rightPanel-${name}`);
+                if (tab) tab.classList.toggle('active', name === tabName);
+                if (panel) panel.classList.toggle('active', name === tabName);
             });
         }
 
