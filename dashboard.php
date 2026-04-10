@@ -14,7 +14,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>HackTrader | v0.7.2.5</title>
+    <title>HackTrader | v0.7.2.6</title>
     <link rel='preconnect' href='https://fonts.googleapis.com'>
     <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
     <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap' rel='stylesheet'>
@@ -75,7 +75,6 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             display: flex;
             align-items: center;
             justify-content: space-between;
-            flex-wrap: wrap;
             gap: 16px;
             padding: 16px 18px;
             border-radius: 24px;
@@ -167,42 +166,27 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             grid-template-columns: 1.2fr auto auto auto 1fr auto auto;
             gap: 12px;
             align-items: center;
-            flex: 1 1 780px;
-            min-width: min(780px, 100%);
+            flex: 1;
         }
-        .api-usage-card {
-            min-width: 300px;
-            max-width: 340px;
-            margin-left: auto;
-            padding: 14px 16px;
-            border-radius: 20px;
-            background: rgba(3, 9, 17, 0.78);
-            border: 1px solid rgba(94,234,212,0.2);
+        .api-usage-panel {
             display: grid;
-            gap: 12px;
+            gap: 14px;
         }
-        .api-usage-head {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 12px;
-        }
-        .api-usage-label {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.16em;
-            color: var(--cyan);
-            font-weight: 700;
-            margin-bottom: 8px;
+        .api-usage-hero {
+            padding: 16px;
+            border-radius: 18px;
+            background: rgba(3, 9, 17, 0.72);
+            border: 1px solid rgba(94,234,212,0.18);
+            display: grid;
+            gap: 8px;
         }
         .api-usage-kpi {
-            font-size: 28px;
+            font-size: 34px;
             font-weight: 800;
             letter-spacing: -0.05em;
             line-height: 0.95;
         }
         .api-usage-sub {
-            margin-top: 6px;
             color: var(--muted);
             font-size: 12px;
             line-height: 1.4;
@@ -788,11 +772,6 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 grid-template-columns: 1fr 1fr 1fr 1fr;
             }
             .controls .slider-wrap { grid-column: span 2; }
-            .api-usage-card {
-                max-width: none;
-                width: 100%;
-                margin-left: 0;
-            }
             .hero-grid { grid-template-columns: minmax(520px, 1fr); }
             .radar-card { min-width: 520px; }
         }
@@ -862,7 +841,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
     <main class='app-shell'>
         <section class='topbar glass'>
             <div class='brand'>
-                <div class='eyebrow'>HackTrader v0.7.2.5 (by @gitjayson)</div>
+                <div class='eyebrow'>HackTrader v0.7.2.6 (by @gitjayson)</div>
                 <strong class='brand-title'><span class='pengo-trigger' id='pengoTrigger' title='Activate pengo'>🐧</span><span class='title-text'>Signal cockpit</span></strong>
                 <span>Breakouts, channels, and market pressure at a glance</span>
             </div>
@@ -882,31 +861,6 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 <button class='ghost-btn' onclick='resetDashboard()'>Reset</button>
                 <button class='ghost-btn' onclick='window.location.href="logout.php"'>Logout</button>
             </div>
-            <aside class='api-usage-card' id='apiUsageCard' aria-live='polite'>
-                <div class='api-usage-head'>
-                    <div>
-                        <div class='api-usage-label'>Attributed API usage</div>
-                        <div class='api-usage-kpi' id='apiUsageTotal'>--</div>
-                        <div class='api-usage-sub' id='apiUsageSub'>Waiting for your first counted request.</div>
-                    </div>
-                    <div class='api-usage-pill' id='apiUsagePill'>idle</div>
-                </div>
-                <div class='api-usage-grid'>
-                    <div class='api-usage-stat'>
-                        <div class='label'>Success rate</div>
-                        <div class='value' id='apiUsageSuccessRate'>--</div>
-                    </div>
-                    <div class='api-usage-stat'>
-                        <div class='label'>Errors</div>
-                        <div class='value' id='apiUsageErrors'>--</div>
-                    </div>
-                    <div class='api-usage-stat'>
-                        <div class='label'>Last scan</div>
-                        <div class='value' id='apiUsageLast'>--</div>
-                    </div>
-                </div>
-                <div class='api-usage-meta' id='apiUsageMeta'>Billed to the signed-in user behind this dashboard session.</div>
-            </aside>
         </section>
 
         <section class='banner-wrap'>
@@ -1020,6 +974,32 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             </div>
 
             <div class='side-column'>
+                <section class='stack-card glass api-usage-panel' aria-live='polite'>
+                    <div class='section-title'>
+                        <h2>API usage</h2>
+                        <span class='api-usage-pill' id='apiUsagePill'>idle</span>
+                    </div>
+                    <div class='api-usage-hero'>
+                        <div class='api-usage-kpi' id='apiUsageTotal'>--</div>
+                        <div class='api-usage-sub' id='apiUsageSub'>Waiting for your first counted request.</div>
+                    </div>
+                    <div class='api-usage-grid'>
+                        <div class='api-usage-stat'>
+                            <div class='label'>Success rate</div>
+                            <div class='value' id='apiUsageSuccessRate'>--</div>
+                        </div>
+                        <div class='api-usage-stat'>
+                            <div class='label'>Errors</div>
+                            <div class='value' id='apiUsageErrors'>--</div>
+                        </div>
+                        <div class='api-usage-stat'>
+                            <div class='label'>Last scan</div>
+                            <div class='value' id='apiUsageLast'>--</div>
+                        </div>
+                    </div>
+                    <div class='api-usage-meta' id='apiUsageMeta'>Billed to the signed-in user behind this dashboard session.</div>
+                </section>
+
                 <section class='stack-card glass'>
                     <div class='section-title'>
                         <h2>Volume + context</h2>
@@ -1066,7 +1046,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 </section>
             </div>
         </section>
-        <footer>HackTrader · visual refresh · v0.7.2.5</footer>
+        <footer>HackTrader · visual refresh · v0.7.2.6</footer>
     </main>
 
     <script>
