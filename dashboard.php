@@ -14,7 +14,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>HackTrader | v0.7.2.7</title>
+    <title>HackTrader | v0.7.2.8</title>
     <link rel='preconnect' href='https://fonts.googleapis.com'>
     <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
     <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap' rel='stylesheet'>
@@ -718,6 +718,85 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             display: grid;
             gap: 10px;
         }
+        .probe-visual {
+            border-radius: 18px;
+            padding: 14px 16px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(148,163,184,0.12);
+            display: grid;
+            gap: 12px;
+        }
+        .probe-visual-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .probe-visual-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--muted);
+            font-weight: 700;
+        }
+        .probe-visual-balance {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--text);
+        }
+        .probe-graph {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 16px minmax(0, 1fr);
+            gap: 10px;
+            align-items: center;
+        }
+        .probe-half {
+            position: relative;
+            height: 18px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.06);
+            overflow: hidden;
+        }
+        .probe-fill {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            border-radius: inherit;
+        }
+        .probe-half.up .probe-fill {
+            right: 0;
+            background: linear-gradient(90deg, rgba(96,165,250,0.52), rgba(74,222,128,0.92));
+        }
+        .probe-half.down .probe-fill {
+            left: 0;
+            background: linear-gradient(90deg, rgba(248,113,113,0.92), rgba(251,191,36,0.72));
+        }
+        .probe-divider {
+            width: 2px;
+            height: 28px;
+            border-radius: 999px;
+            background: rgba(148,163,184,0.24);
+            justify-self: center;
+        }
+        .probe-label-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .probe-label-row .up strong { color: #86efac; }
+        .probe-label-row .down strong { color: #fca5a5; }
+        .probe-label-row strong {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+        }
+        .probe-meta {
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.45;
+        }
         .level-row, .driver-row, .attempt-row {
             display: flex;
             justify-content: space-between;
@@ -844,7 +923,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
     <main class='app-shell'>
         <section class='topbar glass'>
             <div class='brand'>
-                <div class='eyebrow'>HackTrader v0.7.2.7 (by @gitjayson)</div>
+                <div class='eyebrow'>HackTrader v0.7.2.8 (by @gitjayson)</div>
                 <strong class='brand-title'><span class='pengo-trigger' id='pengoTrigger' title='Activate pengo'>🐧</span><span class='title-text'>Signal cockpit</span></strong>
                 <span>Breakouts, channels, and market pressure at a glance</span>
             </div>
@@ -1048,7 +1127,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 </section>
             </div>
         </section>
-        <footer>HackTrader · visual refresh · v0.7.2.7</footer>
+        <footer>HackTrader · visual refresh · v0.7.2.8</footer>
     </main>
 
     <script>
@@ -1304,20 +1383,44 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 
         function renderAttempts(attempts) {
             const container = document.getElementById('attemptList');
+            const up = Number(attempts?.failed_up_today || 0);
+            const down = Number(attempts?.failed_down_today || 0);
+            const maxProbe = Math.max(up, down, 3, 1);
+            const upPct = up > 0 ? Math.max(8, Math.round((up / maxProbe) * 100)) : 0;
+            const downPct = down > 0 ? Math.max(8, Math.round((down / maxProbe) * 100)) : 0;
+            const blockedUp = !!attempts?.rule_of_three_block_up;
+            const blockedDown = !!attempts?.rule_of_three_block_down;
+            const ruleState = blockedUp || blockedDown ? 'active' : 'inactive';
             container.innerHTML = `
+                <div class='probe-visual'>
+                    <div class='probe-visual-top'>
+                        <div class='probe-visual-title'>Probe pressure</div>
+                        <div class='probe-visual-balance'>${up}↑ · ${down}↓</div>
+                    </div>
+                    <div class='probe-graph'>
+                        <div class='probe-half up'><div class='probe-fill' style='width:${upPct}%'></div></div>
+                        <div class='probe-divider'></div>
+                        <div class='probe-half down'><div class='probe-fill' style='width:${downPct}%'></div></div>
+                    </div>
+                    <div class='probe-label-row'>
+                        <div class='up'>Upside probes <strong>${up}</strong>${blockedUp ? ' · blocked' : ''}</div>
+                        <div class='down'>Downside probes <strong>${down}</strong>${blockedDown ? ' · blocked' : ''}</div>
+                    </div>
+                    <div class='probe-meta'>Mirrored graph of failed breakout probes today. Rule-of-three status is ${ruleState}.</div>
+                </div>
                 <div class='attempt-row'>
                     <div class='left'>
                         <div class='row-title'>Failed upside attempts</div>
                         <div class='row-meta'>Repeated pushes into resistance that could not hold</div>
                     </div>
-                    <div class='row-value'>${attempts?.failed_up_today ?? 0}${attempts?.rule_of_three_block_up ? ' · blocked' : ''}</div>
+                    <div class='row-value'>${up}${blockedUp ? ' · blocked' : ''}</div>
                 </div>
                 <div class='attempt-row'>
                     <div class='left'>
                         <div class='row-title'>Failed downside attempts</div>
                         <div class='row-meta'>Repeated probes below support that snapped back</div>
                     </div>
-                    <div class='row-value'>${attempts?.failed_down_today ?? 0}${attempts?.rule_of_three_block_down ? ' · blocked' : ''}</div>
+                    <div class='row-value'>${down}${blockedDown ? ' · blocked' : ''}</div>
                 </div>
             `;
         }
