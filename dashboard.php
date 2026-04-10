@@ -18,6 +18,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
     <link rel='preconnect' href='https://fonts.googleapis.com'>
     <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
     <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap' rel='stylesheet'>
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
     <style>
         :root {
             --bg: #05101a;
@@ -1064,6 +1065,14 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                     </div>
                 </section>
 
+                <section class='stack-card glass' style='padding-top: 16px; padding-bottom: 8px;'>
+                    <div class='section-title'>
+                        <h2>Action chart</h2>
+                        <span id='chartMeta'>Awaiting market data</span>
+                    </div>
+                    <div id='tvChartContainer' style='width: 100%; height: 340px; margin-top: 10px; border-radius: 12px; overflow: hidden;'></div>
+                </section>
+
                 <section class='stack-card glass'>
                     <div class='section-title'>
                         <h2>Price structure</h2>
@@ -1517,7 +1526,127 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             narrative.textContent = `${symbol} is showing a ${bias} breakout posture with ${confidence} confidence. Failed upside attempts: ${upAttempts}. Failed downside attempts: ${downAttempts}.`; 
         }
 
-        function updateFocusPanel(data, indicatorSummary = null, symbol = 'TSLA') {
+        
+        let tvChartInstance = null;
+        let candlestickSeries = null;
+        let r1Line = null;
+        let r2Line = null;
+        let s1Line = null;
+        let s2Line = null;
+        let ma20Series = null;
+
+        function renderTradingChart(data, symbol) {
+            const container = document.getElementById('tvChartContainer');
+            if (!container) return;
+            if (!data || !data.history || !data.history.length) {
+                document.getElementById('chartMeta').textContent = 'No chart data available';
+                return;
+            }
+
+            document.getElementById('chartMeta').textContent = `${symbol} \u00B7 ${data.interval} \u00B7 ${data.history.length} bars`;
+
+            if (!tvChartInstance) {
+                tvChartInstance = LightweightCharts.createChart(container, {
+                    layout: {
+                        background: { type: 'solid', color: 'transparent' },
+                        textColor: '#96a9c4',
+                    },
+                    grid: {
+                        vertLines: { color: 'rgba(148, 163, 184, 0.05)' },
+                        horzLines: { color: 'rgba(148, 163, 184, 0.05)' },
+                    },
+                    crosshair: {
+                        mode: LightweightCharts.CrosshairMode.Normal,
+                    },
+                    rightPriceScale: {
+                        borderColor: 'rgba(148, 163, 184, 0.15)',
+                    },
+                    timeScale: {
+                        borderColor: 'rgba(148, 163, 184, 0.15)',
+                        timeVisible: true,
+                        secondsVisible: false,
+                    },
+                });
+                candlestickSeries = tvChartInstance.addCandlestickSeries({
+                    upColor: '#22c55e',
+                    downColor: '#f87171',
+                    borderVisible: false,
+                    wickUpColor: '#22c55e',
+                    wickDownColor: '#f87171',
+                });
+                ma20Series = tvChartInstance.addLineSeries({
+                    color: '#60a5fa',
+                    lineWidth: 1,
+                    priceScaleId: 'right',
+                    title: 'MA(20)'
+                });
+            }
+
+            // Format history
+            const formattedData = data.history.map(row => {
+                let time = row.time;
+                if (typeof time === 'string') {
+                    // Try to parse ISO
+                    const d = new Date(time);
+                    if (!isNaN(d.getTime())) {
+                        time = d.getTime() / 1000;
+                    }
+                }
+                return {
+                    time: time,
+                    open: row.open,
+                    high: row.high,
+                    low: row.low,
+                    close: row.close
+                };
+            }).sort((a, b) => a.time - b.time);
+
+            
+            // Unique data
+            const uniqueData = Array.from(new Map(formattedData.map(item => [item.time, item])).values());
+            candlestickSeries.setData(uniqueData);
+
+            const uniqueMaData = Array.from(new Map(maData.map(item => [item.time, item])).values());
+            ma20Series.setData(uniqueMaData);
+
+
+            // Add MA data
+            const maData = data.history.map(row => {
+                let time = row.time;
+                if (typeof time === 'string') {
+                    const d = new Date(time);
+                    if (!isNaN(d.getTime())) time = d.getTime() / 1000;
+                }
+                return { time: time, value: row.ma20 };
+            }).filter(d => d.value !== null).sort((a, b) => a.time - b.time);
+
+            
+
+            if (r1Line) candlestickSeries.removePriceLine(r1Line);
+            if (r2Line) candlestickSeries.removePriceLine(r2Line);
+            if (s1Line) candlestickSeries.removePriceLine(s1Line);
+            if (s2Line) candlestickSeries.removePriceLine(s2Line);
+
+            const drawLine = (price, color, title) => {
+                if (!price) return null;
+                return candlestickSeries.createPriceLine({
+                    price: price,
+                    color: color,
+                    lineWidth: 1,
+                    lineStyle: 2, // Dashed
+                    axisLabelVisible: true,
+                    title: title,
+                });
+            };
+
+            if (data.resistance_1) r1Line = drawLine(data.resistance_1.price, '#f87171', 'R1');
+            if (data.resistance_2) r2Line = drawLine(data.resistance_2.price, '#fbbf24', 'R2');
+            if (data.support_1) s1Line = drawLine(data.support_1.price, '#22c55e', 'S1');
+            if (data.support_2) s2Line = drawLine(data.support_2.price, '#34d399', 'S2');
+
+            tvChartInstance.timeScale().fitContent();
+        }
+\n        function updateFocusPanel(data, indicatorSummary = null, symbol = 'TSLA') {
             document.getElementById('focusPriceBox').textContent = `$${formatPrice(data.focus_price ?? data.current_price)}`;
             document.getElementById('focusTimeBox').textContent = data.quote_time_eastern ? `${data.quote_time_eastern} ${data.quote_timezone || 'ET'}` : 'Time unavailable';
             document.getElementById('sourceMeta').textContent = formatSourceMeta(data) || 'Live source pending';
@@ -1642,7 +1771,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 currentFocus = await fetchTickerData(ticker, period, lookback);
                 if (requestId !== dashboardRequestSeq) return;
                 setFocusNode(ticker, currentFocus, tolerance);
-                updateFocusPanel(currentFocus, null, ticker);
+                updateFocusPanel(currentFocus, null, ticker);\n                renderTradingChart(currentFocus, ticker);
                 showBanner(formatSourceMeta(currentFocus), false);
             } catch (e) {
                 if (requestId !== dashboardRequestSeq) return;
