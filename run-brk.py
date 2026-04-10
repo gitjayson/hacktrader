@@ -552,6 +552,68 @@ def score_breakout(current, support1, resistance1, previous_day, failed_up, fail
     return {'up': up, 'down': down, 'bias': bias, 'confidence': confidence, 'drivers': drivers}
 
 
+
+def calculate_ema(prices, days, smoothing=2):
+    ema = [sum(prices[:days]) / days]
+    for price in prices[days:]:
+        ema.append((price * (smoothing / (1 + days))) + ema[-1] * (1 - (smoothing / (1 + days))))
+    return [None]*(days-1) + ema
+
+def calculate_sma(prices, days):
+    sma = []
+    for i in range(len(prices)):
+        if i < days - 1:
+            sma.append(None)
+        else:
+            sma.append(sum(prices[i-days+1:i+1]) / days)
+    return sma
+
+def calculate_rsi(prices, periods=14):
+    rsi = [None] * periods
+    if len(prices) <= periods: return [None]*len(prices)
+    gains = []
+    losses = []
+    for i in range(1, periods + 1):
+        change = prices[i] - prices[i-1]
+        gains.append(change if change > 0 else 0)
+        losses.append(-change if change < 0 else 0)
+    avg_gain = sum(gains) / periods
+    avg_loss = sum(losses) / periods
+    for i in range(periods, len(prices)):
+        if i > periods:
+            change = prices[i] - prices[i-1]
+            gain = change if change > 0 else 0
+            loss = -change if change < 0 else 0
+            avg_gain = (avg_gain * (periods - 1) + gain) / periods
+            avg_loss = (avg_loss * (periods - 1) + loss) / periods
+        rs = avg_gain / avg_loss if avg_loss != 0 else 100
+        rsi.append(100 - (100 / (1 + rs)))
+    return rsi
+
+def calculate_indicators(rows):
+    if not rows: return rows
+    prices = [r['close'] for r in rows]
+    ma20 = calculate_sma(prices, 20)
+    rsi14 = calculate_rsi(prices, 14)
+    ema12 = calculate_ema(prices, 12)
+    ema26 = calculate_ema(prices, 26)
+    macd_line = [(e12 - e26) if e12 is not None and e26 is not None else None for e12, e26 in zip(ema12, ema26)]
+    
+    # calculate signal line (9 EMA of MACD line)
+    valid_macd = [m for m in macd_line if m is not None]
+    signal_valid = calculate_ema(valid_macd, 9) if len(valid_macd) >= 9 else []
+    signal_line = [None]*(len(macd_line)-len(signal_valid)) + signal_valid
+    
+    macd_hist = [(m - s) if m is not None and s is not None else None for m, s in zip(macd_line, signal_line)]
+    
+    for i, r in enumerate(rows):
+        r['ma20'] = ma20[i]
+        r['rsi14'] = rsi14[i]
+        r['macd'] = macd_line[i]
+        r['macd_signal'] = signal_line[i]
+        r['macd_hist'] = macd_hist[i]
+    return rows
+
 def compute_output(ticker, interval, display, periods, values, source):
     latest = values[0] if values else {}
     current = float(latest['close'])
@@ -560,6 +622,7 @@ def compute_output(ticker, interval, display, periods, values, source):
     eastern_time = latest_dt_et.strftime('%Y-%m-%d %I:%M %p') if latest_dt_et else (str(timestamp_raw) if timestamp_raw else None)
     eastern_label = latest_dt_et.tzname() if latest_dt_et else 'US/Eastern'
     rows = normalize_rows(values)
+    rows = calculate_indicators(rows)
     if not rows:
         raise ValueError('No usable rows for breakout analysis')
     bucket_width = bucket_width_for_rows(rows, current, interval)
@@ -640,6 +703,7 @@ def compute_output(ticker, interval, display, periods, values, source):
             'confidence': probabilities['confidence'],
         },
         'score_drivers': probabilities['drivers'],
+        'history': [{'time': r['raw_dt'], 'open': r.get('open', r['close']), 'high': r['high'], 'low': r['low'], 'close': r['close'], 'volume': r['volume'], 'ma20': r.get('ma20'), 'rsi14': r.get('rsi14'), 'macd': r.get('macd'), 'macd_signal': r.get('macd_signal'), 'macd_hist': r.get('macd_hist')} for r in rows],
         'analysis_parameters': {
             'bucket_width': round_maybe(bucket_width, 4),
             'atr': round_maybe(average_true_range(rows, min(14, len(rows))), 4),
