@@ -1583,17 +1583,19 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             }
 
             // Format history
-            const formattedData = data.history.map(row => {
-                let time = row.time;
-                if (typeof time === 'string') {
-                    // Try to parse ISO
-                    const d = new Date(time);
-                    if (!isNaN(d.getTime())) {
-                        time = d.getTime() / 1000;
-                    }
+            const isDaily = data.interval === '1day';
+            const parseTime = (timeStr) => {
+                const d = new Date(timeStr);
+                if (isNaN(d.getTime())) return timeStr;
+                if (isDaily) {
+                    return d.toISOString().split('T')[0];
                 }
+                return d.getTime() / 1000;
+            };
+
+            const formattedData = data.history.map(row => {
                 return {
-                    time: time,
+                    time: parseTime(row.time),
                     open: row.open,
                     high: row.high,
                     low: row.low,
@@ -1615,7 +1617,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                     const d = new Date(time);
                     if (!isNaN(d.getTime())) time = d.getTime() / 1000;
                 }
-                return { time: time, value: row.ma20 };
+                return { time: parseTime(row.time), value: row.ma20 };
             }).filter(d => d.value !== null).sort((a, b) => a.time - b.time);
             const uniqueMaData = Array.from(new Map(maData.map(item => [item.time, item])).values());
             ma20Series.setData(uniqueMaData);
@@ -1645,6 +1647,35 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             if (data.support_2) s2Line = drawLine(data.support_2.price, '#34d399', 'S2');
 
             tvChartInstance.timeScale().fitContent();
+
+            tvChartInstance.subscribeCrosshairMove((param) => {
+                const focusPriceBox = document.getElementById('focusPriceBox');
+                const focusTimeBox = document.getElementById('focusTimeBox');
+                const focusTimezone = document.getElementById('quoteTimezone');
+                
+                if (param.point === undefined || !param.time || param.point.x < 0 || param.point.x > container.clientWidth || param.point.y < 0 || param.point.y > container.clientHeight) {
+                    focusPriceBox.textContent = `$${formatPrice(data.focus_price ?? data.current_price)}`;
+                    focusTimeBox.textContent = data.quote_time_eastern ? `${data.quote_time_eastern} ${data.quote_timezone || 'ET'}` : 'Time unavailable';
+                    return;
+                }
+                
+                const price = param.seriesData.get(candlestickSeries);
+                if (price) {
+                    focusPriceBox.textContent = `$${Number(price.close).toFixed(2)}`;
+                    
+                    let timeStr = param.time;
+                    if (typeof param.time === 'number') {
+                        const d = new Date(param.time * 1000);
+                        timeStr = d.toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
+                    } else if (typeof param.time === 'object' && param.time.year) {
+                        timeStr = `${param.time.year}-${String(param.time.month).padStart(2, '0')}-${String(param.time.day).padStart(2, '0')}`;
+                    } else if (typeof param.time === 'string') {
+                        timeStr = param.time;
+                    }
+                    focusTimeBox.textContent = timeStr;
+                }
+            });
+
         }
 
         function updateFocusPanel(data, indicatorSummary = null, symbol = 'TSLA') {
