@@ -18,7 +18,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
     <link rel='preconnect' href='https://fonts.googleapis.com'>
     <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
     <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap' rel='stylesheet'>
-    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
     <style>
         :root {
             --bg: #05101a;
@@ -1606,8 +1606,6 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             const uniqueData = Array.from(new Map(formattedData.map(item => [item.time, item])).values());
             candlestickSeries.setData(uniqueData);
 
-            const uniqueMaData = Array.from(new Map(maData.map(item => [item.time, item])).values());
-            ma20Series.setData(uniqueMaData);
 
 
             // Add MA data
@@ -1619,6 +1617,8 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 }
                 return { time: time, value: row.ma20 };
             }).filter(d => d.value !== null).sort((a, b) => a.time - b.time);
+            const uniqueMaData = Array.from(new Map(maData.map(item => [item.time, item])).values());
+            ma20Series.setData(uniqueMaData);
 
             
 
@@ -1779,7 +1779,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 if (requestId !== dashboardRequestSeq) return;
                 document.getElementById('focus').className = 'focus-node neutral';
                 document.getElementById('focus').innerHTML = `<div class='focus-symbol'>${ticker}</div><div class='focus-price'>ERR</div><div class='focus-bias'>Market data unavailable</div>`;
-                showBanner(`Market data error: ${e?.error || 'Unknown error'}`, true);
+                showBanner(`Market data error: ${e?.error || e?.message || 'Unknown error'}`, true);
                 return;
             }
             try {
