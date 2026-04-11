@@ -1646,7 +1646,8 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 
             tvChartInstance.timeScale().fitContent();
         }
-\n        function updateFocusPanel(data, indicatorSummary = null, symbol = 'TSLA') {
+
+        function updateFocusPanel(data, indicatorSummary = null, symbol = 'TSLA') {
             document.getElementById('focusPriceBox').textContent = `$${formatPrice(data.focus_price ?? data.current_price)}`;
             document.getElementById('focusTimeBox').textContent = data.quote_time_eastern ? `${data.quote_time_eastern} ${data.quote_timezone || 'ET'}` : 'Time unavailable';
             document.getElementById('sourceMeta').textContent = formatSourceMeta(data) || 'Live source pending';
@@ -1771,7 +1772,8 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 currentFocus = await fetchTickerData(ticker, period, lookback);
                 if (requestId !== dashboardRequestSeq) return;
                 setFocusNode(ticker, currentFocus, tolerance);
-                updateFocusPanel(currentFocus, null, ticker);\n                renderTradingChart(currentFocus, ticker);
+                updateFocusPanel(currentFocus, null, ticker);
+                renderTradingChart(currentFocus, ticker);
                 showBanner(formatSourceMeta(currentFocus), false);
             } catch (e) {
                 if (requestId !== dashboardRequestSeq) return;
