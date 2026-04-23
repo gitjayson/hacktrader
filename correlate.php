@@ -1,225 +1,161 @@
 <?php
-header('Content-Type: application/json');
+/**
+ * correlate.php - Intelligent Market Correlation Endpoint
+ * v0.7.7 - deterministic direct/sector/baseline fallback
+ */
 
 $ticker = strtoupper(trim($_GET['ticker'] ?? 'TSLA'));
-if ($ticker === '') {
-    $ticker = 'TSLA';
-}
-
 $correlationsFile = __DIR__ . '/correlations.json';
-$statusFile = __DIR__ . '/correlation-status.json';
-$locksDir = __DIR__ . '/correlation-locks';
-$focusUniverseFile = __DIR__ . '/focus-universe.json';
-$marketWatchlistFile = __DIR__ . '/market-watchlist.json';
-$correlationGenerator = __DIR__ . '/generate-correlations.py';
-$lockTtlSeconds = 1200;
 
-$defaults = [
-    ['symbol' => 'WTI', 'relation' => 'positive'],
-    ['symbol' => 'UNG', 'relation' => 'positive'],
-    ['symbol' => 'UUP', 'relation' => 'negative'],
-    ['symbol' => 'SPY', 'relation' => 'positive'],
-    ['symbol' => 'QQQ', 'relation' => 'positive'],
-    ['symbol' => 'XLK', 'relation' => 'positive'],
-    ['symbol' => 'XLY', 'relation' => 'positive'],
-    ['symbol' => 'IWM', 'relation' => 'positive'],
-    ['symbol' => 'TLT', 'relation' => 'negative'],
-    ['symbol' => 'SMH', 'relation' => 'positive'],
-    ['symbol' => 'GLD', 'relation' => 'positive'],
-    ['symbol' => 'XOP', 'relation' => 'positive']
-];
-
-$fallback = [
-    ['symbol' => 'SPY', 'relation' => 'positive'],
-    ['symbol' => 'QQQ', 'relation' => 'positive'],
-    ['symbol' => 'XLK', 'relation' => 'positive']
-];
-
-function load_json_file($path, $default) {
-    if (!file_exists($path)) {
-        return $default;
-    }
-    $contents = file_get_contents($path);
-    if ($contents === false || trim($contents) === '') {
-        return $default;
-    }
-    $decoded = json_decode($contents, true);
-    return is_array($decoded) ? $decoded : $default;
+function respond_json($payload, int $statusCode = 200): void {
+    http_response_code($statusCode);
+    header('Content-Type: application/json');
+    echo json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    exit;
 }
 
-function save_json_file($path, $payload) {
-    $tmp = $path . '.tmp';
-    file_put_contents($tmp, json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n");
-    rename($tmp, $path);
+function normalize_relation($value): string {
+    return strtolower((string) $value) === 'negative' ? 'negative' : 'positive';
 }
 
-function normalize_symbol($value) {
-    $value = strtoupper(trim((string)$value));
-    $value = preg_replace('/[^A-Z0-9._-]/', '', $value);
-    return substr($value, 0, 16);
-}
-
-function utc_now() {
-    return gmdate('c');
-}
-
-function sanitize_relationships($ticker, $list) {
-    $clean = [];
-    $seen = [$ticker => true];
-    foreach ($list as $item) {
-        $symbol = normalize_symbol($item['symbol'] ?? '');
-        if ($symbol === '' || isset($seen[$symbol])) {
-            continue;
-        }
-        $relation = strtolower((string)($item['relation'] ?? 'positive')) === 'negative' ? 'negative' : 'positive';
-        $clean[] = ['symbol' => $symbol, 'relation' => $relation];
-        $seen[$symbol] = true;
-        if (count($clean) >= 12) {
-            break;
-        }
-    }
-    return $clean;
-}
-
-function merge_relationships($ticker, $defaults, $specific) {
-    $specific = sanitize_relationships($ticker, $specific);
-    $merged = $specific;
-    $seen = [$ticker => true];
-    foreach ($specific as $item) {
-        $seen[$item['symbol']] = true;
-    }
-    foreach ($defaults as $item) {
-        $symbol = normalize_symbol($item['symbol'] ?? '');
-        if ($symbol === '' || isset($seen[$symbol])) {
-            continue;
-        }
-        $relation = strtolower((string)($item['relation'] ?? 'positive')) === 'negative' ? 'negative' : 'positive';
-        $merged[] = ['symbol' => $symbol, 'relation' => $relation];
-        $seen[$symbol] = true;
-        if (count($merged) >= 12) {
-            break;
-        }
-    }
-    return array_slice($merged, 0, 12);
-}
-
-function remember_focus_symbol($ticker, $focusUniverseFile, $marketWatchlistFile) {
-    $ticker = normalize_symbol($ticker);
-    if ($ticker === '') {
+function push_unique_symbol(array &$result, string $symbol, string $relation = 'positive'): void {
+    $symbol = strtoupper(trim($symbol));
+    if ($symbol === '') {
         return;
     }
-
-    $universe = load_json_file($focusUniverseFile, ['symbols' => [], 'seen' => []]);
-    $symbols = $universe['symbols'] ?? [];
-    $seen = $universe['seen'] ?? [];
-    if (!in_array($ticker, $symbols, true)) {
-        $symbols[] = $ticker;
-        sort($symbols);
+    foreach ($result as $item) {
+        if (($item['symbol'] ?? null) === $symbol) {
+            return;
+        }
     }
-    $seen[$ticker] = utc_now();
-    $universe['symbols'] = array_values($symbols);
-    $universe['seen'] = $seen;
-    save_json_file($focusUniverseFile, $universe);
+    $result[] = [
+        'symbol' => $symbol,
+        'relation' => normalize_relation($relation),
+    ];
+}
 
-    $watchlist = load_json_file($marketWatchlistFile, []);
-    if (!in_array($ticker, $watchlist, true)) {
-        $watchlist[] = $ticker;
-        sort($watchlist);
-        save_json_file($marketWatchlistFile, array_values($watchlist));
+function append_symbol_list(array &$result, array $symbols, string $relation = 'positive'): void {
+    foreach ($symbols as $symbol) {
+        push_unique_symbol($result, $symbol, $relation);
     }
 }
 
-function load_status_map($statusFile) {
-    return load_json_file($statusFile, []);
+function infer_sector_fallback(string $ticker): array {
+    $energyTickers = ['WTI', 'USO', 'XOM', 'CVX', 'SLB', 'OXY', 'HAL', 'BP', 'SHEL'];
+    $cryptoTickers = ['BTC', 'ETH', 'COIN', 'MSTR', 'IBIT', 'BITO'];
+    $chinaTickers = ['BABA', 'JD', 'PDD', 'BIDU', 'KWEB', 'FXI'];
+    $rateTickers = ['TLT', 'IEF', 'SHY', 'HYG', 'LQD'];
+    $goldTickers = ['GLD', 'SLV', 'GDX', 'NEM', 'AEM'];
+
+    if (in_array($ticker, ['QQQ', 'XLK', 'SMH', 'VGT', 'NVDA', 'AMD', 'TSLA', 'AAPL', 'MSFT', 'META', 'AMZN', 'GOOGL', 'NFLX', 'AVGO', 'ADBE'], true)) {
+        return [
+            ['symbols' => ['QQQ', 'XLK', 'SMH', 'VGT', 'SOXX', 'SPY'], 'relation' => 'positive'],
+            ['symbols' => ['UUP', 'TLT'], 'relation' => 'negative'],
+        ];
+    }
+
+    if (in_array($ticker, ['XLF', 'KBE', 'KRE', 'JPM', 'BAC', 'GS', 'MS', 'WFC', 'SCHW'], true)) {
+        return [
+            ['symbols' => ['XLF', 'KBE', 'KRE', 'SPY', 'DIA'], 'relation' => 'positive'],
+            ['symbols' => ['TLT', 'UUP'], 'relation' => 'negative'],
+        ];
+    }
+
+    if (in_array($ticker, ['XLE', 'XOP', 'UNG'], true) || in_array($ticker, $energyTickers, true)) {
+        return [
+            ['symbols' => ['XLE', 'XOP', 'UNG', 'WTI', 'SPY'], 'relation' => 'positive'],
+            ['symbols' => ['UUP', 'TLT'], 'relation' => 'negative'],
+        ];
+    }
+
+    if (in_array($ticker, ['XLV', 'VHT', 'LLY', 'JNJ', 'PFE', 'MRK', 'UNH'], true)) {
+        return [
+            ['symbols' => ['XLV', 'VHT', 'SPY', 'IWM'], 'relation' => 'positive'],
+            ['symbols' => ['UUP'], 'relation' => 'negative'],
+        ];
+    }
+
+    if (in_array($ticker, ['XLY', 'XLP', 'VCR', 'COST', 'WMT', 'HD', 'LOW', 'NKE', 'SBUX'], true)) {
+        return [
+            ['symbols' => ['XLY', 'XLP', 'VCR', 'SPY', 'QQQ'], 'relation' => 'positive'],
+            ['symbols' => ['UUP', 'TLT'], 'relation' => 'negative'],
+        ];
+    }
+
+    if (in_array($ticker, ['XLI', 'ITA', 'CAT', 'DE', 'GE', 'BA', 'LMT', 'RTX'], true)) {
+        return [
+            ['symbols' => ['XLI', 'ITA', 'DIA', 'SPY'], 'relation' => 'positive'],
+            ['symbols' => ['TLT', 'UUP'], 'relation' => 'negative'],
+        ];
+    }
+
+    if (in_array($ticker, $cryptoTickers, true)) {
+        return [
+            ['symbols' => ['COIN', 'MSTR', 'QQQ', 'SMH'], 'relation' => 'positive'],
+            ['symbols' => ['UUP', 'TLT'], 'relation' => 'negative'],
+        ];
+    }
+
+    if (in_array($ticker, $chinaTickers, true)) {
+        return [
+            ['symbols' => ['KWEB', 'FXI', 'EEM', 'SPY'], 'relation' => 'positive'],
+            ['symbols' => ['UUP'], 'relation' => 'negative'],
+        ];
+    }
+
+    if (in_array($ticker, $rateTickers, true)) {
+        return [
+            ['symbols' => ['TLT', 'IEF', 'SHY', 'LQD'], 'relation' => 'positive'],
+            ['symbols' => ['SPY', 'QQQ', 'UUP'], 'relation' => 'negative'],
+        ];
+    }
+
+    if (in_array($ticker, $goldTickers, true)) {
+        return [
+            ['symbols' => ['GLD', 'SLV', 'GDX', 'TLT'], 'relation' => 'positive'],
+            ['symbols' => ['UUP', 'SPY'], 'relation' => 'negative'],
+        ];
+    }
+
+    return [
+        ['symbols' => ['SPY', 'QQQ', 'IWM', 'DIA', 'XLK', 'XLF'], 'relation' => 'positive'],
+        ['symbols' => ['UUP', 'TLT'], 'relation' => 'negative'],
+    ];
 }
 
-function save_status_map($statusFile, $statusMap) {
-    ksort($statusMap);
-    save_json_file($statusFile, $statusMap);
+if (!file_exists($correlationsFile)) {
+    respond_json(['error' => 'Correlation data missing'], 500);
 }
 
-function get_lock_path($locksDir, $ticker) {
-    return rtrim($locksDir, '/') . '/' . $ticker . '.lock';
+$data = json_decode(file_get_contents($correlationsFile), true);
+if (!is_array($data)) {
+    respond_json(['error' => 'Malformed correlation data'], 500);
 }
 
-function lock_is_active($lockPath, $ttlSeconds) {
-    return file_exists($lockPath) && (time() - filemtime($lockPath) < $ttlSeconds);
-}
+$result = [];
 
-function clear_stale_lock($lockPath, $ttlSeconds) {
-    if (file_exists($lockPath) && (time() - filemtime($lockPath) >= $ttlSeconds)) {
-        @unlink($lockPath);
+if (isset($data[$ticker]) && is_array($data[$ticker])) {
+    foreach ($data[$ticker] as $item) {
+        if (!is_array($item) || empty($item['symbol'])) {
+            continue;
+        }
+        push_unique_symbol($result, (string) $item['symbol'], (string) ($item['relation'] ?? 'positive'));
+    }
+} else {
+    foreach (infer_sector_fallback($ticker) as $bucket) {
+        append_symbol_list($result, $bucket['symbols'] ?? [], $bucket['relation'] ?? 'positive');
     }
 }
 
-function set_status($statusFile, $ticker, $fields) {
-    $statusMap = load_status_map($statusFile);
-    $current = $statusMap[$ticker] ?? [];
-    foreach ($fields as $key => $value) {
-        $current[$key] = $value;
-    }
-    $statusMap[$ticker] = $current;
-    save_status_map($statusFile, $statusMap);
-    return $current;
+$baseline = [
+    ['symbols' => ['SPY', 'QQQ', 'IWM', 'DIA'], 'relation' => 'positive'],
+    ['symbols' => ['XLK', 'XLF', 'XLY', 'XLI', 'SMH'], 'relation' => 'positive'],
+    ['symbols' => ['TLT', 'UUP', 'GLD'], 'relation' => 'negative'],
+];
+
+foreach ($baseline as $bucket) {
+    append_symbol_list($result, $bucket['symbols'], $bucket['relation']);
 }
 
-function queue_symbol_research($ticker, $locksDir, $statusFile, $correlationGenerator, $lockTtlSeconds) {
-    if (!file_exists($correlationGenerator)) {
-        return ['queued' => false, 'reason' => 'missing-generator'];
-    }
-
-    if (!is_dir($locksDir)) {
-        @mkdir($locksDir, 0755, true);
-    }
-
-    $lockPath = get_lock_path($locksDir, $ticker);
-    clear_stale_lock($lockPath, $lockTtlSeconds);
-
-    if (lock_is_active($lockPath, $lockTtlSeconds)) {
-        $status = set_status($statusFile, $ticker, [
-            'status' => 'pending',
-            'updated_at' => utc_now(),
-            'source' => 'correlation-research'
-        ]);
-        return ['queued' => false, 'reason' => 'already-pending', 'status' => $status];
-    }
-
-    set_status($statusFile, $ticker, [
-        'status' => 'pending',
-        'requested_at' => utc_now(),
-        'updated_at' => utc_now(),
-        'source' => 'correlation-research'
-    ]);
-
-    $cmd = 'python3 ' . escapeshellarg($correlationGenerator) . ' ' . escapeshellarg($ticker) . ' > /dev/null 2>&1 &';
-    @exec($cmd);
-
-    $status = load_status_map($statusFile)[$ticker] ?? ['status' => 'pending'];
-    return ['queued' => true, 'reason' => 'started', 'status' => $status];
-}
-
-remember_focus_symbol($ticker, $focusUniverseFile, $marketWatchlistFile);
-
-$allCorrelations = load_json_file($correlationsFile, []);
-$tickerSpecific = sanitize_relationships($ticker, $allCorrelations[$ticker] ?? []);
-$hasReadyCorrelations = !empty($tickerSpecific);
-$statusMap = load_status_map($statusFile);
-$status = $statusMap[$ticker] ?? null;
-$research = ['queued' => false, 'reason' => null];
-
-if (!$hasReadyCorrelations) {
-    $research = queue_symbol_research($ticker, $locksDir, $statusFile, $correlationGenerator, $lockTtlSeconds);
-    $statusMap = load_status_map($statusFile);
-    $status = $statusMap[$ticker] ?? ($research['status'] ?? ['status' => 'pending']);
-    $tickerSpecific = $fallback;
-}
-
-$correlations = merge_relationships($ticker, $defaults, $tickerSpecific);
-
-echo json_encode([
-    'ticker' => $ticker,
-    'indicators' => $correlations,
-    'status' => $status ?: ['status' => ($hasReadyCorrelations ? 'ready' : 'pending')],
-    'used_fallback' => !$hasReadyCorrelations,
-    'research' => $research
-], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+$result = array_values(array_slice($result, 0, 12));
+respond_json($result);

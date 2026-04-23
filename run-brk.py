@@ -20,7 +20,6 @@ secrets_candidates = [
 ]
 secrets_path = next((path for path in secrets_candidates if os.path.exists(path)), secrets_candidates[0])
 cache_path = os.path.join(script_dir, 'market-data-cache.json')
-usage_tracker_path = os.path.join(script_dir, 'api_usage_tracker.json')
 
 home = Path.home()
 user_site = home / '.local' / 'lib' / f'python{sys.version_info.major}.{sys.version_info.minor}' / 'site-packages'
@@ -59,7 +58,7 @@ def load_api_keys():
     return keys
 
 
-API_KEYS = load_api_keys()
+API_KEYS=***
 
 
 def load_market_cache():
@@ -70,84 +69,6 @@ def load_market_cache():
             return json.load(f)
     except Exception:
         return None
-
-
-def increment_api_usage(session_id, provider='twelvedata', ticker=None, interval=None, periods=None, outcome='success'):
-    session_id = (session_id or os.environ.get('HACKTRADER_SESSION_ID') or 'session:anonymous').strip() or 'session:anonymous'
-    event = {
-        'timestamp': datetime.now(timezone.utc).isoformat(),
-        'session_id': session_id,
-        'provider': provider,
-        'ticker': ticker,
-        'interval': interval,
-        'periods': int(periods) if str(periods).isdigit() else periods,
-        'outcome': outcome,
-    }
-    os.makedirs(os.path.dirname(usage_tracker_path) or '.', exist_ok=True)
-    with open(usage_tracker_path, 'a+', encoding='utf-8') as tracker_file:
-        if fcntl is not None:
-            fcntl.flock(tracker_file.fileno(), fcntl.LOCK_EX)
-        tracker_file.seek(0)
-        raw = tracker_file.read().strip()
-        tracker = {
-            'meta': {
-                'updated_at': None,
-                'version': 'v0.7.3.0',
-            },
-            'sessions': {},
-            'recent_events': [],
-        }
-        if raw:
-            try:
-                loaded = json.loads(raw)
-                if isinstance(loaded, dict):
-                    tracker.update(loaded)
-            except Exception:
-                pass
-        tracker.setdefault('meta', {})
-        tracker.setdefault('sessions', {})
-        tracker.setdefault('recent_events', [])
-
-        session_entry = tracker['sessions'].setdefault(session_id, {
-            'total_attempts': 0,
-            'providers': {},
-            'last_request_at': None,
-            'last_ticker': None,
-            'last_interval': None,
-            'last_periods': None,
-            'last_outcome': None,
-        })
-        session_entry['total_attempts'] = int(session_entry.get('total_attempts', 0)) + 1
-        provider_entry = session_entry['providers'].setdefault(provider, {
-            'attempts': 0,
-            'successes': 0,
-            'errors': 0,
-        })
-        provider_entry['attempts'] = int(provider_entry.get('attempts', 0)) + 1
-        if outcome == 'success':
-            provider_entry['successes'] = int(provider_entry.get('successes', 0)) + 1
-        else:
-            provider_entry['errors'] = int(provider_entry.get('errors', 0)) + 1
-
-        session_entry['last_request_at'] = event['timestamp']
-        session_entry['last_ticker'] = ticker
-        session_entry['last_interval'] = interval
-        session_entry['last_periods'] = event['periods']
-        session_entry['last_outcome'] = outcome
-
-        tracker['recent_events'].append(event)
-        tracker['recent_events'] = tracker['recent_events'][-200:]
-        tracker['meta']['updated_at'] = event['timestamp']
-        tracker['meta']['version'] = 'v0.7.3.0'
-
-        tracker_file.seek(0)
-        tracker_file.truncate()
-        json.dump(tracker, tracker_file, indent=2)
-        tracker_file.write('\n')
-        tracker_file.flush()
-        os.fsync(tracker_file.fileno())
-        if fcntl is not None:
-            fcntl.flock(tracker_file.fileno(), fcntl.LOCK_UN)
 
 
 def cache_quote_to_value(quote):
@@ -763,7 +684,7 @@ def fetch_massive(ticker, interval, periods):
         start = end - timedelta(days=60)
     from_date = start.strftime('%Y-%m-%d')
     to_date = end.strftime('%Y-%m-%d')
-    url = f'https://api.massive.com/v2/aggs/ticker/{ticker}/range/{multiplier}/{timespan}/{from_date}/{to_date}?adjusted=true&sort=desc&limit=50000&apiKey={api_key}'
+    url = f'https://api.massive.com/v2/aggs/ticker/{ticker}/range/{multiplier}/{timespan}/{from_date}/{to_date}?adjusted=true&sort=desc&limit=50000&apiKey=***
     response = subprocess.run(['curl', '-s', url], capture_output=True, text=True)
     try:
         data = json.loads(response.stdout)
@@ -803,23 +724,19 @@ def fetch_twelvedata(ticker, interval, periods, session_id=None):
     random.shuffle(api_keys)
     last_error = 'No Twelve Data API keys configured'
     for apikey in api_keys:
-        url = f'https://api.twelvedata.com/time_series?symbol={ticker}&interval={interval}&apikey={apikey}&outputsize={periods}'
+        url = f'https://api.twelvedata.com/time_series?symbol={ticker}&interval={interval}&apikey=***&outputsize={periods}'
         response = subprocess.run(['curl', '-s', url], capture_output=True, text=True)
         try:
             data = json.loads(response.stdout)
         except Exception:
-            increment_api_usage(session_id, provider='twelvedata', ticker=ticker, interval=interval, periods=periods, outcome='parse_error')
             last_error = 'Could not fetch data from Twelve Data'
             continue
         if 'code' in data:
-            increment_api_usage(session_id, provider='twelvedata', ticker=ticker, interval=interval, periods=periods, outcome='api_error')
             last_error = data.get('message', 'Twelve Data API Error')
             continue
         if 'values' not in data or not data['values']:
-            increment_api_usage(session_id, provider='twelvedata', ticker=ticker, interval=interval, periods=periods, outcome='empty')
             last_error = 'No values in Twelve Data response'
             continue
-        increment_api_usage(session_id, provider='twelvedata', ticker=ticker, interval=interval, periods=periods, outcome='success')
         return [
             {
                 'high': entry.get('high'),

@@ -1,6 +1,10 @@
 <?php
 session_start();
 
+function generate_oauth_state(): string {
+    return bin2hex(random_bytes(16));
+}
+
 function slugify_identity(string $value): string {
     $value = strtolower(trim($value));
     $value = preg_replace('/[^a-z0-9]+/', '_', $value);
@@ -101,9 +105,21 @@ $client->addScope('email');
 $client->addScope('profile');
 
 if (!isset($_GET['code'])) {
+    $oauthState = generate_oauth_state();
+    $_SESSION['oauth_state'] = $oauthState;
+    $client->setState($oauthState);
     header('Location: ' . $client->createAuthUrl());
     exit;
 } else {
+    $returnedState = (string) ($_GET['state'] ?? '');
+    $expectedState = (string) ($_SESSION['oauth_state'] ?? '');
+    if ($expectedState === '' || $returnedState === '' || !hash_equals($expectedState, $returnedState)) {
+        unset($_SESSION['oauth_state']);
+        http_response_code(400);
+        die('Invalid OAuth state.');
+    }
+    unset($_SESSION['oauth_state']);
+
     $token = $client->fetchAccessTokenWithAuthCode($_GET['code']);
     if (isset($token['error'])) {
         die('Error fetching access token: ' . $token['error']);
@@ -116,6 +132,8 @@ if (!isset($_GET['code'])) {
     $email = strtolower(trim((string) ($userinfo->email ?? '')));
     $sessionUserName = resolve_persistent_session_user_name($email, $displayName);
 
+    session_regenerate_id(true);
+    $_SESSION['oauth_authenticated_at'] = time();
     $_SESSION['user_name'] = $displayName;
     $_SESSION['user_display_name'] = $displayName;
     $_SESSION['user_email'] = $email;
