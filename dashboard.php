@@ -605,8 +605,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         .meter-fill.red {
             background: linear-gradient(90deg, rgba(248,113,113,0.9
 
-... [OUTPUT TRUNCATED - 70 chars omitted out of 50070 total] ...
-
+... [OUTPUT TRUNCATED - 36527 chars omitted out of 86527 total] ...
 
 inite(age) ? `${age}s old` : 'recent'} · ${source}`;
                 return;
