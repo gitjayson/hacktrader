@@ -1,0 +1,928 @@
+{
+    "meta": {
+        "updated_at": "2026-04-24T23:30:51+00:00",
+        "version": "v0.7.7"
+    },
+    "counters": {
+        "total_requests": 17159,
+        "live_successes": 10049,
+        "cache_hits": 7109,
+        "stale_serves": 1,
+        "errors": 0,
+        "consecutive_failures": 0,
+        "consecutive_stale_serves": 0
+    },
+    "last": {
+        "request_at": "2026-04-24T23:30:51+00:00",
+        "ticker": "TLT",
+        "period": "5m",
+        "provider": "massive",
+        "live_status": "cache_hit",
+        "error_summary": null,
+        "cache_age_seconds": 8,
+        "last_success_at": "2026-04-24T23:30:51+00:00",
+        "last_failure_at": "2026-04-24T19:51:44+00:00"
+    },
+    "recent_events": [
+        {
+            "timestamp": "2026-04-24T23:29:15+00:00",
+            "ticker": "AMD",
+            "period": "1h",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:16+00:00",
+            "ticker": "NVDA",
+            "period": "1h",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:17+00:00",
+            "ticker": "IWM",
+            "period": "1h",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:17+00:00",
+            "ticker": "XLY",
+            "period": "1h",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:17+00:00",
+            "ticker": "SMH",
+            "period": "1h",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:17+00:00",
+            "ticker": "UUP",
+            "period": "1h",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:19+00:00",
+            "ticker": "TLT",
+            "period": "1h",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:19+00:00",
+            "ticker": "XLC",
+            "period": "1h",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:20+00:00",
+            "ticker": "AMZN",
+            "period": "1h",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:22+00:00",
+            "ticker": "TSLA",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:24+00:00",
+            "ticker": "TSLA",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:27+00:00",
+            "ticker": "XLK",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:27+00:00",
+            "ticker": "AMD",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:27+00:00",
+            "ticker": "NVDA",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:27+00:00",
+            "ticker": "SPY",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:27+00:00",
+            "ticker": "XLK",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:27+00:00",
+            "ticker": "NVDA",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:27+00:00",
+            "ticker": "AMD",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:27+00:00",
+            "ticker": "SPY",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:29+00:00",
+            "ticker": "QQQ",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:30+00:00",
+            "ticker": "XLY",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:31+00:00",
+            "ticker": "XLY",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:31+00:00",
+            "ticker": "QQQ",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:32+00:00",
+            "ticker": "IWM",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:33+00:00",
+            "ticker": "SMH",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:34+00:00",
+            "ticker": "UUP",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:36+00:00",
+            "ticker": "TLT",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:36+00:00",
+            "ticker": "IWM",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:37+00:00",
+            "ticker": "SMH",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:37+00:00",
+            "ticker": "UUP",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:40+00:00",
+            "ticker": "TLT",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:40+00:00",
+            "ticker": "XLC",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:41+00:00",
+            "ticker": "XLC",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:41+00:00",
+            "ticker": "AMZN",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:43+00:00",
+            "ticker": "AMZN",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:29:50+00:00",
+            "ticker": "TSLA",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 26
+        },
+        {
+            "timestamp": "2026-04-24T23:29:51+00:00",
+            "ticker": "QQQ",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 20
+        },
+        {
+            "timestamp": "2026-04-24T23:29:51+00:00",
+            "ticker": "AMD",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 24
+        },
+        {
+            "timestamp": "2026-04-24T23:29:51+00:00",
+            "ticker": "SPY",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 24
+        },
+        {
+            "timestamp": "2026-04-24T23:29:51+00:00",
+            "ticker": "XLY",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 20
+        },
+        {
+            "timestamp": "2026-04-24T23:29:51+00:00",
+            "ticker": "IWM",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 15
+        },
+        {
+            "timestamp": "2026-04-24T23:29:51+00:00",
+            "ticker": "XLK",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 24
+        },
+        {
+            "timestamp": "2026-04-24T23:29:51+00:00",
+            "ticker": "NVDA",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 24
+        },
+        {
+            "timestamp": "2026-04-24T23:29:51+00:00",
+            "ticker": "SMH",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 14
+        },
+        {
+            "timestamp": "2026-04-24T23:29:51+00:00",
+            "ticker": "UUP",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 14
+        },
+        {
+            "timestamp": "2026-04-24T23:29:51+00:00",
+            "ticker": "TLT",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 11
+        },
+        {
+            "timestamp": "2026-04-24T23:29:51+00:00",
+            "ticker": "XLC",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 10
+        },
+        {
+            "timestamp": "2026-04-24T23:29:51+00:00",
+            "ticker": "AMZN",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 8
+        },
+        {
+            "timestamp": "2026-04-24T23:30:13+00:00",
+            "ticker": "TSLA",
+            "period": "1h",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:15+00:00",
+            "ticker": "QQQ",
+            "period": "1h",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:15+00:00",
+            "ticker": "XLK",
+            "period": "1h",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:15+00:00",
+            "ticker": "AMD",
+            "period": "1h",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:16+00:00",
+            "ticker": "XLY",
+            "period": "1h",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:17+00:00",
+            "ticker": "SPY",
+            "period": "1h",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:18+00:00",
+            "ticker": "NVDA",
+            "period": "1h",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:18+00:00",
+            "ticker": "SMH",
+            "period": "1h",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:18+00:00",
+            "ticker": "IWM",
+            "period": "1h",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:19+00:00",
+            "ticker": "UUP",
+            "period": "1h",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:20+00:00",
+            "ticker": "TLT",
+            "period": "1h",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:21+00:00",
+            "ticker": "XLC",
+            "period": "1h",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:21+00:00",
+            "ticker": "AMZN",
+            "period": "1h",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:22+00:00",
+            "ticker": "TSLA",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:24+00:00",
+            "ticker": "TSLA",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:26+00:00",
+            "ticker": "XLY",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:27+00:00",
+            "ticker": "XLK",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:27+00:00",
+            "ticker": "SPY",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:28+00:00",
+            "ticker": "NVDA",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:28+00:00",
+            "ticker": "XLK",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 1
+        },
+        {
+            "timestamp": "2026-04-24T23:30:30+00:00",
+            "ticker": "QQQ",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:30+00:00",
+            "ticker": "XLY",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 4
+        },
+        {
+            "timestamp": "2026-04-24T23:30:30+00:00",
+            "ticker": "SPY",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 3
+        },
+        {
+            "timestamp": "2026-04-24T23:30:32+00:00",
+            "ticker": "AMD",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:32+00:00",
+            "ticker": "IWM",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:33+00:00",
+            "ticker": "NVDA",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:33+00:00",
+            "ticker": "QQQ",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:33+00:00",
+            "ticker": "IWM",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 1
+        },
+        {
+            "timestamp": "2026-04-24T23:30:35+00:00",
+            "ticker": "AMD",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:37+00:00",
+            "ticker": "UUP",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:37+00:00",
+            "ticker": "UUP",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 1
+        },
+        {
+            "timestamp": "2026-04-24T23:30:37+00:00",
+            "ticker": "SMH",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:38+00:00",
+            "ticker": "XLC",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:38+00:00",
+            "ticker": "XLC",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:38+00:00",
+            "ticker": "TLT",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:41+00:00",
+            "ticker": "SMH",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:43+00:00",
+            "ticker": "AMZN",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:43+00:00",
+            "ticker": "TLT",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:43+00:00",
+            "ticker": "AMZN",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "live",
+            "error_summary": null,
+            "cache_age_seconds": 0
+        },
+        {
+            "timestamp": "2026-04-24T23:30:50+00:00",
+            "ticker": "TSLA",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 26
+        },
+        {
+            "timestamp": "2026-04-24T23:30:51+00:00",
+            "ticker": "XLY",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 25
+        },
+        {
+            "timestamp": "2026-04-24T23:30:51+00:00",
+            "ticker": "XLK",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 24
+        },
+        {
+            "timestamp": "2026-04-24T23:30:51+00:00",
+            "ticker": "NVDA",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 18
+        },
+        {
+            "timestamp": "2026-04-24T23:30:51+00:00",
+            "ticker": "QQQ",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 18
+        },
+        {
+            "timestamp": "2026-04-24T23:30:51+00:00",
+            "ticker": "AMD",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 16
+        },
+        {
+            "timestamp": "2026-04-24T23:30:51+00:00",
+            "ticker": "SPY",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 24
+        },
+        {
+            "timestamp": "2026-04-24T23:30:51+00:00",
+            "ticker": "IWM",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 19
+        },
+        {
+            "timestamp": "2026-04-24T23:30:51+00:00",
+            "ticker": "SMH",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 10
+        },
+        {
+            "timestamp": "2026-04-24T23:30:51+00:00",
+            "ticker": "XLC",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 13
+        },
+        {
+            "timestamp": "2026-04-24T23:30:51+00:00",
+            "ticker": "AMZN",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 8
+        },
+        {
+            "timestamp": "2026-04-24T23:30:51+00:00",
+            "ticker": "UUP",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 15
+        },
+        {
+            "timestamp": "2026-04-24T23:30:51+00:00",
+            "ticker": "TLT",
+            "period": "5m",
+            "provider": "massive",
+            "live_status": "cache_hit",
+            "error_summary": null,
+            "cache_age_seconds": 8
+        }
+    ]
+}

@@ -1,0 +1,379 @@
+{
+    "ticker": "TSLA",
+    "display": "5-min",
+    "periods": 20,
+    "interval": "5min",
+    "current_price": 401.09,
+    "focus_price": 401.09,
+    "quote_time_eastern": "2026-04-17 07:55 PM",
+    "quote_timezone": "EDT",
+    "resistance_1": {
+        "price": 401.21,
+        "diff": 0.12,
+        "touches": 22,
+        "range": [
+            401.01,
+            401.44
+        ]
+    },
+    "resistance_2": null,
+    "support_1": {
+        "price": 401.05,
+        "diff": 0.04,
+        "touches": 27,
+        "range": [
+            401,
+            401.2
+        ]
+    },
+    "support_2": null,
+    "upper_resistances": [
+        {
+            "price": 401.21,
+            "diff": 0.12,
+            "touches": 22,
+            "range": [
+                401.01,
+                401.44
+            ]
+        }
+    ],
+    "lower_supports": [
+        {
+            "price": 401.05,
+            "diff": 0.04,
+            "touches": 27,
+            "range": [
+                401,
+                401.2
+            ]
+        }
+    ],
+    "channels": [
+        {
+            "name": "current",
+            "lower": 401.05,
+            "upper": 401.21,
+            "width": 0.16,
+            "location": "inside"
+        }
+    ],
+    "previous_day": {
+        "date": null,
+        "high": null,
+        "low": null,
+        "open": null,
+        "close": null,
+        "volume": null
+    },
+    "recent_extremes": {
+        "window_bars": 20,
+        "recent_high": 401.44,
+        "recent_low": 401
+    },
+    "attempts": {
+        "failed_up_today": 0,
+        "failed_down_today": 0,
+        "rule_of_three_block_up": false,
+        "rule_of_three_block_down": false
+    },
+    "probabilities": {
+        "up": 43.5,
+        "down": 56.5,
+        "bias": "down",
+        "confidence": "low"
+    },
+    "score_drivers": [
+        {
+            "factor": "channel_position",
+            "value": 0.252,
+            "impact": -6.46
+        },
+        {
+            "factor": "failed_up_attempts",
+            "value": 0,
+            "impact": 0
+        },
+        {
+            "factor": "failed_down_attempts",
+            "value": 0,
+            "impact": 0
+        }
+    ],
+    "history": [
+        {
+            "time": "2026-04-17T22:20:00+00:00",
+            "open": 401.17,
+            "high": 401.17,
+            "low": 401.01,
+            "close": 401.17,
+            "volume": 6195.349410000001,
+            "ma20": null,
+            "rsi14": null,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-17T22:25:00+00:00",
+            "open": 401.2,
+            "high": 401.29,
+            "low": 401.17,
+            "close": 401.2,
+            "volume": 8426.873912000001,
+            "ma20": null,
+            "rsi14": null,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-17T22:30:00+00:00",
+            "open": 401.3,
+            "high": 401.31,
+            "low": 401.01,
+            "close": 401.3,
+            "volume": 10108.40582,
+            "ma20": null,
+            "rsi14": null,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-17T22:35:00+00:00",
+            "open": 401.15,
+            "high": 401.44,
+            "low": 401.15,
+            "close": 401.15,
+            "volume": 7864.227000999999,
+            "ma20": null,
+            "rsi14": null,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-17T22:40:00+00:00",
+            "open": 401.148,
+            "high": 401.1601,
+            "low": 401.06,
+            "close": 401.148,
+            "volume": 6633.271142,
+            "ma20": null,
+            "rsi14": null,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-17T22:45:00+00:00",
+            "open": 401.1,
+            "high": 401.14,
+            "low": 401.1,
+            "close": 401.1,
+            "volume": 6712.2714,
+            "ma20": null,
+            "rsi14": null,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-17T22:50:00+00:00",
+            "open": 401.0965,
+            "high": 401.2,
+            "low": 401.08,
+            "close": 401.0965,
+            "volume": 6973.872837000001,
+            "ma20": null,
+            "rsi14": null,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-17T22:55:00+00:00",
+            "open": 401.24,
+            "high": 401.3,
+            "low": 401.08,
+            "close": 401.24,
+            "volume": 7531.181376999999,
+            "ma20": null,
+            "rsi14": null,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-17T23:00:00+00:00",
+            "open": 401.2,
+            "high": 401.35,
+            "low": 401.2,
+            "close": 401.2,
+            "volume": 6538.97185,
+            "ma20": null,
+            "rsi14": null,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-17T23:05:00+00:00",
+            "open": 401.1997,
+            "high": 401.2,
+            "low": 401.1,
+            "close": 401.1997,
+            "volume": 5113.588648,
+            "ma20": null,
+            "rsi14": null,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-17T23:10:00+00:00",
+            "open": 401.07,
+            "high": 401.19,
+            "low": 401.07,
+            "close": 401.07,
+            "volume": 5208.014148,
+            "ma20": null,
+            "rsi14": null,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-17T23:15:00+00:00",
+            "open": 401,
+            "high": 401.04,
+            "low": 401,
+            "close": 401,
+            "volume": 5524.510499,
+            "ma20": null,
+            "rsi14": null,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-17T23:20:00+00:00",
+            "open": 401,
+            "high": 401.02,
+            "low": 401,
+            "close": 401,
+            "volume": 12643.114479999998,
+            "ma20": null,
+            "rsi14": null,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-17T23:25:00+00:00",
+            "open": 401.0001,
+            "high": 401.01,
+            "low": 401,
+            "close": 401.0001,
+            "volume": 6209.68501,
+            "ma20": null,
+            "rsi14": null,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-17T23:30:00+00:00",
+            "open": 401.029,
+            "high": 401.07,
+            "low": 401,
+            "close": 401.029,
+            "volume": 9086.205437999999,
+            "ma20": null,
+            "rsi14": 40.54959785522705,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-17T23:35:00+00:00",
+            "open": 401.12,
+            "high": 401.1729,
+            "low": 401,
+            "close": 401.12,
+            "volume": 8197.388035,
+            "ma20": null,
+            "rsi14": 47.452606635070595,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-17T23:40:00+00:00",
+            "open": 401.05,
+            "high": 401.18,
+            "low": 401.02,
+            "close": 401.05,
+            "volume": 7620.159943000001,
+            "ma20": null,
+            "rsi14": 43.288712937143565,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-17T23:45:00+00:00",
+            "open": 401.14,
+            "high": 401.2,
+            "low": 401.05,
+            "close": 401.14,
+            "volume": 9537.225534000001,
+            "ma20": null,
+            "rsi14": 49.432550969735,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-17T23:50:00+00:00",
+            "open": 401.1065,
+            "high": 401.29,
+            "low": 401.09,
+            "close": 401.1065,
+            "volume": 13252.018082,
+            "ma20": null,
+            "rsi14": 47.37520042636713,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-17T23:55:00+00:00",
+            "open": 401.0895,
+            "high": 401.16,
+            "low": 401.0173,
+            "close": 401.0895,
+            "volume": 29051.390087,
+            "ma20": 401.120465,
+            "rsi14": 46.32161972390692,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        }
+    ],
+    "analysis_parameters": {
+        "bucket_width": 0.3209,
+        "atr": 0.1225,
+        "rows_used": 20
+    },
+    "volume": {
+        "current_bar": 29051.39,
+        "expected_bar": null,
+        "bar_ratio": null,
+        "current_day": 178427.72,
+        "expected_day": null,
+        "day_ratio": null
+    },
+    "source": "massive"
+}

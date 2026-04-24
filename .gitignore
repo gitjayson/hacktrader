@@ -1,0 +1,51 @@
+# --- Local helper scripts (mac-specific, not source) ---
+sync_hacktrader.sh
+deploy.sh
+setup_git.sh
+.pengo_tmp
+
+# --- Secrets / credentials ---
+api-accounts.json
+api-accounts.sqlite
+.env
+.env.*
+
+# --- Live runtime state (changes constantly, not source) ---
+api-usage.json
+api_usage_tracker.json
+correlations.json
+correlation-status.json
+correlation-locks/
+focus-universe.json
+market-watchlist.json
+
+# --- Backups ---
+*.bak
+*.bak-*
+backups/
+
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+
+# --- Logs / cache / temp ---
+*.log
+*.log.*
+logs/
+log/
+cache/
+caches/
+.cache/
+tmp/
+temp/
+
+# --- macOS / editors ---
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo

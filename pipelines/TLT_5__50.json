@@ -1,0 +1,832 @@
+{
+    "ticker": "TLT",
+    "display": "5-min",
+    "periods": 50,
+    "interval": "5min",
+    "current_price": 86.76,
+    "focus_price": 86.76,
+    "quote_time_eastern": "2026-04-24 09:00 AM",
+    "quote_timezone": "EDT",
+    "resistance_1": {
+        "price": 86.85,
+        "diff": 0.09,
+        "touches": 24,
+        "range": [
+            86.76,
+            86.9
+        ]
+    },
+    "resistance_2": {
+        "price": 86.93,
+        "diff": 0.17,
+        "touches": 4,
+        "range": [
+            86.93,
+            86.93
+        ]
+    },
+    "support_1": {
+        "price": 86.64,
+        "diff": 0.12,
+        "touches": 15,
+        "range": [
+            86.61,
+            86.68
+        ]
+    },
+    "support_2": {
+        "price": 86.54,
+        "diff": 0.22,
+        "touches": 23,
+        "range": [
+            86.51,
+            86.59
+        ]
+    },
+    "upper_resistances": [
+        {
+            "price": 86.85,
+            "diff": 0.09,
+            "touches": 24,
+            "range": [
+                86.76,
+                86.9
+            ]
+        },
+        {
+            "price": 86.93,
+            "diff": 0.17,
+            "touches": 4,
+            "range": [
+                86.93,
+                86.93
+            ]
+        }
+    ],
+    "lower_supports": [
+        {
+            "price": 86.64,
+            "diff": 0.12,
+            "touches": 15,
+            "range": [
+                86.61,
+                86.68
+            ]
+        },
+        {
+            "price": 86.54,
+            "diff": 0.22,
+            "touches": 23,
+            "range": [
+                86.51,
+                86.59
+            ]
+        }
+    ],
+    "channels": [
+        {
+            "name": "current",
+            "lower": 86.64,
+            "upper": 86.85,
+            "width": 0.21,
+            "location": "inside"
+        },
+        {
+            "name": "above_resistance",
+            "lower": 86.85,
+            "upper": 86.93,
+            "width": 0.08,
+            "location": "potential_upside_channel"
+        },
+        {
+            "name": "below_support",
+            "lower": 86.54,
+            "upper": 86.64,
+            "width": 0.1,
+            "location": "potential_downside_channel"
+        }
+    ],
+    "previous_day": {
+        "date": "2026-04-23",
+        "high": 86.63,
+        "low": 86.61,
+        "open": 86.63,
+        "close": 86.63,
+        "volume": 3837
+    },
+    "recent_extremes": {
+        "window_bars": 20,
+        "recent_high": 86.93,
+        "recent_low": 86.63
+    },
+    "attempts": {
+        "failed_up_today": 1,
+        "failed_down_today": 0,
+        "rule_of_three_block_up": false,
+        "rule_of_three_block_down": false
+    },
+    "probabilities": {
+        "up": 70,
+        "down": 30,
+        "bias": "up",
+        "confidence": "high"
+    },
+    "score_drivers": [
+        {
+            "factor": "channel_position",
+            "value": 0.575,
+            "impact": 1.95
+        },
+        {
+            "factor": "previous_day_high",
+            "value": 86.63,
+            "impact": 12
+        },
+        {
+            "factor": "previous_day_low",
+            "value": 86.61,
+            "impact": 7.5
+        },
+        {
+            "factor": "day_volume_ratio",
+            "value": 118.86,
+            "impact": 6
+        },
+        {
+            "factor": "failed_up_attempts",
+            "value": 1,
+            "impact": -7.5
+        },
+        {
+            "factor": "failed_down_attempts",
+            "value": 0,
+            "impact": 0
+        }
+    ],
+    "history": [
+        {
+            "time": "2026-04-23T23:50:00+00:00",
+            "open": 86.63,
+            "high": 86.63,
+            "low": 86.61,
+            "close": 86.63,
+            "volume": 1737,
+            "ma20": null,
+            "rsi14": null,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-23T23:55:00+00:00",
+            "open": 86.63,
+            "high": 86.63,
+            "low": 86.63,
+            "close": 86.63,
+            "volume": 2100,
+            "ma20": null,
+            "rsi14": null,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-24T08:00:00+00:00",
+            "open": 86.64,
+            "high": 86.67,
+            "low": 86.64,
+            "close": 86.64,
+            "volume": 530,
+            "ma20": null,
+            "rsi14": null,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-24T08:10:00+00:00",
+            "open": 86.63,
+            "high": 86.63,
+            "low": 86.63,
+            "close": 86.63,
+            "volume": 848,
+            "ma20": null,
+            "rsi14": null,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-24T08:15:00+00:00",
+            "open": 86.67,
+            "high": 86.67,
+            "low": 86.64,
+            "close": 86.67,
+            "volume": 1205,
+            "ma20": null,
+            "rsi14": null,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-24T08:20:00+00:00",
+            "open": 86.67,
+            "high": 86.7,
+            "low": 86.67,
+            "close": 86.67,
+            "volume": 1430,
+            "ma20": null,
+            "rsi14": null,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-24T08:25:00+00:00",
+            "open": 86.65,
+            "high": 86.67,
+            "low": 86.64,
+            "close": 86.65,
+            "volume": 2419,
+            "ma20": null,
+            "rsi14": null,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-24T08:30:00+00:00",
+            "open": 86.64,
+            "high": 86.64,
+            "low": 86.64,
+            "close": 86.64,
+            "volume": 584,
+            "ma20": null,
+            "rsi14": null,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-24T08:35:00+00:00",
+            "open": 86.62,
+            "high": 86.62,
+            "low": 86.62,
+            "close": 86.62,
+            "volume": 1036,
+            "ma20": null,
+            "rsi14": null,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-24T08:50:00+00:00",
+            "open": 86.57,
+            "high": 86.59,
+            "low": 86.57,
+            "close": 86.57,
+            "volume": 5426,
+            "ma20": null,
+            "rsi14": null,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-24T08:55:00+00:00",
+            "open": 86.57,
+            "high": 86.57,
+            "low": 86.55,
+            "close": 86.57,
+            "volume": 3706,
+            "ma20": null,
+            "rsi14": null,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-24T09:00:00+00:00",
+            "open": 86.58,
+            "high": 86.58,
+            "low": 86.58,
+            "close": 86.58,
+            "volume": 250,
+            "ma20": null,
+            "rsi14": null,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-24T09:15:00+00:00",
+            "open": 86.58,
+            "high": 86.58,
+            "low": 86.57,
+            "close": 86.58,
+            "volume": 1663,
+            "ma20": null,
+            "rsi14": null,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-24T09:20:00+00:00",
+            "open": 86.52,
+            "high": 86.56,
+            "low": 86.52,
+            "close": 86.52,
+            "volume": 1747,
+            "ma20": null,
+            "rsi14": null,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-24T10:00:00+00:00",
+            "open": 86.55,
+            "high": 86.56,
+            "low": 86.53,
+            "close": 86.55,
+            "volume": 3561.25,
+            "ma20": null,
+            "rsi14": 34.61538461538693,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-24T10:05:00+00:00",
+            "open": 86.53,
+            "high": 86.53,
+            "low": 86.525,
+            "close": 86.53,
+            "volume": 402,
+            "ma20": null,
+            "rsi14": 31.967213114757044,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-24T10:10:00+00:00",
+            "open": 86.53,
+            "high": 86.53,
+            "low": 86.53,
+            "close": 86.53,
+            "volume": 200,
+            "ma20": null,
+            "rsi14": 31.967213114757044,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-24T10:15:00+00:00",
+            "open": 86.52,
+            "high": 86.54,
+            "low": 86.51,
+            "close": 86.52,
+            "volume": 4883.0141,
+            "ma20": null,
+            "rsi14": 30.609306789686173,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-24T10:20:00+00:00",
+            "open": 86.51,
+            "high": 86.54,
+            "low": 86.51,
+            "close": 86.51,
+            "volume": 4039,
+            "ma20": null,
+            "rsi14": 29.270317357295212,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-24T10:25:00+00:00",
+            "open": 86.54,
+            "high": 86.54,
+            "low": 86.51,
+            "close": 86.54,
+            "volume": 4936,
+            "ma20": 86.589,
+            "rsi14": 38.028634356164915,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-24T10:30:00+00:00",
+            "open": 86.54,
+            "high": 86.54,
+            "low": 86.54,
+            "close": 86.54,
+            "volume": 120,
+            "ma20": 86.5845,
+            "rsi14": 38.028634356164915,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-24T10:35:00+00:00",
+            "open": 86.54,
+            "high": 86.54,
+            "low": 86.54,
+            "close": 86.54,
+            "volume": 399,
+            "ma20": 86.58,
+            "rsi14": 38.028634356164915,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-24T10:40:00+00:00",
+            "open": 86.55,
+            "high": 86.55,
+            "low": 86.55,
+            "close": 86.55,
+            "volume": 810,
+            "ma20": 86.5755,
+            "rsi14": 41.066802135535504,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-24T10:50:00+00:00",
+            "open": 86.6,
+            "high": 86.6,
+            "low": 86.59,
+            "close": 86.6,
+            "volume": 1081.270557,
+            "ma20": 86.574,
+            "rsi14": 53.374994398847264,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-24T10:55:00+00:00",
+            "open": 86.55,
+            "high": 86.58,
+            "low": 86.55,
+            "close": 86.55,
+            "volume": 793,
+            "ma20": 86.568,
+            "rsi14": 43.57443782234444,
+            "macd": null,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-24T11:00:00+00:00",
+            "open": 86.65,
+            "high": 86.65,
+            "low": 86.58,
+            "close": 86.65,
+            "volume": 6536.775,
+            "ma20": 86.567,
+            "rsi14": 59.56556179226377,
+            "macd": -0.01337763806844805,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-24T11:05:00+00:00",
+            "open": 86.71,
+            "high": 86.77,
+            "low": 86.68,
+            "close": 86.71,
+            "volume": 32874,
+            "ma20": 86.57000000000001,
+            "rsi14": 65.82393047080757,
+            "macd": -0.0013480299325578926,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-24T11:10:00+00:00",
+            "open": 86.76,
+            "high": 86.8,
+            "low": 86.73,
+            "close": 86.76,
+            "volume": 13310,
+            "ma20": 86.576,
+            "rsi14": 69.99212862716138,
+            "macd": 0.012080842879697684,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-24T11:15:00+00:00",
+            "open": 86.78,
+            "high": 86.78,
+            "low": 86.74,
+            "close": 86.78,
+            "volume": 19985.195028000002,
+            "ma20": 86.584,
+            "rsi14": 71.4899790742181,
+            "macd": 0.02405980769977134,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-24T11:20:00+00:00",
+            "open": 86.87,
+            "high": 86.9,
+            "low": 86.77,
+            "close": 86.87,
+            "volume": 25977.115134,
+            "ma20": 86.599,
+            "rsi14": 77.04316767129713,
+            "macd": 0.04035033788416342,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-24T11:25:00+00:00",
+            "open": 86.93,
+            "high": 86.93,
+            "low": 86.87,
+            "close": 86.93,
+            "volume": 25913,
+            "ma20": 86.61699999999999,
+            "rsi14": 79.85964029486489,
+            "macd": 0.057440065659591255,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-24T11:30:00+00:00",
+            "open": 86.9,
+            "high": 86.93,
+            "low": 86.88,
+            "close": 86.9,
+            "volume": 17807.111148,
+            "ma20": 86.63300000000001,
+            "rsi14": 74.91091484198832,
+            "macd": 0.06778170348179913,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-24T11:35:00+00:00",
+            "open": 86.87,
+            "high": 86.9,
+            "low": 86.86,
+            "close": 86.87,
+            "volume": 11077.721999999998,
+            "ma20": 86.64750000000001,
+            "rsi14": 70.22451395835145,
+            "macd": 0.0727185228185192,
+            "macd_signal": null,
+            "macd_hist": null
+        },
+        {
+            "time": "2026-04-24T11:40:00+00:00",
+            "open": 86.87,
+            "high": 86.88,
+            "low": 86.86,
+            "close": 86.87,
+            "volume": 2794.8,
+            "ma20": 86.66499999999999,
+            "rsi14": 70.22451395835145,
+            "macd": 0.07575770010149085,
+            "macd_signal": 0.03727370139155855,
+            "macd_hist": 0.038483998709932306
+        },
+        {
+            "time": "2026-04-24T11:45:00+00:00",
+            "open": 86.85,
+            "high": 86.85,
+            "low": 86.84,
+            "close": 86.85,
+            "volume": 5901,
+            "ma20": 86.68,
+            "rsi14": 66.98450084115979,
+            "macd": 0.0756800446952468,
+            "macd_signal": 0.044954970052296206,
+            "macd_hist": 0.0307250746429506
+        },
+        {
+            "time": "2026-04-24T11:50:00+00:00",
+            "open": 86.86,
+            "high": 86.86,
+            "low": 86.85,
+            "close": 86.86,
+            "volume": 18142,
+            "ma20": 86.6965,
+            "rsi14": 67.78483809448119,
+            "macd": 0.07555447371090906,
+            "macd_signal": 0.05107487078401878,
+            "macd_hist": 0.024479602926890283
+        },
+        {
+            "time": "2026-04-24T11:55:00+00:00",
+            "open": 86.89,
+            "high": 86.89,
+            "low": 86.87,
+            "close": 86.89,
+            "volume": 1336,
+            "ma20": 86.7145,
+            "rsi14": 70.12461581701976,
+            "macd": 0.07698823463532278,
+            "macd_signal": 0.05625754355427959,
+            "macd_hist": 0.020730691081043195
+        },
+        {
+            "time": "2026-04-24T12:00:00+00:00",
+            "open": 86.87,
+            "high": 86.89,
+            "low": 86.845,
+            "close": 86.87,
+            "volume": 19997,
+            "ma20": 86.732,
+            "rsi14": 66.64923137241715,
+            "macd": 0.07563875120419539,
+            "macd_signal": 0.06013378508426275,
+            "macd_hist": 0.015504966119932635
+        },
+        {
+            "time": "2026-04-24T12:05:00+00:00",
+            "open": 86.85,
+            "high": 86.89,
+            "low": 86.83,
+            "close": 86.85,
+            "volume": 3766.531223,
+            "ma20": 86.749,
+            "rsi14": 63.2722377844974,
+            "macd": 0.07212404194955013,
+            "macd_signal": 0.06253183645732023,
+            "macd_hist": 0.009592205492229902
+        },
+        {
+            "time": "2026-04-24T12:10:00+00:00",
+            "open": 86.85,
+            "high": 86.87,
+            "low": 86.85,
+            "close": 86.85,
+            "volume": 694.25,
+            "ma20": 86.7645,
+            "rsi14": 63.272237784497406,
+            "macd": 0.06854842595859623,
+            "macd_signal": 0.06373515435757543,
+            "macd_hist": 0.0048132716010207965
+        },
+        {
+            "time": "2026-04-24T12:15:00+00:00",
+            "open": 86.82,
+            "high": 86.8503,
+            "low": 86.8,
+            "close": 86.82,
+            "volume": 13789,
+            "ma20": 86.7785,
+            "rsi14": 58.14690228008721,
+            "macd": 0.06257267638211772,
+            "macd_signal": 0.0635026587624839,
+            "macd_hist": -0.0009299823803661789
+        },
+        {
+            "time": "2026-04-24T12:20:00+00:00",
+            "open": 86.83,
+            "high": 86.85,
+            "low": 86.81,
+            "close": 86.83,
+            "volume": 2882.230321,
+            "ma20": 86.79299999999999,
+            "rsi14": 59.329539712763946,
+            "macd": 0.057975463165433894,
+            "macd_signal": 0.0623972196430739,
+            "macd_hist": -0.00442175647764001
+        },
+        {
+            "time": "2026-04-24T12:25:00+00:00",
+            "open": 86.85,
+            "high": 86.85,
+            "low": 86.8204,
+            "close": 86.85,
+            "volume": 5429,
+            "ma20": 86.808,
+            "rsi14": 61.66277920571255,
+            "macd": 0.05530841049518642,
+            "macd_signal": 0.06097945781349641,
+            "macd_hist": -0.005671047318309988
+        },
+        {
+            "time": "2026-04-24T12:30:00+00:00",
+            "open": 86.85,
+            "high": 86.87,
+            "low": 86.85,
+            "close": 86.85,
+            "volume": 6460.229834,
+            "ma20": 86.82050000000001,
+            "rsi14": 61.66277920571255,
+            "macd": 0.05258854403848545,
+            "macd_signal": 0.059301275058494224,
+            "macd_hist": -0.006712731020008772
+        },
+        {
+            "time": "2026-04-24T12:35:00+00:00",
+            "open": 86.76,
+            "high": 86.81,
+            "low": 86.74,
+            "close": 86.76,
+            "volume": 5432,
+            "ma20": 86.83099999999999,
+            "rsi14": 47.45454957924776,
+            "macd": 0.04267880770873944,
+            "macd_signal": 0.05597678158854327,
+            "macd_hist": -0.013297973879803832
+        },
+        {
+            "time": "2026-04-24T12:40:00+00:00",
+            "open": 86.77,
+            "high": 86.79,
+            "low": 86.75,
+            "close": 86.77,
+            "volume": 20381,
+            "ma20": 86.837,
+            "rsi14": 48.86442958363194,
+            "macd": 0.03522612189246388,
+            "macd_signal": 0.05182664964932739,
+            "macd_hist": -0.016600527756863513
+        },
+        {
+            "time": "2026-04-24T12:45:00+00:00",
+            "open": 86.64,
+            "high": 86.7795,
+            "low": 86.63,
+            "close": 86.64,
+            "volume": 19150,
+            "ma20": 86.8335,
+            "rsi14": 35.52116118042285,
+            "macd": 0.018615315376663943,
+            "macd_signal": 0.045184382794794704,
+            "macd_hist": -0.02656906741813076
+        },
+        {
+            "time": "2026-04-24T12:50:00+00:00",
+            "open": 86.65,
+            "high": 86.69,
+            "low": 86.64,
+            "close": 86.65,
+            "volume": 125368,
+            "ma20": 86.828,
+            "rsi14": 36.94746893848036,
+            "macd": 0.006186731179070648,
+            "macd_signal": 0.037384852471649896,
+            "macd_hist": -0.031198121292579248
+        },
+        {
+            "time": "2026-04-24T12:55:00+00:00",
+            "open": 86.72,
+            "high": 86.72,
+            "low": 86.6598,
+            "close": 86.72,
+            "volume": 5396,
+            "ma20": 86.825,
+            "rsi14": 45.95906318525617,
+            "macd": 0.0019627779623903052,
+            "macd_signal": 0.03030043756979798,
+            "macd_hist": -0.028337659607407674
+        },
+        {
+            "time": "2026-04-24T13:00:00+00:00",
+            "open": 86.76,
+            "high": 86.76,
+            "low": 86.72,
+            "close": 86.76,
+            "volume": 3591,
+            "ma20": 86.8195,
+            "rsi14": 50.327830070020575,
+            "macd": 0.0018219282574563067,
+            "macd_signal": 0.024604735707329645,
+            "macd_hist": -0.02278280744987334
+        }
+    ],
+    "analysis_parameters": {
+        "bucket_width": 0.0694,
+        "atr": 0.0532,
+        "rows_used": 50
+    },
+    "volume": {
+        "current_bar": 3591,
+        "expected_bar": null,
+        "bar_ratio": null,
+        "current_day": 456059.49,
+        "expected_day": 3837,
+        "day_ratio": 118.86
+    },
+    "source": "massive"
+}
