@@ -73,9 +73,9 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             box-shadow: var(--shadow);
         }
         .topbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            display: grid;
+            grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
+            align-items: end;
             gap: 16px;
             padding: 16px 18px;
             border-radius: 24px;
@@ -87,7 +87,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             display: flex;
             flex-direction: column;
             gap: 4px;
-            min-width: 170px;
+            min-width: 0;
         }
         .eyebrow {
             font-size: 11px;
@@ -164,10 +164,14 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         }
         .controls {
             display: grid;
-            grid-template-columns: minmax(120px, 1.15fr) 92px 108px minmax(220px, 1fr) auto auto auto;
+            grid-template-columns: minmax(140px, 1.2fr) minmax(86px, 96px) minmax(96px, 112px) minmax(180px, 0.9fr) repeat(3, minmax(0, max-content));
             gap: 14px;
             align-items: center;
-            flex: 1;
+            min-width: 0;
+            width: 100%;
+        }
+        .controls > * {
+            min-width: 0;
         }
         .api-usage-inline {
             display: grid;
@@ -265,6 +269,12 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             transform: translateY(-1px);
             border-color: rgba(94,234,212,0.7);
         }
+        button:focus-visible,
+        input:focus-visible,
+        select:focus-visible {
+            outline: 2px solid rgba(94,234,212,0.95);
+            outline-offset: 2px;
+        }
         .primary-btn {
             background: linear-gradient(135deg, rgba(96,165,250,0.96), rgba(94,234,212,0.96));
             color: #06111d;
@@ -338,7 +348,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         }
         .dashboard-grid {
             display: grid;
-            grid-template-columns: 1.2fr 0.8fr;
+            grid-template-columns: minmax(0, 1.28fr) minmax(340px, 0.92fr);
             gap: 18px;
             align-items: start;
         }
@@ -389,6 +399,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             font-size: 30px;
             font-weight: 800;
             letter-spacing: -0.04em;
+            font-variant-numeric: tabular-nums;
         }
         .quote-pill .sub {
             margin-top: 6px;
@@ -397,7 +408,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         }
         .hero-grid {
             display: grid;
-            grid-template-columns: minmax(560px, 1.15fr) minmax(320px, 0.85fr);
+            grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
             gap: 18px;
             align-items: stretch;
         }
@@ -408,7 +419,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             border: 1px solid rgba(148, 163, 184, 0.14);
         }
         .radar-card {
-            min-width: 560px;
+            min-width: 0;
         }
         .section-title {
             display: flex;
@@ -441,18 +452,6 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             overflow: visible;
             padding: 22px;
         }
-        .radar-stage::before,
-        .radar-stage::after {
-            content: '';
-            position: absolute;
-            inset: 10%;
-            border-radius: 50%;
-            border: 1px dashed rgba(148,163,184,0.14);
-            pointer-events: none;
-        }
-        .radar-stage::after {
-            inset: 24%;
-        }
         .radar-lines {
             position: absolute;
             inset: 0;
@@ -482,6 +481,15 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         .focus-node.up { border-color: rgba(34,197,94,0.45); box-shadow: 0 0 24px rgba(34,197,94,0.18); }
         .focus-node.down { border-color: rgba(248,113,113,0.45); box-shadow: 0 0 24px rgba(248,113,113,0.18); }
         .focus-node.neutral { border-color: rgba(96,165,250,0.4); }
+        .focus-direction {
+            margin-top: 6px;
+            font-size: 16px;
+            font-weight: 800;
+            line-height: 1;
+        }
+        .focus-node.up .focus-direction { color: #86efac; }
+        .focus-node.down .focus-direction { color: #fca5a5; }
+        .focus-node.neutral .focus-direction { color: #bfdbfe; }
         .focus-symbol { font-size: 34px; font-weight: 800; letter-spacing: -0.04em; }
         .focus-price { font-size: 22px; font-weight: 700; margin-top: 8px; }
         .focus-bias { margin-top: 10px; font-size: 12px; color: var(--muted); }
@@ -556,8 +564,9 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         .bias-chip.up { background: rgba(34,197,94,0.12); color: #86efac; }
         .bias-chip.down { background: rgba(248,113,113,0.12); color: #fca5a5; }
         .bias-chip.neutral { background: rgba(96,165,250,0.12); color: #bfdbfe; }
+        .bias-chip.live { background: rgba(96,165,250,0.12); color: #bfdbfe; }
         .bias-chip.stale { background: rgba(251,191,36,0.14); color: #fde68a; border-color: rgba(251,191,36,0.28); }
-        .bias-chip.error { background: rgba(248,113,113,0.16); color: #fecaca; border-color: rgba(248,113,113,0.28); }
+        .bias-chip.error { background: rgba(148,163,184,0.16); color: #dbe4f0; border-color: rgba(148,163,184,0.28); }
         .range-grid {
             display: grid;
             gap: 10px;
@@ -603,15 +612,842 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             background: linear-gradient(90deg, rgba(96,165,250,0.72), rgba(94,234,212,0.9));
         }
         .meter-fill.red {
-            background: linear-gradient(90deg, rgba(248,113,113,0.9
+            background: linear-gradient(90deg, rgba(248,113,113,0.92), rgba(251,191,36,0.72));
+        }
+        .meter-fill.green {
+            background: linear-gradient(90deg, rgba(74,222,128,0.92), rgba(94,234,212,0.72));
+        }
+        .meter-subtext {
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.45;
+        }
+        .driver-impact-bar {
+            width: 96px;
+            height: 8px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.08);
+            overflow: hidden;
+            margin-left: auto;
+            margin-top: 6px;
+        }
+        .driver-impact-fill {
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, rgba(96,165,250,0.82), rgba(94,234,212,0.82));
+        }
+        .driver-impact-fill.neg {
+            background: linear-gradient(90deg, rgba(248,113,113,0.92), rgba(251,191,36,0.72));
+        }
+        .range-card {
+            border-radius: 18px;
+            padding: 14px 16px;
+            background: rgba(255,255,255,0.025);
+            border: 1px solid rgba(148,163,184,0.12);
+        }
+        .range-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+        .range-name {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--muted);
+            font-weight: 700;
+        }
+        .range-width {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text);
+            font-size: 12px;
+        }
+        .range-track {
+            position: relative;
+            height: 12px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.08);
+            overflow: hidden;
+        }
+        .range-fill {
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: linear-gradient(90deg, rgba(96,165,250,0.52), rgba(94,234,212,0.72));
+        }
+        .range-meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .compact-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+        .stack-card {
+            border-radius: 24px;
+            padding: 20px;
+        }
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+        .panel-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .panel-tab {
+            padding: 10px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            background: rgba(255,255,255,0.03);
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+        }
+        .panel-tab.active {
+            border-color: transparent;
+            background: linear-gradient(135deg, rgba(96,165,250,0.96), rgba(94,234,212,0.96));
+            color: #06111d;
+        }
+        .tab-panel {
+            display: none;
+        }
+        .tab-panel.active {
+            display: block;
+        }
+        .metric-card {
+            border-radius: 18px;
+            padding: 16px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(148,163,184,0.12);
+        }
+        .metric-card .label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--muted);
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        .metric-card .value {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            font-variant-numeric: tabular-nums;
+        }
+        .metric-card .sub {
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .levels-list, .drivers-list, .attempt-list {
+            display: grid;
+            gap: 10px;
+        }
+        .probe-visual {
+            border-radius: 18px;
+            padding: 14px 16px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(148,163,184,0.12);
+            display: grid;
+            gap: 12px;
+        }
+        .probe-visual-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .probe-visual-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--muted);
+            font-weight: 700;
+        }
+        .probe-visual-balance {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--text);
+        }
+        .probe-graph {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 16px minmax(0, 1fr);
+            gap: 10px;
+            align-items: center;
+        }
+        .probe-half {
+            position: relative;
+            height: 18px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.06);
+            overflow: hidden;
+        }
+        .probe-fill {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            border-radius: inherit;
+        }
+        .probe-half.up .probe-fill {
+            right: 0;
+            background: linear-gradient(90deg, rgba(96,165,250,0.52), rgba(74,222,128,0.92));
+        }
+        .probe-half.down .probe-fill {
+            left: 0;
+            background: linear-gradient(90deg, rgba(248,113,113,0.92), rgba(251,191,36,0.72));
+        }
+        .probe-divider {
+            width: 2px;
+            height: 28px;
+            border-radius: 999px;
+            background: rgba(148,163,184,0.24);
+            justify-self: center;
+        }
+        .probe-label-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .probe-label-row .up strong { color: #86efac; }
+        .probe-label-row .down strong { color: #fca5a5; }
+        .probe-label-row strong {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+        }
+        .probe-meta {
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.45;
+        }
+        .level-row, .driver-row, .attempt-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+            padding: 12px 14px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.025);
+            border: 1px solid rgba(148,163,184,0.1);
+        }
+        .level-row .left, .driver-row .left, .attempt-row .left {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .row-title {
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .row-meta {
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .row-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            background: rgba(255,255,255,0.05);
+            color: var(--muted);
+        }
+        .pill.up { color: #86efac; background: rgba(34,197,94,0.12); }
+        .pill.down { color: #fca5a5; background: rgba(248,113,113,0.12); }
+        .pill.neutral { color: #bfdbfe; background: rgba(96,165,250,0.12); }
+        footer {
+            text-align: center;
+            font-size: 11px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: rgba(150,169,196,0.72);
+            padding: 4px 0 12px;
+        }
+        @media (max-width: 1260px) {
+            .topbar {
+                grid-template-columns: 1fr;
+                align-items: stretch;
+            }
+            .controls {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+            .controls .slider-wrap { grid-column: span 2; }
+            .controls button { width: 100%; }
+            .hero-grid { grid-template-columns: minmax(0, 1fr); }
+            .radar-card { min-width: 0; }
+        }
+        @media (max-width: 980px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .topbar { position: static; }
+            .controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .controls > * { min-width: 0; }
+            .controls .slider-wrap { grid-column: span 2; }
+            .controls button { width: 100%; }
+            .hero-grid { grid-template-columns: 1fr; }
+            .radar-card { min-width: 0; }
+            .radar-stage {
+                width: min(500px, 100%);
+                min-width: 500px;
+                padding: 18px;
+            }
+            .radar-card {
+                overflow-x: auto;
+            }
+        }
+        @media (max-width: 720px) {
+            .app-shell { width: min(100vw - 16px, 100%); margin-top: 8px; }
+            .topbar, .hero-panel, .stack-card { border-radius: 22px; }
+            .controls { grid-template-columns: 1fr; }
+            .controls .slider-wrap { grid-column: auto; }
+            .controls button { width: 100%; }
+            .api-usage-grid { grid-template-columns: 1fr; }
+            .slider-wrap { min-width: 0; }
+            .hero-top { flex-direction: column; }
+            .breakout-grid, .compact-grid, .metric-grid, .microchart-grid { grid-template-columns: 1fr; }
+            .banner-wrap {
+                top: auto;
+                bottom: 12px;
+                width: calc(100vw - 24px);
+            }
+            .radar-stage {
+                width: 420px;
+                min-width: 420px;
+                padding: 14px;
+            }
+            .focus-node {
+                width: 122px;
+                min-height: 122px;
+                padding: 12px;
+            }
+            .focus-symbol { font-size: 26px; }
+            .focus-price { font-size: 18px; }
+            .focus-bias { font-size: 11px; }
+            .indicator-node {
+                width: 78px;
+                min-height: 72px;
+                padding: 8px 6px;
+            }
+            .indicator-node .ticker { font-size: 12px; }
+            .indicator-node .price { font-size: 10px; }
+            .indicator-node .mini-bias { font-size: 9px; }
+        }
+    </style>
+</head>
+<body onload='syncToleranceValue(); updateDashboard()'>
+    <?php
+    $corrData = json_decode(file_get_contents('correlations.json'), true);
+    $allTickers = array_keys($corrData);
+    sort($allTickers);
+    $logoManifest = [];
+    if (file_exists('logos.json')) {
+        $logoManifest = json_decode(file_get_contents('logos.json'), true) ?: [];
+    }
+    ?>
+    <main class='app-shell'>
+        <header class='topbar glass'>
+            <div class='brand'>
+                <div class='eyebrow'>HackTrader v0.7.7 (by @gitjayson)</div>
+                <strong class='brand-title'><span class='pengo-trigger' id='pengoTrigger' title='Activate pengo'>🐧</span><span class='title-text'>Signal cockpit</span></strong>
+                <span>Chart-first breakout view with correlation confirmation</span>
+            </div>
+            <div class='controls'>
+                <input type='text' id='ticker' list='ticker-list' placeholder='Ticker' autocomplete='off' spellcheck='false'>
+                <datalist id='ticker-list'>
+                    <?php foreach ($allTickers as $t): ?>
+                        <option value='<?= htmlspecialchars($t, ENT_QUOTES, 'UTF-8') ?>'></option>
+                    <?php endforeach; ?>
+                </datalist>
+                <select id='period'><option selected>5m</option><option>1m</option><option>1h</option><option>1d</option></select>
+                <input type='number' id='lookback' value='100' placeholder='Lookback'>
+                <div class='slider-wrap'>
+                    <label for='tolerance'>Tolerance</label>
+                    <input type='range' id='tolerance' min='0' max='100' value='90' oninput='syncToleranceValue()'>
+                    <span class='slider-value' id='toleranceValue'>90</span>
+                </div>
+                <button class='primary-btn' onclick='updateDashboard()'>Scan</button>
+                <button class='ghost-btn' onclick='resetDashboard()'>Reset</button>
+                <button class='ghost-btn' onclick='window.location.href="logout.php"'>Logout</button>
+            </div>
+        </header>
 
-... [OUTPUT TRUNCATED - 36527 chars omitted out of 86527 total] ...
+        <section class='banner-wrap'>
+            <div id='statusBanner' class='status-banner'></div>
+            <div id='debugBanner' class='debug-banner'></div>
+        </section>
 
-inite(age) ? `${age}s old` : 'recent'} · ${source}`;
+        <div id='pengoPopup' class='pengo-popup' role='status' aria-live='polite'>
+            <span class='emoji'>🐧</span>
+            <span class='copy'>pengo approves the setup</span>
+        </div>
+
+        <section class='dashboard-grid'>
+            <section class='main-column' aria-label='Primary market dashboard'>
+                <section class='hero-panel glass'>
+                    <div class='hero-top'>
+                        <div class='focus-meta'>
+                            <div class='eyebrow'>Focus symbol</div>
+                            <h1 id='focusHeadline'>TSLA breakout monitor</h1>
+                            <p id='focusNarrative'>Scanning live price, breakout bias, and confirmation signals for the selected symbol.</p>
+                        </div>
+                        <div class='quote-pill'>
+                            <div class='label'>Live quote</div>
+                            <div class='value' id='focusPriceBox'>$--</div>
+                            <div class='sub' id='focusTimeBox'>Awaiting quote</div>
+                        </div>
+                    </div>
+                    <div class='hero-grid'>
+                        <div class='radar-card'>
+                            <div class='section-title'>
+                                <h2>Correlation radar</h2>
+                                <span id='indicatorBiasSubtext'>0 processed</span>
+                            </div>
+                            <div class='radar-stage' id='clock'>
+                                <svg id='lines' class='radar-lines'></svg>
+                                <div class='focus-node neutral' id='focus' onclick='resetDashboard()' style='cursor:pointer;'>
+                                    <div class='focus-symbol'>INIT</div>
+                                    <div class='focus-price'>SCAN</div>
+                                    <div class='focus-bias'>Awaiting data</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class='breakout-card'>
+                            <div class='section-title'>
+                                <h2>Breakout bias</h2>
+                                <span id='analysisMeta'>Channel structure</span>
+                            </div>
+                            <div class='breakout-grid'>
+                                <div class='signal-card up'>
+                                    <div class='label'>Upside probability</div>
+                                    <div class='value' id='upProbability'>--</div>
+                                    <div class='sub' id='upProbabilitySub'>Awaiting breakout model</div>
+                                </div>
+                                <div class='signal-card down'>
+                                    <div class='label'>Downside probability</div>
+                                    <div class='value' id='downProbability'>--</div>
+                                    <div class='sub' id='downProbabilitySub'>Awaiting breakout model</div>
+                                </div>
+                            </div>
+                            <div id='biasChip' class='bias-chip neutral'>Neutral bias</div>
+                            <div id='liveStatusChip' class='bias-chip neutral'>Live status pending</div>
+                            <div class='microchart-grid'>
+                                <div class='microchart-card'>
+                                    <div class='microchart-label'>Breakout pressure</div>
+                                    <div class='microchart-value' id='pressureValue'>--</div>
+                                    <div class='meter'><div class='meter-fill green' id='pressureFill'></div></div>
+                                    <div class='meter-subtext' id='pressureSubtext'>Awaiting breakout pressure</div>
+                                </div>
+                                <div class='microchart-card'>
+                                    <div class='microchart-label'>Channel width</div>
+                                    <div class='microchart-value' id='channelWidthValue'>--</div>
+                                    <div class='meter'><div class='meter-fill' id='channelWidthFill'></div></div>
+                                    <div class='meter-subtext' id='channelWidthSubtext'>Awaiting channel structure</div>
+                                </div>
+                                <div class='microchart-card'>
+                                    <div class='microchart-label'>Attempt stress</div>
+                                    <div class='microchart-value' id='attemptStressValue'>--</div>
+                                    <div class='meter'><div class='meter-fill red' id='attemptStressFill'></div></div>
+                                    <div class='meter-subtext' id='attemptStressSubtext'>Awaiting failed attempt count</div>
+                                </div>
+                            </div>
+                            <div class='range-grid' id='channelList'>
+                                <div class='range-card'>
+                                    <div class='range-top'>
+                                        <div class='range-name'>Current channel</div>
+                                        <div class='range-width'>Waiting on levels</div>
+                                    </div>
+                                    <div class='range-track'><div class='range-fill' style='width: 0%'></div></div>
+                                    <div class='range-meta'><span>--</span><span>--</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class='stack-card glass' style='padding-top: 16px; padding-bottom: 8px;'>
+                    <div class='section-title'>
+                        <h2>Price action</h2>
+                        <span id='chartMeta'>Awaiting market data</span>
+                    </div>
+                    <div id='tvChartContainer' style='width: 100%; height: 420px; margin-top: 10px; border-radius: 12px; overflow: hidden;'></div>
+                </section>
+
+            </section>
+
+            <aside class='side-column' aria-label='Supplementary market intelligence'>
+                <section class='stack-card glass'>
+                    <div class='section-title'>
+                        <h2>Intel stack</h2>
+                        <span id='quoteTimezone'>ET</span>
+                    </div>
+                    <div class='panel-tabs' role='tablist' aria-label='Right rail views'>
+                        <button type='button' role='tab' aria-selected='true' aria-controls='rightPanel-probes' class='panel-tab active' id='rightTab-probes' onclick="switchRightPanelTab('probes')">Probes</button>
+                        <button type='button' role='tab' aria-selected='false' aria-controls='rightPanel-context' class='panel-tab' id='rightTab-context' onclick="switchRightPanelTab('context')">Context</button>
+                        <button type='button' role='tab' aria-selected='false' aria-controls='rightPanel-attempts' class='panel-tab' id='rightTab-attempts' onclick="switchRightPanelTab('attempts')">Attempts</button>
+                        <button type='button' role='tab' aria-selected='false' aria-controls='rightPanel-drivers' class='panel-tab' id='rightTab-drivers' onclick="switchRightPanelTab('drivers')">Drivers</button>
+                        <button type='button' role='tab' aria-selected='false' aria-controls='rightPanel-usage' class='panel-tab' id='rightTab-usage' onclick="switchRightPanelTab('usage')">Usage</button>
+                    </div>
+                    <div class='tab-panel active' role='tabpanel' aria-labelledby='rightTab-probes' id='rightPanel-probes'>
+                        <div id='probeGraphPanel'></div>
+                    </div>
+                    <div class='tab-panel' role='tabpanel' aria-labelledby='rightTab-context' id='rightPanel-context'>
+                        <div class='metric-grid'>
+                            <div class='metric-card'>
+                                <div class='label'>Day volume</div>
+                                <div class='value' id='dayVolumeValue'>--</div>
+                                <div class='sub' id='dayVolumeSubtext'>Waiting on market data</div>
+                            </div>
+                            <div class='metric-card'>
+                                <div class='label'>Day ratio</div>
+                                <div class='value' id='dayVolumeRatio'>--</div>
+                                <div class='sub' id='barVolumeSubtext'>Current bar vs expected slot pending</div>
+                            </div>
+                            <div class='metric-card'>
+                                <div class='label'>Indicator bias</div>
+                                <div class='value' id='indicatorBiasValue'>--</div>
+                                <div class='sub'>Correlation basket disposition</div>
+                            </div>
+                            <div class='metric-card'>
+                                <div class='label'>Recent extremes</div>
+                                <div class='value' id='recentExtremesValue'>--</div>
+                                <div class='sub' id='previousDayValue'>Previous day waiting</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class='tab-panel' role='tabpanel' aria-labelledby='rightTab-attempts' id='rightPanel-attempts'>
+                        <div class='attempt-list' id='attemptList'></div>
+                    </div>
+                    <div class='tab-panel' role='tabpanel' aria-labelledby='rightTab-drivers' id='rightPanel-drivers'>
+                        <div class='drivers-list' id='driversList'></div>
+                    </div>
+                    <div class='tab-panel' role='tabpanel' aria-labelledby='rightTab-usage' id='rightPanel-usage'>
+                        <div class='api-usage-inline' aria-live='polite'>
+                            <div class='api-usage-top'>
+                                <div>
+                                    <div class='label'>API usage</div>
+                                    <div class='api-usage-kpi' id='apiUsageTotal'>--</div>
+                                </div>
+                                <span class='api-usage-pill' id='apiUsagePill'>idle</span>
+                            </div>
+                            <div class='api-usage-sub' id='apiUsageSub'>Waiting for your first counted request.</div>
+                            <div class='api-usage-grid'>
+                                <div class='api-usage-stat'>
+                                    <div class='label'>Success rate</div>
+                                    <div class='value' id='apiUsageSuccessRate'>--</div>
+                                </div>
+                                <div class='api-usage-stat'>
+                                    <div class='label'>Errors</div>
+                                    <div class='value' id='apiUsageErrors'>--</div>
+                                </div>
+                                <div class='api-usage-stat'>
+                                    <div class='label'>Last scan</div>
+                                    <div class='value' id='apiUsageLast'>--</div>
+                                </div>
+                            </div>
+                            <div class='api-usage-meta' id='apiUsageMeta'>No counted requests yet for this signed-in user.</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class='stack-card glass'>
+                    <div class='section-title'>
+                        <h2>Price structure</h2>
+                        <span id='sourceMeta'>Awaiting source</span>
+                    </div>
+                    <div class='compact-grid'>
+                        <div>
+                            <div class='section-title'><h2>Resistance stack</h2><span>R1 / R2</span></div>
+                            <div class='levels-list' id='resistanceList'></div>
+                        </div>
+                        <div>
+                            <div class='section-title'><h2>Support stack</h2><span>S1 / S2</span></div>
+                            <div class='levels-list' id='supportList'></div>
+                        </div>
+                    </div>
+                </section>
+            </aside>
+        </section>
+        <footer>HackTrader · visual refresh · v0.7.7</footer>
+    </main>
+
+    <script>
+        let refreshInterval = setInterval(updateDashboard, 30000);
+        let tickerInputDebounce = null;
+        let correlationPollTimer = null;
+        let dashboardRequestSeq = 0;
+        let pengoPopupTimer = null;
+
+        function syncToleranceValue() {
+            document.getElementById('toleranceValue').textContent = document.getElementById('tolerance').value;
+        }
+
+        function showBanner(message, isError = false) {
+            const banner = document.getElementById('statusBanner');
+            if (!message) {
+                banner.style.display = 'none';
+                banner.classList.remove('error');
+                banner.textContent = '';
                 return;
             }
-            el.className = 'bias-chip up';
-            el.textContent = `Live feed healthy · ${source}`;
+            banner.textContent = message;
+            banner.style.display = 'block';
+            banner.classList.toggle('error', !!isError);
+        }
+
+        function showDebug(message) {
+            const banner = document.getElementById('debugBanner');
+            const debugEnabled = new URLSearchParams(window.location.search).get('debug') === '1';
+            if (!debugEnabled || !message) {
+                banner.style.display = 'none';
+                banner.textContent = '';
+                return;
+            }
+            banner.textContent = message;
+            banner.style.display = 'block';
+        }
+
+        function showPengoPopup() {
+            const popup = document.getElementById('pengoPopup');
+            if (!popup) return;
+            popup.classList.add('show');
+            if (pengoPopupTimer) clearTimeout(pengoPopupTimer);
+            pengoPopupTimer = setTimeout(() => popup.classList.remove('show'), 10000);
+        }
+
+        function attachPengoTrigger() {
+            const trigger = document.getElementById('pengoTrigger');
+            if (!trigger) return;
+            trigger.addEventListener('click', showPengoPopup);
+        }
+
+        function formatSourceMeta(data) {
+            const parts = [];
+            if (data.source) parts.push(`SOURCE ${String(data.source).toUpperCase()}`);
+            if (data.live_status) parts.push(`STATUS ${String(data.live_status).toUpperCase()}`);
+            if (data.cache?.stale) parts.push(`STALE ${data.cache.age_seconds}s`);
+            else if (data.cache?.hit) parts.push(`CACHE ${data.cache.age_seconds}s`);
+            if (data.fallback_reason) parts.push('FALLBACK ACTIVE');
+            if (data.warning) parts.push('LIVE FETCH WARNING');
+            if (data.live_error_summary && data.live_status !== 'live') parts.push(String(data.live_error_summary).slice(0, 80));
+            return parts.join(' · ');
+        }
+
+        function formatPrice(value) {
+            const num = Number(value);
+            return Number.isFinite(num) ? num.toFixed(2) : '--';
+        }
+
+        function formatPercent(value) {
+            const num = Number(value);
+            return Number.isFinite(num) ? `${num.toFixed(1)}%` : '--';
+        }
+
+        function formatVolume(value) {
+            const num = Number(value);
+            if (!Number.isFinite(num)) return '--';
+            if (num >= 1_000_000_000) return `${(num / 1_000_000_000).toFixed(2)}B`;
+            if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(2)}M`;
+            if (num >= 1_000) return `${(num / 1_000).toFixed(1)}K`;
+            return `${Math.round(num)}`;
+        }
+
+        function formatRatio(value) {
+            const num = Number(value);
+            return Number.isFinite(num) ? `${num.toFixed(2)}x` : '--';
+        }
+
+        function formatRelativeTime(value) {
+            if (!value) return 'just now';
+            const parsed = new Date(value);
+            if (Number.isNaN(parsed.getTime())) return 'recently';
+            const deltaSeconds = Math.max(0, Math.round((Date.now() - parsed.getTime()) / 1000));
+            if (deltaSeconds < 60) return `${deltaSeconds}s ago`;
+            if (deltaSeconds < 3600) return `${Math.round(deltaSeconds / 60)}m ago`;
+            if (deltaSeconds < 86400) return `${Math.round(deltaSeconds / 3600)}h ago`;
+            return `${Math.round(deltaSeconds / 86400)}d ago`;
+        }
+
+        function updateApiUsageCard(usage) {
+            const totalEl = document.getElementById('apiUsageTotal');
+            if (!totalEl) return;
+
+            const attempts = Number(usage?.attempts);
+            const errors = Number(usage?.errors);
+            const successRate = Number(usage?.success_rate);
+            const lastTicker = usage?.last_ticker ? String(usage.last_ticker).toUpperCase() : null;
+            const lastInterval = usage?.last_interval ? String(usage.last_interval) : null;
+            const hasTracker = usage && Number.isFinite(attempts);
+            const hasUsage = hasTracker && attempts > 0;
+            const pill = document.getElementById('apiUsagePill');
+
+            totalEl.textContent = hasTracker ? `${attempts} calls` : '--';
+            document.getElementById('apiUsageSub').textContent = hasUsage
+                ? 'Counted provider requests for the current signed-in user.'
+                : 'No counted requests yet for this signed-in user.';
+            document.getElementById('apiUsageSuccessRate').textContent = hasUsage && Number.isFinite(successRate) ? `${Math.round(successRate)}%` : '--';
+            document.getElementById('apiUsageErrors').textContent = hasTracker && Number.isFinite(errors) ? `${errors}` : '--';
+            document.getElementById('apiUsageLast').textContent = hasUsage && lastTicker ? `${lastTicker}${lastInterval ? ` ${lastInterval}` : ''}` : '--';
+
+            pill.classList.toggle('warn', hasUsage && Number.isFinite(errors) && errors > 0);
+            pill.textContent = !hasUsage ? 'idle' : (errors > 0 ? `${errors} issue${errors === 1 ? '' : 's'}` : 'tracked');
+
+            const lastWhen = formatRelativeTime(usage?.last_request_at);
+            document.getElementById('apiUsageMeta').textContent = hasUsage
+                ? `Updated ${lastWhen}. ${lastTicker ? `Last counted request: ${lastTicker}${lastInterval ? ` ${lastInterval}` : ''}. ` : ''}Attributed to the current signed-in user.`
+                : 'No counted requests yet. Attribution is tied to the current signed-in user.';
+        }
+
+        function formatSigned(value) {
+            const num = Number(value);
+            if (!Number.isFinite(num)) return '--';
+            return `${num >= 0 ? '+' : ''}${num.toFixed(2)}`;
+        }
+
+        function fetchTickerData(ticker, period, lookback) {
+            return fetch(`api.php?ticker=${encodeURIComponent(ticker)}&period=${encodeURIComponent(period)}&lookback=${encodeURIComponent(lookback)}&t=${Date.now()}`)
+                .then(async (response) => {
+                    const data = await response.json();
+                    updateApiUsageCard(data?.usage);
+                    if (!response.ok || data.error) throw data;
+                    return data;
+                });
+        }
+
+        function clearCorrelationPoll() {
+            if (correlationPollTimer) {
+                clearTimeout(correlationPollTimer);
+                correlationPollTimer = null;
+            }
+        }
+
+        function scheduleCorrelationRefresh(activeRequestId, ticker, delayMs = 4000) {
+            clearCorrelationPoll();
+            correlationPollTimer = setTimeout(() => {
+                if (activeRequestId !== dashboardRequestSeq) return;
+                const currentTicker = (document.getElementById('ticker').value || '').toUpperCase();
+                if (currentTicker !== ticker) return;
+                updateDashboard(ticker, { preserveInput: true, silentFocus: true });
+            }, delayMs);
+        }
+
+        function summarizeRelationshipBias(indicatorStates, tolerance) {
+            const summary = { up: 0, down: 0, neutral: 0 };
+            (indicatorStates || []).forEach((item) => {
+                if (!item || !item.data) {
+                    summary.neutral += 1;
+                    return;
+                }
+                const relation = item.relation || 'positive';
+                const up = Number(item.data?.probabilities?.up || 0);
+                const down = Number(item.data?.probabilities?.down || 0);
+                const isUp = relation === 'positive' ? up >= tolerance : down >= tolerance;
+                const isDown = relation === 'positive' ? down >= tolerance : up >= tolerance;
+                if (isUp) summary.up += 1;
+                else if (isDown) summary.down += 1;
+                else summary.neutral += 1;
+            });
+            return summary;
+        }
+
+        function resetDashboard() {
+            document.getElementById('ticker').value = 'TSLA';
+            document.getElementById('period').value = '5m';
+            document.getElementById('lookback').value = '100';
+            document.getElementById('tolerance').value = '90';
+            syncToleranceValue();
+            updateDashboard('TSLA');
+        }
+
+        function attachTickerAutoRefresh() {
+            const tickerEl = document.getElementById('ticker');
+            const triggerRefresh = () => {
+                const nextTicker = tickerEl.value.trim().toUpperCase();
+                if (!nextTicker) return;
+                tickerEl.value = nextTicker;
+                clearTimeout(tickerInputDebounce);
+                tickerInputDebounce = setTimeout(() => updateDashboard(nextTicker), 250);
+            };
+            tickerEl.addEventListener('change', triggerRefresh);
+            tickerEl.addEventListener('blur', triggerRefresh);
+            tickerEl.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    triggerRefresh();
+                }
+            });
+        }
+
+        function switchRightPanelTab(tabName) {
+            ['probes', 'context', 'attempts', 'drivers', 'usage'].forEach((name) => {
+                const tab = document.getElementById(`rightTab-${name}`);
+                const panel = document.getElementById(`rightPanel-${name}`);
+                const active = name === tabName;
+                if (tab) {
+                    tab.classList.toggle('active', active);
+                    tab.setAttribute('aria-selected', active ? 'true' : 'false');
+                }
+                if (panel) panel.classList.toggle('active', active);
+            });
+        }
+
+        function setBiasChip(probabilities) {
+            const el = document.getElementById('biasChip');
+            const bias = probabilities?.bias || 'neutral';
+            const confidence = probabilities?.confidence || 'low';
+            el.className = `bias-chip ${bias}`;
+            el.textContent = `${bias} bias · ${confidence} confidence`;
+        }
+
+        function setLiveStatusChip(data) {
+            const el = document.getElementById('liveStatusChip');
+            if (!el) return;
+            const liveStatus = String(data?.live_status || '').toLowerCase();
+            const source = data?.source ? String(data.source).toUpperCase() : 'SOURCE UNKNOWN';
+            const summary = data?.live_error_summary ? String(data.live_error_summary) : '';
+            if (liveStatus === 'stale_fallback') {
+                el.className = 'bias-chip stale';
+                el.textContent = `Data stale · ${summary || 'live fetch failed'}`;
+                return;
+            }
+            if (liveStatus === 'error') {
+                el.className = 'bias-chip error';
+                el.textContent = `Data unavailable · ${summary || 'market data unavailable'}`;
+                return;
+            }
+            if (liveStatus === 'cache_hit') {
+                const age = Number(data?.cache?.age_seconds);
+                el.className = 'bias-chip neutral';
+                el.textContent = `Cached data · ${Number.isFinite(age) ? `${age}s old` : 'recent'} · ${source}`;
+                return;
+            }
+            el.className = 'bias-chip live';
+            el.textContent = `Live data · ${source}`;
         }
 
         function renderLevelList(targetId, titlePrefix, levels) {
@@ -738,7 +1574,7 @@ inite(age) ? `${age}s old` : 'recent'} · ${source}`;
             const upAttempts = data?.attempts?.failed_up_today ?? 0;
             const downAttempts = data?.attempts?.failed_down_today ?? 0;
             headline.textContent = `${symbol} breakout monitor`;
-            narrative.textContent = `${symbol} is showing a ${bias} breakout posture with ${confidence} confidence. Failed upside attempts: ${upAttempts}. Failed downside attempts: ${downAttempts}.`; 
+            narrative.textContent = `${bias} setup · ${confidence} confidence · ${upAttempts} failed upside probes · ${downAttempts} failed downside probes.`;
         }
 
         
@@ -954,10 +1790,12 @@ inite(age) ? `${age}s old` : 'recent'} · ${source}`;
             const focus = document.getElementById('focus');
             const probs = data?.probabilities || {};
             const bias = probs.bias || 'neutral';
+            const directionGlyph = bias === 'up' ? '↑' : (bias === 'down' ? '↓' : '→');
             focus.className = `focus-node ${bias}`;
             focus.innerHTML = `
                 <div class='focus-symbol'>${symbol}</div>
                 <div class='focus-price'>$${formatPrice(data?.current_price)}</div>
+                <div class='focus-direction' aria-hidden='true'>${directionGlyph}</div>
                 <div class='focus-bias'>↑ ${formatPercent(probs.up)} · ↓ ${formatPercent(probs.down)} · ${bias}</div>
             `;
         }
