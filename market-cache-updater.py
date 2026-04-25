@@ -15,7 +15,7 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlencode
-from urllib.request import urlopen, Request
+from urllib.request import Request, urlopen
 
 BASE_DIR = Path(__file__).resolve().parent
 CACHE_PATH = BASE_DIR / "market-data-cache.json"
@@ -23,9 +23,30 @@ WATCHLIST_PATH = BASE_DIR / "market-watchlist.json"
 SECRETS_PATH = BASE_DIR / "secrets.json"
 
 DEFAULT_SYMBOLS = [
-    "TSLA", "NVDA", "AAPL", "AMZN", "MSFT", "META", "GOOGL", "NFLX",
-    "AMD", "QQQ", "SPY", "IWM", "XLY", "XLC", "XLK", "XLF",
-    "WTI", "UNG", "UUP", "TLT", "GLD", "SLV", "XOP", "SMH",
+    "TSLA",
+    "NVDA",
+    "AAPL",
+    "AMZN",
+    "MSFT",
+    "META",
+    "GOOGL",
+    "NFLX",
+    "AMD",
+    "QQQ",
+    "SPY",
+    "IWM",
+    "XLY",
+    "XLC",
+    "XLK",
+    "XLF",
+    "WTI",
+    "UNG",
+    "UUP",
+    "TLT",
+    "GLD",
+    "SLV",
+    "XOP",
+    "SMH",
 ]
 
 
@@ -77,7 +98,7 @@ def fetch_quotes(symbols: list[str], api_key: str) -> dict:
 
 def chunked(seq, size):
     for i in range(0, len(seq), size):
-        yield seq[i:i + size]
+        yield seq[i : i + size]
 
 
 def main() -> int:

@@ -4,6 +4,13 @@ deploy.sh
 setup_git.sh
 .pengo_tmp
 
+# --- composer dev dependencies (installed locally, not deployed) ---
+vendor/
+
+# --- phpstan binary downloaded by `make install` ---
+bin/phpstan.phar
+bin/
+
 # --- Secrets / credentials ---
 api-accounts.json
 api-accounts.sqlite

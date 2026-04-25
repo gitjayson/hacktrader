@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+#
+# pre-commit hook
+# Blocks the bad habits we just cleaned up:
+#   - Manual *.bak / *.bak-* versioning files
+#   - Accidentally staged secrets / runtime state
+#
+# Install (or reinstall) by running:  bash hooks/install.sh
+
+set -euo pipefail
+
+fail=0
+
+# Files staged in this commit (added/copied/modified/renamed)
+staged="$(git diff --cached --name-only --diff-filter=ACMR)"
+
+# 1. Block manual backup files
+bak_hits="$(printf '%s\n' "$staged" | grep -E '(\.bak$|\.bak[.-])' || true)"
+if [[ -n "$bak_hits" ]]; then
+    echo "ERROR: pre-commit blocked staged backup files:" >&2
+    printf '  %s\n' $bak_hits >&2
+    echo "We use git for history now. Delete these and try again." >&2
+    fail=1
+fi
+
+# 2. Block files matched by deny-list of secrets / live state
+denylist=(
+    'api-accounts.json'
+    'api-accounts.sqlite'
+    'api-usage.json'
+    'api_usage_tracker.json'
+    'correlations.json'
+    'correlation-status.json'
+    'focus-universe.json'
+    'market-watchlist.json'
+    '.pengo_tmp'
+    '.env'
+    '.env.local'
+    '.env.production'
+)
+for needle in "${denylist[@]}"; do
+    if printf '%s\n' "$staged" | grep -qxF "$needle"; then
+        echo "ERROR: pre-commit blocked secret/state file: $needle" >&2
+        echo "  If this is intentional, override once with:  git commit --no-verify" >&2
+        fail=1
+    fi
+done
+
+# 3. Block files in backups/ if anyone re-creates that directory
+if printf '%s\n' "$staged" | grep -qE '^backups/'; then
+    echo "ERROR: pre-commit blocked file(s) under backups/" >&2
+    echo "  We use git tags/branches for snapshots, not a backups/ tree." >&2
+    fail=1
+fi
+
+# 4. Soft-warn on huge files (>5 MB) — doesn't block, just notes
+while IFS= read -r f; do
+    [[ -z "$f" || ! -f "$f" ]] && continue
+    size=$(stat -f%z "$f" 2>/dev/null || stat -c%s "$f" 2>/dev/null || echo 0)
+    if (( size > 5 * 1024 * 1024 )); then
+        echo "WARN: staging large file ($((size / 1024 / 1024)) MB): $f" >&2
+    fi
+done <<< "$staged"
+
+exit $fail

@@ -1,6 +1,6 @@
 import sys
 
-with open('/var/www/html/api.php', 'r') as f:
+with open("/var/www/html/api.php") as f:
     content = f.read()
 
 patch = """<?php
@@ -21,7 +21,7 @@ log_api_usage($apiKey, '/api.php', $_GET['ticker'] ?? 'TSLA');
 
 if "api_auth.php" not in content:
     content = content.replace("<?php", patch, 1)
-    with open('/var/www/html/api.php', 'w') as f:
+    with open("/var/www/html/api.php", "w") as f:
         f.write(content)
     print("Patched api.php")
 else:

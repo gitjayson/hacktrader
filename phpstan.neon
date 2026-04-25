@@ -1,0 +1,39 @@
+parameters:
+    # Starting level: 1.
+    # phpstan has 10 levels (0-9). Level 1 catches obvious issues without
+    # drowning us in errors against an existing codebase. Bump this up as we
+    # clean things up. https://phpstan.org/user-guide/rule-levels
+    level: 1
+
+    paths:
+        - api.php
+        - api_auth.php
+        - dashboard.php
+        - callback.php
+        - correlate.php
+        - index.php
+        - healthz.php
+        - disclaimer.php
+        - logout.php
+
+    excludePaths:
+        - vendor/
+        - backups/
+        - '*.bak'
+        - '*.bak-*'
+
+    # Tolerated for now while we get a baseline established.
+    treatPhpDocTypesAsCertain: false
+    reportUnmatchedIgnoredErrors: false
+
+    # Ignore errors phpstan raises only because vendor/ isn't installed
+    # locally. The classes exist at runtime on the server (per composer.json).
+    ignoreErrors:
+        - identifier: class.notFound
+          message: '#Google\\#'
+
+    # We can paste in a baseline file later via:
+    #   php bin/phpstan.phar analyse --generate-baseline
+    # to grandfather existing issues without blocking new code.
+    # includes:
+    #     - phpstan-baseline.neon

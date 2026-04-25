@@ -1,0 +1,42 @@
+# pyproject.toml
+# Tooling config for the Python side of HackTrader.
+# Currently scoped to ruff (lint + format). No build system yet —
+# the Python files are run as standalone scripts.
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+extend-exclude = [
+    "backups",
+    "*.bak",
+    "*.bak-*",
+    "__pycache__",
+    "vendor",
+]
+
+[tool.ruff.lint]
+# Pragmatic starting set. We can tighten later.
+#   E, W   pycodestyle (style)
+#   F      pyflakes (real bugs: unused imports, undefined names)
+#   I      isort (import order)
+#   B      flake8-bugbear (likely-bug patterns)
+#   UP     pyupgrade (modern Python idioms)
+#   SIM    flake8-simplify (refactor hints)
+#   RUF    ruff-specific rules
+select = ["E", "W", "F", "I", "B", "UP", "SIM", "RUF"]
+
+# Things we don't care about right now in a script-style codebase
+ignore = [
+    "E501",   # line too long — formatter will fix the ones that matter
+    "E402",   # module level import not at top — common in scripts that mutate sys.path first
+    "B008",   # function call in default arg — sometimes intentional in this codebase
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Verification / one-off scripts can be looser
+"scripts/*" = ["E", "W", "B"]
+"patch_*.py" = ["E", "W", "B", "F401"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
