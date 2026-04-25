@@ -189,23 +189,37 @@ if (!defined('HACKTRADER_SUBSCRIPTION_LOADED')) {
     }
 
     /**
+     * Locate and parse secrets.json. Mirrors the candidate-chain pattern
+     * callback.php uses so both files agree on where the file lives:
+     *
+     *   /var/www/secrets.json     (preferred — above webroot, safer)
+     *   /var/www/html/secrets.json (fallback — same dir as the PHP files)
+     *
+     * Returns the decoded array, or [] if no secrets file is found.
+     */
+    function hacktrader_load_secrets(): array {
+        $candidates = [
+            __DIR__ . '/../secrets.json',     // /var/www/html/secrets.json
+            dirname(__DIR__, 2) . '/secrets.json', // /var/www/secrets.json (one above webroot)
+            '/var/www/secrets.json',          // explicit fallback
+        ];
+        foreach ($candidates as $path) {
+            if (is_file($path) && is_readable($path)) {
+                $raw = file_get_contents($path);
+                $json = $raw !== false ? json_decode($raw, true) : null;
+                if (is_array($json)) return $json;
+            }
+        }
+        return [];
+    }
+
+    /**
      * Load Stripe-related secrets from secrets.json. Returns null fields if
      * not yet configured — calling code should treat that as "Stripe not
      * wired up yet" and emit a friendly message instead of erroring.
      */
     function hacktrader_stripe_config(): array {
-        $path = __DIR__ . '/../secrets.json';
-        $defaults = [
-            'publishable_key' => null,
-            'secret_key' => null,
-            'webhook_secret' => null,
-            'price_plus' => null,
-            'price_pro' => null,
-        ];
-        if (!file_exists($path)) return $defaults;
-        $raw = file_get_contents($path);
-        $json = $raw !== false ? json_decode($raw, true) : null;
-        if (!is_array($json)) return $defaults;
+        $json = hacktrader_load_secrets();
         return [
             'publishable_key' => $json['STRIPE_PUBLISHABLE_KEY'] ?? null,
             'secret_key' => $json['STRIPE_SECRET_KEY'] ?? null,

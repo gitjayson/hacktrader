@@ -47,17 +47,13 @@ const TEST_LOGIN_ALLOWED_EMAILS = [
 ];
 
 // ---- Secret check ----------------------------------------------------------
-$secretsPath = __DIR__ . '/secrets.json';
-$expectedKey = null;
-if (file_exists($secretsPath)) {
-    $secrets = json_decode((string) file_get_contents($secretsPath), true);
-    if (is_array($secrets)) {
-        $expectedKey = $secrets['TEST_LOGIN_KEY'] ?? null;
-    }
-}
+// Use the shared loader so we honor /var/www/secrets.json (above webroot)
+// just like callback.php does, instead of hardcoding /var/www/html/.
+$secrets = hacktrader_load_secrets();
+$expectedKey = $secrets['TEST_LOGIN_KEY'] ?? null;
 if (!$expectedKey) {
     http_response_code(503);
-    echo 'test-login disabled (TEST_LOGIN_KEY not configured)';
+    echo 'test-login disabled (TEST_LOGIN_KEY not configured in secrets.json)';
     exit;
 }
 
