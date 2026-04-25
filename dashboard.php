@@ -1469,7 +1469,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 
             </section>
         </section>
-        <footer>HackTrader v0.8.1 · by @gitjayson</footer>
+        <footer>HackTrader v0.8.1 · © 2026 Jayson Hawley · All rights reserved.</footer>
     </main>
 
     <script>
