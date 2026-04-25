@@ -440,32 +440,42 @@ if (function_exists('log_api_usage')) {
 }
 
 // v0.9.0 — subscription gate.
-// Soft mode for now: we resolve the user, count the call, log when over-quota,
-// but DON'T block the response. Once Stripe is wired and we've validated the
-// trial flow end-to-end, flip $hardGate to true to enforce.
-@require_once __DIR__ . '/lib/subscription.php';
+// Soft mode for now: resolve the user, count the call, log when over-quota,
+// but DON'T block the response. Once Stripe is wired and the trial flow is
+// validated end-to-end, flip $hardGate to true to enforce.
+//
+// EVERYTHING in this block is wrapped in try/catch so that any failure
+// (missing PDO_SQLITE extension, unwritable directory, schema migration
+// hiccup, etc.) cannot break api.php's main response. The gate is best-effort.
 $hardGate = false;  // flip to true after Stripe go-live + trial test
-if ($sessionAuthorized && function_exists('current_user_record')) {
-    $sub_user = current_user_record();
-    if ($sub_user) {
-        $allowed = user_can_make_api_call($sub_user);
-        if (!$allowed) {
-            error_log("v0.9.0 quota: user {$sub_user['email']} over plan {$sub_user['plan']} call limit");
-            if ($hardGate) {
-                http_response_code(402);
-                header('Content-Type: application/json');
-                echo json_encode([
-                    'error' => 'quota_exceeded',
-                    'message' => 'Monthly API call quota reached. Upgrade your plan to continue.',
-                    'plan' => $sub_user['plan'],
-                    'subscribe_url' => '/index.php#pricing',
-                ]);
-                exit;
+$libPath = __DIR__ . '/lib/subscription.php';
+if ($sessionAuthorized && file_exists($libPath)) {
+    try {
+        require_once $libPath;
+        if (function_exists('current_user_record')) {
+            $sub_user = current_user_record();
+            if ($sub_user) {
+                $allowed = user_can_make_api_call($sub_user);
+                if (!$allowed) {
+                    error_log("v0.9.0 quota: user {$sub_user['email']} over plan {$sub_user['plan']} call limit");
+                    if ($hardGate) {
+                        http_response_code(402);
+                        header('Content-Type: application/json');
+                        echo json_encode([
+                            'error' => 'quota_exceeded',
+                            'message' => 'Monthly API call quota reached. Upgrade your plan to continue.',
+                            'plan' => $sub_user['plan'],
+                            'subscribe_url' => '/index.php#pricing',
+                        ]);
+                        exit;
+                    }
+                }
+                record_api_call($sub_user);
             }
         }
-        // Always increment in soft mode so we can see real usage data
-        // before enforcing.
-        record_api_call($sub_user);
+    } catch (Throwable $e) {
+        // Subscription system is dark — log and let api.php proceed normally.
+        error_log('v0.9.0 subscription gate failed (non-fatal): ' . $e->getMessage());
     }
 }
 

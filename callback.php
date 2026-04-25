@@ -135,15 +135,17 @@ if (!isset($_GET['code'])) {
 
     // v0.9.0: Upsert into the subscription DB so a user row exists before
     // any Stripe webhook references this email. The first call seeds a
-    // 7-day Plus trial; subsequent logins just refresh the row.
-    require_once __DIR__ . '/lib/subscription.php';
-    if ($email !== '' && $googleSub !== '') {
-        try {
+    // 7-day Plus trial; subsequent logins just refresh the row. The whole
+    // require + call is try/wrapped so any DB / extension failure cannot
+    // block login.
+    try {
+        $libPath = __DIR__ . '/lib/subscription.php';
+        if (file_exists($libPath) && $email !== '' && $googleSub !== '') {
+            require_once $libPath;
             upsert_user_from_oauth($email, $googleSub, $displayName);
-        } catch (Throwable $e) {
-            // Don't block login if the DB has a hiccup; just log it.
-            error_log('callback.php upsert failed: ' . $e->getMessage());
         }
+    } catch (Throwable $e) {
+        error_log('callback.php upsert failed (non-fatal): ' . $e->getMessage());
     }
 
     session_regenerate_id(true);
