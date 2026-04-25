@@ -11,7 +11,6 @@ import math
 
 import pytest
 
-
 # ---- calculate_sma ----------------------------------------------------------
 
 
@@ -109,7 +108,7 @@ def test_rsi_known_textbook_example(run_brk):
     most TA references. 16 closing prices.
 
     Expected (from this codebase's implementation): RSI[14] ≈ 70.46.
-    Most TA references give a value in the 70.4–70.5 range. We pin to
+    Most TA references give a value in the 70.4-70.5 range. We pin to
     a tight tolerance so any future drift in the math is caught.
     """
     prices = [

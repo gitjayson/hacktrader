@@ -5,7 +5,6 @@ These are the easy ones that catch dumb regressions cheaply.
 
 from __future__ import annotations
 
-
 # ---- safe_float -------------------------------------------------------------
 
 

@@ -5,7 +5,6 @@ These power the support/resistance ladder on the dashboard.
 
 from __future__ import annotations
 
-
 # ---- find_pivots ------------------------------------------------------------
 
 
