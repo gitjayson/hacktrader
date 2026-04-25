@@ -130,13 +130,28 @@ if (!isset($_GET['code'])) {
 
     $displayName = trim((string) ($userinfo->name ?? 'Trader'));
     $email = strtolower(trim((string) ($userinfo->email ?? '')));
+    $googleSub = (string) ($userinfo->id ?? $userinfo->sub ?? '');
     $sessionUserName = resolve_persistent_session_user_name($email, $displayName);
+
+    // v0.9.0: Upsert into the subscription DB so a user row exists before
+    // any Stripe webhook references this email. The first call seeds a
+    // 7-day Plus trial; subsequent logins just refresh the row.
+    require_once __DIR__ . '/lib/subscription.php';
+    if ($email !== '' && $googleSub !== '') {
+        try {
+            upsert_user_from_oauth($email, $googleSub, $displayName);
+        } catch (Throwable $e) {
+            // Don't block login if the DB has a hiccup; just log it.
+            error_log('callback.php upsert failed: ' . $e->getMessage());
+        }
+    }
 
     session_regenerate_id(true);
     $_SESSION['oauth_authenticated_at'] = time();
     $_SESSION['user_name'] = $displayName;
     $_SESSION['user_display_name'] = $displayName;
     $_SESSION['user_email'] = $email;
+    $_SESSION['google_sub'] = $googleSub;
     $_SESSION['session_user_name'] = $sessionUserName;
     $_SESSION['session_identity'] = 'session:' . $sessionUserName;
     $_SESSION['login_time'] = time();

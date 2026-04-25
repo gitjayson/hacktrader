@@ -1,0 +1,217 @@
+<?php
+/**
+ * lib/subscription.php — user lookups, plan resolution, gate functions.
+ *
+ * Public API:
+ *   upsert_user_from_oauth(email, google_sub, name)  → user row
+ *   current_user()                                    → user row (or null)
+ *   user_plan(user)                                   → plan slug ('free'|'plus'|'pro')
+ *   user_has_active_subscription(user)                → bool
+ *   user_can_add_ticker(user)                         → bool
+ *   user_can_make_api_call(user)                      → bool
+ *   record_api_call(user)                             → void  (increments monthly counter)
+ *   user_usage_summary(user)                          → array  (for dashboard display)
+ */
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/plans.php';
+
+if (!defined('HACKTRADER_SUBSCRIPTION_LOADED')) {
+    define('HACKTRADER_SUBSCRIPTION_LOADED', true);
+
+    /**
+     * Upsert a user row keyed on google_sub. Called from callback.php after
+     * a successful Google OAuth handshake. Returns the resulting row.
+     */
+    function upsert_user_from_oauth(string $email, string $google_sub, ?string $name = null): array {
+        $db = hacktrader_db();
+        $now = time();
+        $existing = $db->prepare('SELECT * FROM users WHERE google_sub = ? OR email = ? LIMIT 1');
+        $existing->execute([$google_sub, $email]);
+        $row = $existing->fetch(PDO::FETCH_ASSOC);
+
+        if ($row) {
+            // Update mutable fields. Don't overwrite plan/subscription_status —
+            // those are owned by the Stripe webhook handler.
+            $update = $db->prepare(
+                'UPDATE users SET email = ?, google_sub = ?, name = ?, updated_at = ? WHERE id = ?'
+            );
+            $update->execute([$email, $google_sub, $name, $now, $row['id']]);
+            return user_by_id((int) $row['id']);
+        }
+
+        // First-time login → seed with a 7-day free trial of Plus so the user
+        // doesn't hit any gate during their first session. Trial end stamps
+        // current_period_end; webhook will replace this if they actually pay.
+        $trialEnd = $now + (7 * 86400);
+        $insert = $db->prepare(
+            'INSERT INTO users(email, google_sub, name, plan, subscription_status, current_period_end, trial_end, created_at, updated_at)
+             VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        );
+        $insert->execute([$email, $google_sub, $name, 'free', 'trialing', $trialEnd, $trialEnd, $now, $now]);
+        $userId = (int) $db->lastInsertId();
+        return user_by_id($userId);
+    }
+
+    function user_by_id(int $id): ?array {
+        $db = hacktrader_db();
+        $stmt = $db->prepare('SELECT * FROM users WHERE id = ?');
+        $stmt->execute([$id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
+    function user_by_email(string $email): ?array {
+        $db = hacktrader_db();
+        $stmt = $db->prepare('SELECT * FROM users WHERE email = ?');
+        $stmt->execute([$email]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
+    function user_by_stripe_customer(string $customerId): ?array {
+        $db = hacktrader_db();
+        $stmt = $db->prepare('SELECT * FROM users WHERE stripe_customer_id = ?');
+        $stmt->execute([$customerId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
+    /** Returns the currently logged-in user row, or null. */
+    function current_user_record(): ?array {
+        if (empty($_SESSION['user_email'])) {
+            return null;
+        }
+        return user_by_email((string) $_SESSION['user_email']);
+    }
+
+    /** 'free' | 'plus' | 'pro' — falls back to free if unknown. */
+    function user_plan(array $user): string {
+        $slug = (string) ($user['plan'] ?? 'free');
+        return hacktrader_plan($slug) ? $slug : 'free';
+    }
+
+    function user_has_active_subscription(array $user): bool {
+        $status = (string) ($user['subscription_status'] ?? 'none');
+        if (!in_array($status, ['active', 'trialing'], true)) {
+            return false;
+        }
+        $end = (int) ($user['current_period_end'] ?? 0);
+        return $end > time();
+    }
+
+    /**
+     * Quota gates. These take a user row and return a boolean. The free tier
+     * always gets THROUGH the gate up to the quota — paid plans get more.
+     */
+    function user_ticker_count(array $user): int {
+        $db = hacktrader_db();
+        $stmt = $db->prepare('SELECT COUNT(*) FROM user_tickers WHERE user_id = ?');
+        $stmt->execute([$user['id']]);
+        return (int) $stmt->fetchColumn();
+    }
+
+    function user_can_add_ticker(array $user): bool {
+        $plan = hacktrader_plan(user_plan($user));
+        $limit = (int) $plan['ticker_limit'];
+        if ($limit >= HACKTRADER_UNLIMITED) return true;
+        return user_ticker_count($user) < $limit;
+    }
+
+    function current_billing_window_start(array $user): int {
+        // For paying users we anchor on current_period_end (so the call counter
+        // resets exactly when Stripe rolls). For free users we anchor on the
+        // 1st of the current calendar month.
+        $end = (int) ($user['current_period_end'] ?? 0);
+        if ($end > time()) {
+            // Roughly a month before period end (Stripe uses calendar months
+            // but the exact boundary doesn't matter for quota purposes).
+            return $end - (30 * 86400);
+        }
+        return strtotime(date('Y-m-01 00:00:00'));
+    }
+
+    function user_api_call_count(array $user): int {
+        $db = hacktrader_db();
+        $stmt = $db->prepare('SELECT call_count FROM api_usage WHERE user_id = ? AND window_start = ?');
+        $stmt->execute([$user['id'], current_billing_window_start($user)]);
+        $count = $stmt->fetchColumn();
+        return $count !== false ? (int) $count : 0;
+    }
+
+    function user_can_make_api_call(array $user): bool {
+        $plan = hacktrader_plan(user_plan($user));
+        $limit = (int) $plan['api_call_limit'];
+        if ($limit >= HACKTRADER_UNLIMITED) return true;
+        return user_api_call_count($user) < $limit;
+    }
+
+    /**
+     * Increment the user's monthly API call counter. Called once per
+     * billable api.php request, AFTER the gate decision.
+     */
+    function record_api_call(array $user): void {
+        $db = hacktrader_db();
+        $window = current_billing_window_start($user);
+        // INSERT OR IGNORE then UPDATE — sqlite-friendly upsert without the
+        // 3.24+ ON CONFLICT syntax (Ubuntu LTS sqlite versions vary).
+        $insert = $db->prepare('INSERT OR IGNORE INTO api_usage(user_id, window_start, call_count) VALUES(?, ?, 0)');
+        $insert->execute([$user['id'], $window]);
+        $update = $db->prepare('UPDATE api_usage SET call_count = call_count + 1 WHERE user_id = ? AND window_start = ?');
+        $update->execute([$user['id'], $window]);
+    }
+
+    /** Compact summary for the dashboard's Subscription panel. */
+    function user_usage_summary(array $user): array {
+        $plan = hacktrader_plan(user_plan($user));
+        $callsUsed = user_api_call_count($user);
+        $tickerCount = user_ticker_count($user);
+        $callLimit = (int) $plan['api_call_limit'];
+        $tickerLimit = (int) $plan['ticker_limit'];
+        return [
+            'plan' => $plan['slug'],
+            'plan_name' => $plan['display_name'],
+            'price_monthly' => $plan['price_monthly'],
+            'subscription_status' => $user['subscription_status'] ?? 'none',
+            'current_period_end' => $user['current_period_end'] ?? null,
+            'trial_end' => $user['trial_end'] ?? null,
+            'tickers' => [
+                'used' => $tickerCount,
+                'limit' => $tickerLimit >= HACKTRADER_UNLIMITED ? null : $tickerLimit,
+            ],
+            'api_calls' => [
+                'used' => $callsUsed,
+                'limit' => $callLimit >= HACKTRADER_UNLIMITED ? null : $callLimit,
+            ],
+        ];
+    }
+
+    /**
+     * Load Stripe-related secrets from secrets.json. Returns null fields if
+     * not yet configured — calling code should treat that as "Stripe not
+     * wired up yet" and emit a friendly message instead of erroring.
+     */
+    function hacktrader_stripe_config(): array {
+        $path = __DIR__ . '/../secrets.json';
+        $defaults = [
+            'publishable_key' => null,
+            'secret_key' => null,
+            'webhook_secret' => null,
+            'price_plus' => null,
+            'price_pro' => null,
+        ];
+        if (!file_exists($path)) return $defaults;
+        $raw = file_get_contents($path);
+        $json = $raw !== false ? json_decode($raw, true) : null;
+        if (!is_array($json)) return $defaults;
+        return [
+            'publishable_key' => $json['STRIPE_PUBLISHABLE_KEY'] ?? null,
+            'secret_key' => $json['STRIPE_SECRET_KEY'] ?? null,
+            'webhook_secret' => $json['STRIPE_WEBHOOK_SECRET'] ?? null,
+            'price_plus' => $json['STRIPE_PRICE_PLUS'] ?? null,
+            'price_pro' => $json['STRIPE_PRICE_PRO'] ?? null,
+        ];
+    }
+}

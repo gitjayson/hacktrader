@@ -6,6 +6,14 @@
 
 HackTrader is a market dashboard for tracking a focus ticker, breakout probabilities, support/resistance ladders, volume context, and correlated indicators in a sci-fi control-panel interface.
 
+## Highlights in v0.9.0
+
+- **Subscription tiers introduced.** Free (5 tickers, 1k API calls/mo) · HackTrader Plus $29/mo (25 tickers, 25k calls) · HackTrader Pro $99/mo (unlimited). New users get a 7-day Plus-tier trial automatically on first Google login.
+- **Per-user persistence.** SQLite-backed `users.sqlite` with auto-migrating schema. Tracks Google OAuth identity, Stripe customer + subscription IDs, plan, status, and a per-user monthly API-call counter that resets on the billing cycle boundary.
+- **Stripe wiring (scaffold).** `subscribe.php` (hosted Checkout redirect), `billing.php` (Customer Portal redirect), `webhook.php` (signature-verified event receiver, plan updates, payment-failed → past_due transitions). All three return informative 503 messages until Stripe keys land in `secrets.json`; once they do, flipping the switch is trivial.
+- **Entitlement matrix as data.** `lib/plans.php` is the single source of truth for plan limits — change a number there and the gates, the pricing page, and the dashboard usage panel all reflect it.
+- **Gate helpers.** `user_can_add_ticker()`, `user_can_make_api_call()`, `record_api_call()`, `user_usage_summary()` — small, pure-ish functions that wrap the plan + DB lookups so call sites stay readable.
+
 ## Highlights in v0.8.2
 
 - **Focus node shows the headline number.** Direction line now reads `↑ 82.3%` — direction glyph plus dominant breakout probability — so the most important focus-ticker fact is always visible at a glance.

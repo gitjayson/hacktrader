@@ -21,6 +21,9 @@ bin/
 # --- Secrets / credentials ---
 api-accounts.json
 api-accounts.sqlite
+users.sqlite
+users.sqlite-shm
+users.sqlite-wal
 .env
 .env.*
 

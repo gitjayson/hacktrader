@@ -14,7 +14,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>HackTrader | v0.8.2</title>
+    <title>HackTrader | v0.9.0</title>
     <link rel='preconnect' href='https://fonts.googleapis.com'>
     <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
     <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap' rel='stylesheet'>
@@ -168,6 +168,78 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         .controls > * {
             min-width: 0;
         }
+        /* v0.9.0 subscription panel — sits above the API activity block in
+           the Usage tab, showing plan + quota usage + manage-billing link. */
+        .sub-panel {
+            display: grid;
+            gap: 14px;
+            padding: 16px;
+            border-radius: 18px;
+            background: rgba(94, 234, 212, 0.04);
+            border: 1px solid rgba(94, 234, 212, 0.22);
+            margin-bottom: 14px;
+        }
+        .sub-panel-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+        .sub-panel-plan {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            margin-top: 2px;
+        }
+        .sub-panel-pill {
+            font-size: 11px;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.12);
+            color: var(--muted);
+        }
+        .sub-panel-pill.active   { background: rgba(34, 197, 94, 0.14);  color: #86efac; }
+        .sub-panel-pill.trialing { background: rgba(94, 234, 212, 0.14); color: var(--cyan); }
+        .sub-panel-pill.past_due { background: rgba(251, 191, 36, 0.16); color: #fde68a; }
+        .sub-panel-pill.canceled { background: rgba(248, 113, 113, 0.12); color: #fca5a5; }
+        .sub-panel-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+        .sub-panel-stat .label { font-size: 10px; color: var(--muted); letter-spacing: 0.06em; }
+        .sub-panel-stat .value {
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 4px 0 8px;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.02em;
+        }
+        .sub-panel-meta { font-size: 11px; color: var(--muted); line-height: 1.4; }
+        .sub-panel-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .sub-panel-btn {
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(148, 163, 184, 0.24);
+            color: var(--text);
+        }
+        .sub-panel-btn.primary {
+            background: rgba(94, 234, 212, 0.92);
+            color: #06111d;
+            border-color: transparent;
+        }
+        .sub-panel-btn.primary:hover { background: rgba(94, 234, 212, 1); }
+        .sub-panel-btn.ghost:hover { background: rgba(255, 255, 255, 0.04); }
+
         .api-usage-inline {
             display: grid;
             gap: 12px;
@@ -1430,10 +1502,40 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                         </div>
                     </div>
                     <div class='tab-panel' role='tabpanel' aria-labelledby='rightTab-usage' id='rightPanel-usage'>
+                        <!-- v0.9.0 subscription summary. Populated by
+                             updateSubscriptionPanel() from /me.php. -->
+                        <div class='sub-panel'>
+                            <div class='sub-panel-top'>
+                                <div>
+                                    <div class='label'>Plan</div>
+                                    <div class='sub-panel-plan' id='subPlanName'>—</div>
+                                </div>
+                                <span class='sub-panel-pill' id='subPlanPill'>—</span>
+                            </div>
+                            <div class='sub-panel-grid'>
+                                <div class='sub-panel-stat'>
+                                    <div class='label'>API calls this period</div>
+                                    <div class='value' id='subCallsUsed'>—</div>
+                                    <div class='meter'><div class='meter-fill' id='subCallsFill'></div></div>
+                                </div>
+                                <div class='sub-panel-stat'>
+                                    <div class='label'>Watched tickers</div>
+                                    <div class='value' id='subTickersUsed'>—</div>
+                                    <div class='meter'><div class='meter-fill' id='subTickersFill'></div></div>
+                                </div>
+                            </div>
+                            <div class='sub-panel-meta' id='subPanelMeta'>—</div>
+                            <div class='sub-panel-actions'>
+                                <a class='sub-panel-btn primary' id='subUpgradeBtn' href='index.php#pricing'>Upgrade plan</a>
+                                <a class='sub-panel-btn ghost' href='billing.php'>Manage billing</a>
+                            </div>
+                        </div>
+
+                        <div class='activity-section-label'>Live API activity</div>
                         <div class='api-usage-inline' aria-live='polite'>
                             <div class='api-usage-top'>
                                 <div>
-                                    <div class='label'>API usage</div>
+                                    <div class='label'>This session</div>
                                     <div class='api-usage-kpi' id='apiUsageTotal'>--</div>
                                 </div>
                                 <span class='api-usage-pill' id='apiUsagePill'>idle</span>
@@ -1469,7 +1571,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 
             </section>
         </section>
-        <footer>HackTrader v0.8.2 · © 2026 Jayson Hawley · All rights reserved.</footer>
+        <footer>HackTrader v0.9.0 · © 2026 Jayson Hawley · All rights reserved.</footer>
     </main>
 
     <script>
@@ -2585,6 +2687,91 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 
         attachTickerAutoRefresh();
         attachPengoTrigger();
+        updateSubscriptionPanel();
+        // Refresh subscription summary periodically so quota usage ticks up
+        // visibly as the dashboard auto-refreshes.
+        setInterval(updateSubscriptionPanel, 60000);
+
+        // v0.9.0 — fetch /me.php and paint the Subscription panel inside
+        // the Usage tab. Silently no-ops on unauthenticated responses (some
+        // dev paths might not be logged in).
+        async function updateSubscriptionPanel() {
+            try {
+                const res = await fetch('me.php', { cache: 'no-store' });
+                if (!res.ok) return;
+                const me = await res.json();
+                if (!me || me.error) return;
+
+                const planEl = document.getElementById('subPlanName');
+                const pillEl = document.getElementById('subPlanPill');
+                const callsUsedEl = document.getElementById('subCallsUsed');
+                const callsFillEl = document.getElementById('subCallsFill');
+                const tickersUsedEl = document.getElementById('subTickersUsed');
+                const tickersFillEl = document.getElementById('subTickersFill');
+                const metaEl = document.getElementById('subPanelMeta');
+                const upgradeBtn = document.getElementById('subUpgradeBtn');
+
+                if (planEl) planEl.textContent = me.plan_name || '—';
+                if (pillEl) {
+                    const status = String(me.subscription_status || 'none');
+                    pillEl.className = `sub-panel-pill ${status}`;
+                    pillEl.textContent = status === 'trialing'
+                        ? 'Trial'
+                        : status === 'active' ? 'Active'
+                        : status === 'past_due' ? 'Past due'
+                        : status === 'canceled' ? 'Canceled'
+                        : status;
+                }
+
+                const calls = me.api_calls || {};
+                const callsLimit = calls.limit;
+                const callsUsed = Number(calls.used || 0);
+                if (callsUsedEl) {
+                    callsUsedEl.textContent = callsLimit == null
+                        ? `${callsUsed.toLocaleString()} / unlimited`
+                        : `${callsUsed.toLocaleString()} / ${Number(callsLimit).toLocaleString()}`;
+                }
+                if (callsFillEl) {
+                    const pct = callsLimit ? Math.min(100, (callsUsed / callsLimit) * 100) : 4;
+                    callsFillEl.style.width = `${Math.max(4, pct)}%`;
+                    callsFillEl.className = `meter-fill ${pct >= 90 ? 'red' : pct >= 70 ? 'amber' : 'green'}`;
+                }
+
+                const tickers = me.tickers || {};
+                const tickersLimit = tickers.limit;
+                const tickersUsed = Number(tickers.used || 0);
+                if (tickersUsedEl) {
+                    tickersUsedEl.textContent = tickersLimit == null
+                        ? `${tickersUsed} / unlimited`
+                        : `${tickersUsed} / ${tickersLimit}`;
+                }
+                if (tickersFillEl) {
+                    const pct = tickersLimit ? Math.min(100, (tickersUsed / tickersLimit) * 100) : 4;
+                    tickersFillEl.style.width = `${Math.max(4, pct)}%`;
+                    tickersFillEl.className = `meter-fill ${pct >= 90 ? 'red' : pct >= 70 ? 'amber' : 'green'}`;
+                }
+
+                if (metaEl) {
+                    const parts = [];
+                    if (me.subscription_status === 'trialing' && me.trial_end) {
+                        const days = Math.max(0, Math.ceil((Number(me.trial_end) - Date.now() / 1000) / 86400));
+                        parts.push(`Trial · ${days} day${days === 1 ? '' : 's'} left`);
+                    } else if (me.current_period_end && me.subscription_status === 'active') {
+                        const d = new Date(Number(me.current_period_end) * 1000);
+                        parts.push(`Renews ${d.toLocaleDateString()}`);
+                    }
+                    if (me.price_monthly > 0) parts.push(`$${me.price_monthly}/mo`);
+                    metaEl.textContent = parts.length ? parts.join(' · ') : 'Free tier';
+                }
+
+                if (upgradeBtn) {
+                    // Hide upgrade button on Pro (no higher tier to upgrade to)
+                    upgradeBtn.style.display = me.plan === 'pro' ? 'none' : '';
+                }
+            } catch (e) {
+                // Silent — subscription panel is non-critical UI
+            }
+        }
     </script>
 </body>
 </html>

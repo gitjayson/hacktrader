@@ -211,6 +211,140 @@
             .hero, .signin-container { min-height: auto; }
             .hero-metrics { grid-template-columns: 1fr; }
         }
+        /* v0.9.0 pricing section */
+        .pricing-section {
+            margin-top: 48px;
+            padding: 32px 24px 40px;
+            border-radius: 24px;
+            background: rgba(9, 22, 35, 0.55);
+            border: 1px solid rgba(148, 163, 184, 0.14);
+        }
+        .pricing-eyebrow {
+            font-size: 10px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--cyan, #5eead4);
+            font-weight: 600;
+            text-align: center;
+        }
+        .pricing-title {
+            margin: 6px 0 28px;
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            text-align: center;
+        }
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            max-width: 980px;
+            margin: 0 auto;
+        }
+        .pricing-card {
+            position: relative;
+            padding: 24px 22px;
+            border-radius: 16px;
+            background: rgba(5, 12, 21, 0.7);
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            display: flex;
+            flex-direction: column;
+        }
+        .pricing-card.featured {
+            border-color: rgba(94, 234, 212, 0.45);
+            box-shadow: 0 0 0 1px rgba(94, 234, 212, 0.15) inset;
+        }
+        .pricing-flag {
+            position: absolute;
+            top: -10px;
+            right: 14px;
+            background: rgba(94, 234, 212, 0.92);
+            color: #06111d;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            padding: 4px 10px;
+            border-radius: 999px;
+            text-transform: uppercase;
+        }
+        .pricing-name {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+        .pricing-price {
+            margin: 12px 0 4px;
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+        }
+        .pricing-amount {
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            font-size: 36px;
+            font-weight: 600;
+            letter-spacing: -0.03em;
+            font-variant-numeric: tabular-nums;
+        }
+        .pricing-cadence {
+            font-size: 12px;
+            color: rgba(232, 241, 255, 0.6);
+        }
+        .pricing-tagline {
+            font-size: 12px;
+            color: rgba(232, 241, 255, 0.7);
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+        .pricing-features {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 20px;
+            display: grid;
+            gap: 8px;
+            flex: 1;
+        }
+        .pricing-features li {
+            position: relative;
+            padding-left: 18px;
+            font-size: 13px;
+            color: rgba(232, 241, 255, 0.85);
+        }
+        .pricing-features li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #5eead4;
+            font-size: 11px;
+        }
+        .pricing-cta {
+            display: block;
+            text-align: center;
+            text-decoration: none;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            color: #e8f1ff;
+            transition: background 0.15s ease, border-color 0.15s ease;
+        }
+        .pricing-cta:hover { background: rgba(255, 255, 255, 0.04); }
+        .pricing-cta.ghost { color: rgba(232, 241, 255, 0.85); }
+        .pricing-cta.primary {
+            background: rgba(94, 234, 212, 0.92);
+            color: #06111d;
+            border-color: transparent;
+        }
+        .pricing-cta.primary:hover { background: rgba(94, 234, 212, 1); }
+        .pricing-fineprint {
+            margin-top: 24px;
+            font-size: 11px;
+            text-align: center;
+            color: rgba(232, 241, 255, 0.5);
+        }
+        @media (max-width: 720px) {
+            .pricing-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -228,7 +362,7 @@
             <div class='hero-metrics'>
                 <div class='metric'>
                     <div class='metric-label'>Breakout engine</div>
-                    <div class='metric-value'>v0.8.2</div>
+                    <div class='metric-value'>v0.9.0</div>
                 </div>
                 <div class='metric'>
                     <div class='metric-label'>Visual system</div>
@@ -250,9 +384,52 @@
             <a href='callback.php' class='signin-button'>
                 <span>Continue with Google</span>
             </a>
-            <div class='signin-note'>Protected dev environment · visual refresh enabled</div>
+            <div class='signin-note'>Free tier included. New users start with a 7-day Plus trial.</div>
+        </section>
+
+        <?php
+            // v0.9.0 pricing block. Reads the entitlement matrix from
+            // lib/plans.php so a price change in one place flows through.
+            require_once __DIR__ . '/lib/plans.php';
+            $allPlans = hacktrader_plans();
+        ?>
+        <section id='pricing' class='pricing-section'>
+            <div class='pricing-eyebrow'>Pricing</div>
+            <h2 class='pricing-title'>Pick the plan that fits how you trade</h2>
+            <div class='pricing-grid'>
+                <?php foreach ($allPlans as $slug => $plan): ?>
+                    <?php $isPro = $slug === 'plus'; ?>
+                    <article class='pricing-card<?= $isPro ? ' featured' : '' ?>'>
+                        <?php if ($isPro): ?><div class='pricing-flag'>Most popular</div><?php endif; ?>
+                        <div class='pricing-name'><?= htmlspecialchars($plan['display_name'], ENT_QUOTES) ?></div>
+                        <div class='pricing-price'>
+                            <?php if ($plan['price_monthly'] === 0): ?>
+                                <span class='pricing-amount'>$0</span>
+                                <span class='pricing-cadence'>forever</span>
+                            <?php else: ?>
+                                <span class='pricing-amount'>$<?= (int) $plan['price_monthly'] ?></span>
+                                <span class='pricing-cadence'>/ month</span>
+                            <?php endif; ?>
+                        </div>
+                        <div class='pricing-tagline'><?= htmlspecialchars($plan['tagline'], ENT_QUOTES) ?></div>
+                        <ul class='pricing-features'>
+                            <?php foreach ($plan['features'] as $f): ?>
+                                <li><?= htmlspecialchars($f, ENT_QUOTES) ?></li>
+                            <?php endforeach; ?>
+                        </ul>
+                        <?php if ($slug === 'free'): ?>
+                            <a href='callback.php' class='pricing-cta ghost'>Start free</a>
+                        <?php else: ?>
+                            <a href='subscribe.php?plan=<?= htmlspecialchars($slug, ENT_QUOTES) ?>' class='pricing-cta<?= $isPro ? ' primary' : '' ?>'>Subscribe</a>
+                        <?php endif; ?>
+                    </article>
+                <?php endforeach; ?>
+            </div>
+            <div class='pricing-fineprint'>
+                Cancel anytime from your billing portal. Prices in USD. New users start on a 7-day Plus trial — no card required.
+            </div>
         </section>
     </main>
-    <footer>HackTrader v0.8.2 · © 2026 Jayson Hawley · All rights reserved.</footer>
+    <footer>HackTrader v0.9.0 · © 2026 Jayson Hawley · All rights reserved.</footer>
 </body>
 </html>
