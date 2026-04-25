@@ -1339,7 +1339,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                         <div class='meter-subtext' id='pressureSubtext'>—</div>
                     </div>
                     <div class='microchart-card'>
-                        <div class='microchart-label'>Channel width</div>
+                        <div class='microchart-label'>Breakout target</div>
                         <div class='microchart-value' id='channelWidthValue'>—</div>
                         <div class='meter'><div class='meter-fill' id='channelWidthFill'></div></div>
                         <div class='meter-subtext' id='channelWidthSubtext'>—</div>
@@ -1783,46 +1783,66 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             }
             if (subEl) subEl.textContent = `Spread ${Math.abs(upProb - downProb).toFixed(1)} pts`;
 
+            // Breakout target microchart — shows the predicted bounds of the
+            // NEW trading channel that price would enter on a breakout.
+            // Trader uses these as concrete exit / take-profit zones.
             const channels = Array.isArray(data?.channels) ? data.channels : [];
             const currentChannel = channels.find(c => c?.name === 'current') || channels[0];
             const aboveChannel = channels.find(c => c?.name === 'above_resistance');
             const belowChannel = channels.find(c => c?.name === 'below_support');
-            const channelWidth = Number(currentChannel?.width || 0);
             const atr = Number(data?.analysis_parameters?.atr || 0);
-            const widthRatio = atr > 0 ? Math.min(100, (channelWidth / atr) * 50) : 0;
+            const currentPrice = Number(data?.current_price || data?.focus_price || 0);
 
             // Pick the breakout-target channel based on bias direction —
             // upside breakout enters the above-resistance channel, downside
-            // breakout enters the below-support channel. Falls back to
-            // whichever channel exists if bias is neutral.
+            // breakout enters the below-support channel.
             const breakoutSide = upProb >= downProb ? 'up' : 'down';
             const breakoutChannel = breakoutSide === 'up' ? (aboveChannel || belowChannel) : (belowChannel || aboveChannel);
-            const breakoutWidth = Number(breakoutChannel?.width || 0);
+            const targetLower = Number(breakoutChannel?.lower);
+            const targetUpper = Number(breakoutChannel?.upper);
+            const targetWidth = Number(breakoutChannel?.width || 0);
 
             const cwValue = document.getElementById('channelWidthValue');
             const cwFill = document.getElementById('channelWidthFill');
             const cwSub = document.getElementById('channelWidthSubtext');
             if (cwValue) {
-                // Show "current → breakout" so the trader sees what room
-                // opens up if price breaks the current channel boundary.
-                if (channelWidth && breakoutWidth) {
+                // Headline: the predicted bounds of the new channel. This is
+                // what a trader sets exits against — "if it breaks up, exits
+                // at $375.92–$379.50".
+                if (Number.isFinite(targetLower) && Number.isFinite(targetUpper)) {
                     const arrow = breakoutSide === 'up' ? '↑' : '↓';
-                    cwValue.textContent = `$${formatPrice(channelWidth)} ${arrow} $${formatPrice(breakoutWidth)}`;
-                } else if (channelWidth) {
-                    cwValue.textContent = `$${formatPrice(channelWidth)}`;
+                    cwValue.textContent = `${arrow} $${formatPrice(targetLower)} – $${formatPrice(targetUpper)}`;
+                } else if (Number.isFinite(targetLower) || Number.isFinite(targetUpper)) {
+                    const single = Number.isFinite(targetUpper) ? targetUpper : targetLower;
+                    cwValue.textContent = `$${formatPrice(single)}`;
                 } else {
                     cwValue.textContent = '—';
                 }
             }
-            if (cwFill) cwFill.style.width = `${Math.max(4, widthRatio)}%`;
+            // Meter shows the band width relative to ATR — wider band = bigger
+            // post-breakout move available. Color follows breakout direction.
+            if (cwFill) {
+                const widthRatio = atr > 0 ? Math.min(100, (targetWidth / atr) * 50) : 0;
+                cwFill.style.width = `${Math.max(4, widthRatio)}%`;
+                cwFill.className = `meter-fill ${breakoutSide === 'up' ? 'green' : 'red'}`;
+            }
             if (cwSub) {
                 const parts = [];
-                if (currentChannel?.location) parts.push(String(currentChannel.location).replaceAll('_', ' '));
+                const dirLabel = breakoutSide === 'up' ? 'if breaks up' : 'if breaks down';
+                parts.push(dirLabel);
+                if (targetWidth) parts.push(`width $${formatPrice(targetWidth)}`);
                 if (atr) parts.push(`ATR ${formatPrice(atr)}`);
-                if (breakoutChannel?.lower != null && breakoutChannel?.upper != null) {
-                    parts.push(`breakout band $${formatPrice(breakoutChannel.lower)}–$${formatPrice(breakoutChannel.upper)}`);
+                if (currentChannel && currentPrice && Number.isFinite(targetLower)) {
+                    // Distance from current price to the near edge of the
+                    // breakout band — gives a rough sense of how soon
+                    // exits would matter.
+                    const nearEdge = breakoutSide === 'up' ? targetLower : targetUpper;
+                    const distance = Math.abs(currentPrice - nearEdge);
+                    if (Number.isFinite(distance) && distance > 0) {
+                        parts.push(`${formatPrice(distance)} away`);
+                    }
                 }
-                cwSub.textContent = parts.length ? parts.join(' · ') : 'No current channel';
+                cwSub.textContent = parts.length ? parts.join(' · ') : 'No breakout channel';
             }
 
             const upAttempts = Number(data?.attempts?.failed_up_today || 0);
@@ -2229,18 +2249,23 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             const probs = data?.probabilities || {};
             const bias = probs.bias || 'neutral';
             const directionGlyph = bias === 'up' ? '↑' : (bias === 'down' ? '↓' : '→');
+            // Headline number: the breakout probability in the bias direction.
+            // This is the most important single piece of focus-ticker data, so
+            // it lives inside the focus node alongside the direction glyph.
+            const dominantPct = Math.max(Number(probs.up || 0), Number(probs.down || 0));
+            const dominantText = Number.isFinite(dominantPct) && dominantPct > 0
+                ? `${dominantPct.toFixed(1)}%`
+                : '—';
             focus.className = `focus-node ${bias}`;
             // verdict is a small "N/M ↑" line that summarizes the indicator
             // basket disposition (set later when the correlation fetch finishes).
-            // setFocusNode renders empty space for it on the first call so the
-            // node doesn't visually jump when the verdict arrives.
             const verdictHtml = verdict
                 ? `<div class='focus-verdict'>${verdict}</div>`
                 : `<div class='focus-verdict'>&nbsp;</div>`;
             focus.innerHTML = `
                 <div class='focus-symbol'>${symbol}</div>
                 <div class='focus-price'>$${formatPrice(data?.current_price)}</div>
-                <div class='focus-direction' aria-hidden='true'>${directionGlyph}</div>
+                <div class='focus-direction' aria-hidden='true'>${directionGlyph} ${dominantText}</div>
                 ${verdictHtml}
             `;
         }
