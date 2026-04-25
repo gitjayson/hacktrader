@@ -14,7 +14,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>HackTrader | v0.8.1</title>
+    <title>HackTrader | v0.8.2</title>
     <link rel='preconnect' href='https://fonts.googleapis.com'>
     <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
     <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap' rel='stylesheet'>
@@ -1469,7 +1469,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 
             </section>
         </section>
-        <footer>HackTrader v0.8.1 · © 2026 Jayson Hawley · All rights reserved.</footer>
+        <footer>HackTrader v0.8.2 · © 2026 Jayson Hawley · All rights reserved.</footer>
     </main>
 
     <script>

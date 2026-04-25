@@ -291,6 +291,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accept'])) {
             <div class='footnote'>Proceed only if you understand and accept the above limitations.</div>
         </section>
     </main>
-    <footer>HackTrader · disclaimer · v0.7.2.2.2</footer>
+    <footer>HackTrader · disclaimer · v0.8.2 · © 2026 Jayson Hawley · All rights reserved.</footer>
 </body>
 </html>

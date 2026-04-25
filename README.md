@@ -1,10 +1,16 @@
 # HackTrader Dashboard
 
-- **Version:** v0.8.1
+- **Version:** v0.8.2
 - **Status:** Active
 - **Codebase:** HackTrader FUI dashboard
 
 HackTrader is a market dashboard for tracking a focus ticker, breakout probabilities, support/resistance ladders, volume context, and correlated indicators in a sci-fi control-panel interface.
+
+## Highlights in v0.8.2
+
+- **Focus node shows the headline number.** Direction line now reads `↑ 82.3%` — direction glyph plus dominant breakout probability — so the most important focus-ticker fact is always visible at a glance.
+- **Breakout target replaces channel width.** The middle microchart now shows the predicted bounds of the new trading channel: `↑ $375.92 – $379.50` with subtext like `if breaks up · width $3.58 · ATR 1.42 · $0.66 away`. Concrete take-profit/exit prices for the planned trade.
+- **Copyright notice in the footer** plus version alignment across `dashboard.php`, `index.php`, `disclaimer.php`, `privacy.html`, `tos.html`, and the `api.php` health-status / usage-tracker meta stamps.
 
 ## Highlights in v0.8.1
 

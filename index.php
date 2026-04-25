@@ -228,7 +228,7 @@
             <div class='hero-metrics'>
                 <div class='metric'>
                     <div class='metric-label'>Breakout engine</div>
-                    <div class='metric-value'>v0.7.7</div>
+                    <div class='metric-value'>v0.8.2</div>
                 </div>
                 <div class='metric'>
                     <div class='metric-label'>Visual system</div>
@@ -253,6 +253,6 @@
             <div class='signin-note'>Protected dev environment · visual refresh enabled</div>
         </section>
     </main>
-    <footer>HackTrader · v0.7.7</footer>
+    <footer>HackTrader v0.8.2 · © 2026 Jayson Hawley · All rights reserved.</footer>
 </body>
 </html>
