@@ -85,15 +85,12 @@ def test_interval_to_minutes_unknown_falls_back_to_5(run_brk):
     assert run_brk.interval_to_minutes("") == 5
 
 
-# ---- interval_to_yfinance ---------------------------------------------------
+# ---- interval_to_massive_params --------------------------------------------
 
 
-def test_interval_to_yfinance_known(run_brk):
-    assert run_brk.interval_to_yfinance("1min") == "1m"
-    assert run_brk.interval_to_yfinance("5min") == "5m"
-    assert run_brk.interval_to_yfinance("1h") == "60m"
-    assert run_brk.interval_to_yfinance("1day") == "1d"
-
-
-def test_interval_to_yfinance_unknown_falls_back_to_1d(run_brk):
-    assert run_brk.interval_to_yfinance("anything-else") == "1d"
+def test_interval_to_massive_params_known(run_brk):
+    """Massive (polygon-style) takes a (multiplier, timespan) pair."""
+    assert run_brk.interval_to_massive_params("1min")  == (1, "minute")
+    assert run_brk.interval_to_massive_params("5min")  == (5, "minute")
+    assert run_brk.interval_to_massive_params("1h")    == (1, "hour")
+    assert run_brk.interval_to_massive_params("1day")  == (1, "day")

@@ -571,57 +571,79 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             display: grid;
             gap: 10px;
         }
-        .microchart-grid {
+        /* Levels ladder: vertical R2/R1/now/S1/S2 stack mapping screen
+           position to price position. Replaces the side-by-side R+S tables. */
+        .levels-ladder {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .ladder-row {
+            display: grid;
+            grid-template-columns: 44px 1fr auto auto;
+            align-items: center;
             gap: 12px;
-            margin-top: 16px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.025);
+            border-left: 3px solid transparent;
+            font-variant-numeric: tabular-nums;
         }
-        .microchart-card {
-            border-radius: 18px;
-            padding: 14px 16px;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(148,163,184,0.12);
+        .ladder-row.resistance { border-left-color: rgba(248,113,113,0.45); }
+        .ladder-row.support    { border-left-color: rgba(74,222,128,0.45); }
+        .ladder-row.current {
+            background: rgba(96,165,250,0.10);
+            border-left-color: rgba(96,165,250,0.85);
+            box-shadow: 0 0 0 1px rgba(96,165,250,0.18) inset;
         }
-        .microchart-label {
+        .ladder-tag {
             font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.14em;
+            font-weight: 800;
+            letter-spacing: 0.12em;
             color: var(--muted);
-            margin-bottom: 10px;
+        }
+        .ladder-row.resistance .ladder-tag { color: #fca5a5; }
+        .ladder-row.support    .ladder-tag { color: #86efac; }
+        .ladder-row.current    .ladder-tag { color: #bfdbfe; }
+        .ladder-price {
+            font-size: 16px;
             font-weight: 700;
         }
-        .microchart-value {
-            font-size: 20px;
-            font-weight: 800;
-            margin-bottom: 10px;
-        }
-        .meter {
-            position: relative;
-            width: 100%;
-            height: 10px;
-            border-radius: 999px;
-            background: rgba(255,255,255,0.08);
-            overflow: hidden;
-        }
-        .meter-fill {
-            position: absolute;
-            inset: 0 auto 0 0;
-            width: 0%;
-            border-radius: inherit;
-            background: linear-gradient(90deg, rgba(96,165,250,0.72), rgba(94,234,212,0.9));
-        }
-        .meter-fill.red {
-            background: linear-gradient(90deg, rgba(248,113,113,0.92), rgba(251,191,36,0.72));
-        }
-        .meter-fill.green {
-            background: linear-gradient(90deg, rgba(74,222,128,0.92), rgba(94,234,212,0.72));
-        }
-        .meter-subtext {
-            margin-top: 8px;
-            font-size: 12px;
+        .ladder-meta {
+            font-size: 11px;
             color: var(--muted);
-            line-height: 1.45;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .ladder-diff {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted);
+            min-width: 64px;
+            text-align: right;
+        }
+        .ladder-row.resistance .ladder-diff { color: #fca5a5; }
+        .ladder-row.support    .ladder-diff { color: #86efac; }
+        .ladder-empty {
+            padding: 18px;
+            color: var(--muted);
+            font-size: 13px;
+            text-align: center;
+            border: 1px dashed rgba(148,163,184,0.2);
+            border-radius: 12px;
+        }
+        /* Section divider used inside the Activity tab so probes/attempts/drivers
+           are still visually delineated even though they share one panel. */
+        .activity-section-label {
+            margin: 16px 0 8px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+        .activity-section-label:first-of-type {
+            margin-top: 18px;
         }
         .driver-impact-bar {
             width: 96px;
@@ -686,11 +708,6 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             font-size: 12px;
             color: var(--muted);
         }
-        .compact-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 14px;
-        }
         .stack-card {
             border-radius: 24px;
             padding: 20px;
@@ -754,7 +771,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             font-size: 13px;
             line-height: 1.5;
         }
-        .levels-list, .drivers-list, .attempt-list {
+        .drivers-list, .attempt-list {
             display: grid;
             gap: 10px;
         }
@@ -930,7 +947,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             .api-usage-grid { grid-template-columns: 1fr; }
             .slider-wrap { min-width: 0; }
             .hero-top { flex-direction: column; }
-            .breakout-grid, .compact-grid, .metric-grid, .microchart-grid { grid-template-columns: 1fr; }
+            .breakout-grid, .metric-grid { grid-template-columns: 1fr; }
             .banner-wrap {
                 top: auto;
                 bottom: 12px;
@@ -973,9 +990,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
     <main class='app-shell'>
         <header class='topbar glass'>
             <div class='brand'>
-                <div class='eyebrow'>HackTrader v0.7.7 (by @gitjayson)</div>
                 <strong class='brand-title'><span class='pengo-trigger' id='pengoTrigger' title='Activate pengo'>🐧</span><span class='title-text'>Signal cockpit</span></strong>
-                <span>Chart-first breakout view with correlation confirmation</span>
             </div>
             <div class='controls'>
                 <input type='text' id='ticker' list='ticker-list' placeholder='Ticker' autocomplete='off' spellcheck='false'>
@@ -1019,7 +1034,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                         <div class='quote-pill'>
                             <div class='label'>Live quote</div>
                             <div class='value' id='focusPriceBox'>$--</div>
-                            <div class='sub' id='focusTimeBox'>Awaiting quote</div>
+                            <div class='sub' id='focusTimeBox'>—</div>
                         </div>
                     </div>
                     <div class='hero-grid'>
@@ -1033,7 +1048,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                                 <div class='focus-node neutral' id='focus' onclick='resetDashboard()' style='cursor:pointer;'>
                                     <div class='focus-symbol'>INIT</div>
                                     <div class='focus-price'>SCAN</div>
-                                    <div class='focus-bias'>Awaiting data</div>
+                                    <div class='focus-bias'>—</div>
                                 </div>
                             </div>
                         </div>
@@ -1046,41 +1061,20 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                                 <div class='signal-card up'>
                                     <div class='label'>Upside probability</div>
                                     <div class='value' id='upProbability'>--</div>
-                                    <div class='sub' id='upProbabilitySub'>Awaiting breakout model</div>
+                                    <div class='sub' id='upProbabilitySub'>—</div>
                                 </div>
                                 <div class='signal-card down'>
                                     <div class='label'>Downside probability</div>
                                     <div class='value' id='downProbability'>--</div>
-                                    <div class='sub' id='downProbabilitySub'>Awaiting breakout model</div>
+                                    <div class='sub' id='downProbabilitySub'>—</div>
                                 </div>
                             </div>
-                            <div id='biasChip' class='bias-chip neutral'>Neutral bias</div>
-                            <div id='liveStatusChip' class='bias-chip neutral'>Live status pending</div>
-                            <div class='microchart-grid'>
-                                <div class='microchart-card'>
-                                    <div class='microchart-label'>Breakout pressure</div>
-                                    <div class='microchart-value' id='pressureValue'>--</div>
-                                    <div class='meter'><div class='meter-fill green' id='pressureFill'></div></div>
-                                    <div class='meter-subtext' id='pressureSubtext'>Awaiting breakout pressure</div>
-                                </div>
-                                <div class='microchart-card'>
-                                    <div class='microchart-label'>Channel width</div>
-                                    <div class='microchart-value' id='channelWidthValue'>--</div>
-                                    <div class='meter'><div class='meter-fill' id='channelWidthFill'></div></div>
-                                    <div class='meter-subtext' id='channelWidthSubtext'>Awaiting channel structure</div>
-                                </div>
-                                <div class='microchart-card'>
-                                    <div class='microchart-label'>Attempt stress</div>
-                                    <div class='microchart-value' id='attemptStressValue'>--</div>
-                                    <div class='meter'><div class='meter-fill red' id='attemptStressFill'></div></div>
-                                    <div class='meter-subtext' id='attemptStressSubtext'>Awaiting failed attempt count</div>
-                                </div>
-                            </div>
+                            <div id='statusChip' class='bias-chip neutral'>—</div>
                             <div class='range-grid' id='channelList'>
                                 <div class='range-card'>
                                     <div class='range-top'>
                                         <div class='range-name'>Current channel</div>
-                                        <div class='range-width'>Waiting on levels</div>
+                                        <div class='range-width'>—</div>
                                     </div>
                                     <div class='range-track'><div class='range-fill' style='width: 0%'></div></div>
                                     <div class='range-meta'><span>--</span><span>--</span></div>
@@ -1093,7 +1087,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 <section class='stack-card glass' style='padding-top: 16px; padding-bottom: 8px;'>
                     <div class='section-title'>
                         <h2>Price action</h2>
-                        <span id='chartMeta'>Awaiting market data</span>
+                        <span id='chartMeta'>—</span>
                     </div>
                     <div id='tvChartContainer' style='width: 100%; height: 420px; margin-top: 10px; border-radius: 12px; overflow: hidden;'></div>
                 </section>
@@ -1107,26 +1101,28 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                         <span id='quoteTimezone'>ET</span>
                     </div>
                     <div class='panel-tabs' role='tablist' aria-label='Right rail views'>
-                        <button type='button' role='tab' aria-selected='true' aria-controls='rightPanel-probes' class='panel-tab active' id='rightTab-probes' onclick="switchRightPanelTab('probes')">Probes</button>
+                        <button type='button' role='tab' aria-selected='true' aria-controls='rightPanel-activity' class='panel-tab active' id='rightTab-activity' onclick="switchRightPanelTab('activity')">Activity</button>
                         <button type='button' role='tab' aria-selected='false' aria-controls='rightPanel-context' class='panel-tab' id='rightTab-context' onclick="switchRightPanelTab('context')">Context</button>
-                        <button type='button' role='tab' aria-selected='false' aria-controls='rightPanel-attempts' class='panel-tab' id='rightTab-attempts' onclick="switchRightPanelTab('attempts')">Attempts</button>
-                        <button type='button' role='tab' aria-selected='false' aria-controls='rightPanel-drivers' class='panel-tab' id='rightTab-drivers' onclick="switchRightPanelTab('drivers')">Drivers</button>
                         <button type='button' role='tab' aria-selected='false' aria-controls='rightPanel-usage' class='panel-tab' id='rightTab-usage' onclick="switchRightPanelTab('usage')">Usage</button>
                     </div>
-                    <div class='tab-panel active' role='tabpanel' aria-labelledby='rightTab-probes' id='rightPanel-probes'>
+                    <div class='tab-panel active' role='tabpanel' aria-labelledby='rightTab-activity' id='rightPanel-activity'>
                         <div id='probeGraphPanel'></div>
+                        <div class='activity-section-label'>Failed attempts today</div>
+                        <div class='attempt-list' id='attemptList'></div>
+                        <div class='activity-section-label'>Top drivers</div>
+                        <div class='drivers-list' id='driversList'></div>
                     </div>
                     <div class='tab-panel' role='tabpanel' aria-labelledby='rightTab-context' id='rightPanel-context'>
                         <div class='metric-grid'>
                             <div class='metric-card'>
                                 <div class='label'>Day volume</div>
                                 <div class='value' id='dayVolumeValue'>--</div>
-                                <div class='sub' id='dayVolumeSubtext'>Waiting on market data</div>
+                                <div class='sub' id='dayVolumeSubtext'>—</div>
                             </div>
                             <div class='metric-card'>
                                 <div class='label'>Day ratio</div>
                                 <div class='value' id='dayVolumeRatio'>--</div>
-                                <div class='sub' id='barVolumeSubtext'>Current bar vs expected slot pending</div>
+                                <div class='sub' id='barVolumeSubtext'>—</div>
                             </div>
                             <div class='metric-card'>
                                 <div class='label'>Indicator bias</div>
@@ -1136,15 +1132,9 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                             <div class='metric-card'>
                                 <div class='label'>Recent extremes</div>
                                 <div class='value' id='recentExtremesValue'>--</div>
-                                <div class='sub' id='previousDayValue'>Previous day waiting</div>
+                                <div class='sub' id='previousDayValue'>—</div>
                             </div>
                         </div>
-                    </div>
-                    <div class='tab-panel' role='tabpanel' aria-labelledby='rightTab-attempts' id='rightPanel-attempts'>
-                        <div class='attempt-list' id='attemptList'></div>
-                    </div>
-                    <div class='tab-panel' role='tabpanel' aria-labelledby='rightTab-drivers' id='rightPanel-drivers'>
-                        <div class='drivers-list' id='driversList'></div>
                     </div>
                     <div class='tab-panel' role='tabpanel' aria-labelledby='rightTab-usage' id='rightPanel-usage'>
                         <div class='api-usage-inline' aria-live='polite'>
@@ -1155,7 +1145,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                                 </div>
                                 <span class='api-usage-pill' id='apiUsagePill'>idle</span>
                             </div>
-                            <div class='api-usage-sub' id='apiUsageSub'>Waiting for your first counted request.</div>
+                            <div class='api-usage-sub' id='apiUsageSub'>No counted requests yet.</div>
                             <div class='api-usage-grid'>
                                 <div class='api-usage-stat'>
                                     <div class='label'>Success rate</div>
@@ -1177,23 +1167,14 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 
                 <section class='stack-card glass'>
                     <div class='section-title'>
-                        <h2>Price structure</h2>
-                        <span id='sourceMeta'>Awaiting source</span>
+                        <h2>Levels</h2>
+                        <span id='sourceMeta'>—</span>
                     </div>
-                    <div class='compact-grid'>
-                        <div>
-                            <div class='section-title'><h2>Resistance stack</h2><span>R1 / R2</span></div>
-                            <div class='levels-list' id='resistanceList'></div>
-                        </div>
-                        <div>
-                            <div class='section-title'><h2>Support stack</h2><span>S1 / S2</span></div>
-                            <div class='levels-list' id='supportList'></div>
-                        </div>
-                    </div>
+                    <div class='levels-ladder' id='levelsLadder' aria-label='Price levels ladder'></div>
                 </section>
             </aside>
         </section>
-        <footer>HackTrader · visual refresh · v0.7.7</footer>
+        <footer>HackTrader v0.7.7 · by @gitjayson</footer>
     </main>
 
     <script>
@@ -1404,7 +1385,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         }
 
         function switchRightPanelTab(tabName) {
-            ['probes', 'context', 'attempts', 'drivers', 'usage'].forEach((name) => {
+            ['activity', 'context', 'usage'].forEach((name) => {
                 const tab = document.getElementById(`rightTab-${name}`);
                 const panel = document.getElementById(`rightPanel-${name}`);
                 const active = name === tabName;
@@ -1416,61 +1397,107 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             });
         }
 
-        function setBiasChip(probabilities) {
-            const el = document.getElementById('biasChip');
-            const bias = probabilities?.bias || 'neutral';
-            const confidence = probabilities?.confidence || 'low';
-            el.className = `bias-chip ${bias}`;
-            el.textContent = `${bias} bias · ${confidence} confidence`;
-        }
-
-        function setLiveStatusChip(data) {
-            const el = document.getElementById('liveStatusChip');
+        // Unified status chip: combines market bias + data freshness in one badge.
+        // Format: "<icon> <BIAS> bias · <freshness> · <source>"
+        // Example: "▲ Up bias · Live · MASSIVE"  /  "■ Neutral · Stale · cached 47s"
+        function updateStatusChip(data) {
+            const el = document.getElementById('statusChip');
             if (!el) return;
+
+            const probs = data?.probabilities || {};
+            const bias = probs.bias || 'neutral';
+            const confidence = probs.confidence || 'low';
+            const biasIcon = bias === 'up' ? '▲' : bias === 'down' ? '▼' : '■';
+            const biasLabel = bias === 'neutral'
+                ? 'Neutral'
+                : `${bias.charAt(0).toUpperCase()}${bias.slice(1)} bias`;
+
             const liveStatus = String(data?.live_status || '').toLowerCase();
-            const source = data?.source ? String(data.source).toUpperCase() : 'SOURCE UNKNOWN';
+            const source = data?.source ? String(data.source).toUpperCase() : '';
             const summary = data?.live_error_summary ? String(data.live_error_summary) : '';
+
+            // Pick the chip's color class. Stale/error trump bias direction so the
+            // user notices data-quality issues before reacting to the signal.
+            let cls = bias;
+            let freshness;
             if (liveStatus === 'stale_fallback') {
-                el.className = 'bias-chip stale';
-                el.textContent = `Data stale · ${summary || 'live fetch failed'}`;
-                return;
-            }
-            if (liveStatus === 'error') {
-                el.className = 'bias-chip error';
-                el.textContent = `Data unavailable · ${summary || 'market data unavailable'}`;
-                return;
-            }
-            if (liveStatus === 'cache_hit') {
+                cls = 'stale';
+                freshness = `Stale${summary ? ` (${summary})` : ''}`;
+            } else if (liveStatus === 'error') {
+                cls = 'error';
+                freshness = `Error${summary ? ` (${summary})` : ''}`;
+            } else if (liveStatus === 'cache_hit') {
                 const age = Number(data?.cache?.age_seconds);
-                el.className = 'bias-chip neutral';
-                el.textContent = `Cached data · ${Number.isFinite(age) ? `${age}s old` : 'recent'} · ${source}`;
-                return;
+                freshness = `Cached ${Number.isFinite(age) ? `${age}s` : ''}`.trim();
+            } else {
+                freshness = 'Live';
             }
-            el.className = 'bias-chip live';
-            el.textContent = `Live data · ${source}`;
+
+            const parts = [`${biasIcon} ${biasLabel}`];
+            if (confidence && bias !== 'neutral') parts.push(`${confidence} confidence`);
+            parts.push(freshness);
+            if (source) parts.push(source);
+
+            el.className = `bias-chip ${cls}`;
+            el.textContent = parts.join(' · ');
         }
 
-        function renderLevelList(targetId, titlePrefix, levels) {
-            const container = document.getElementById(targetId);
-            if (!levels || !levels.length) {
-                container.innerHTML = `<div class='level-row'><div class='left'><div class='row-title'>No validated levels</div><div class='row-meta'>The model did not find enough clustered structure here.</div></div><div class='row-value'>--</div></div>`;
+        // Unified levels ladder: stacks resistances above current price above supports,
+        // mapping the on-screen vertical order to actual price order. The current
+        // price marker sits in the middle and shows the live quote.
+        function renderLevelLadder(data) {
+            const container = document.getElementById('levelsLadder');
+            if (!container) return;
+
+            const resistances = (data?.upper_resistances || []).slice(0, 2);
+            const supports    = (data?.lower_supports   || []).slice(0, 2);
+            const current     = Number(data?.current_price ?? data?.last_price ?? 0);
+
+            const empty = !resistances.length && !supports.length;
+            if (empty && !current) {
+                container.innerHTML = `<div class='ladder-empty'>No validated levels yet</div>`;
                 return;
             }
-            container.innerHTML = levels.map((level, index) => `
-                <div class='level-row'>
-                    <div class='left'>
-                        <div class='row-title'>${titlePrefix}${index + 1} · $${formatPrice(level.price)}</div>
-                        <div class='row-meta'>Touches ${level.touches ?? '--'} · Range ${Array.isArray(level.range) ? `$${formatPrice(level.range[0])} to $${formatPrice(level.range[1])}` : 'n/a'}</div>
-                    </div>
-                    <div class='row-value'>${titlePrefix === 'R' ? '+' : '-'}$${formatPrice(level.diff)}</div>
+
+            const rowFor = (level, prefix, index, kind) => `
+                <div class='ladder-row ${kind}'>
+                    <div class='ladder-tag'>${prefix}${index}</div>
+                    <div class='ladder-price'>$${formatPrice(level.price)}</div>
+                    <div class='ladder-meta'>${level.touches ?? '--'} touches</div>
+                    <div class='ladder-diff'>${kind === 'resistance' ? '+' : '-'}$${formatPrice(Math.abs(Number(level.diff || 0)))}</div>
                 </div>
-            `).join('');
+            `;
+
+            const parts = [];
+            // Resistances: highest first (R2 above R1)
+            const sortedR = [...resistances].sort((a, b) => Number(b.price) - Number(a.price));
+            sortedR.forEach((lvl, i) => {
+                const idx = sortedR.length - i;  // R2 then R1
+                parts.push(rowFor(lvl, 'R', idx, 'resistance'));
+            });
+
+            parts.push(`
+                <div class='ladder-row current'>
+                    <div class='ladder-tag'>NOW</div>
+                    <div class='ladder-price'>${current ? `$${formatPrice(current)}` : '—'}</div>
+                    <div class='ladder-meta'>current</div>
+                    <div class='ladder-diff'></div>
+                </div>
+            `);
+
+            // Supports: highest first (S1 above S2)
+            const sortedS = [...supports].sort((a, b) => Number(b.price) - Number(a.price));
+            sortedS.forEach((lvl, i) => {
+                parts.push(rowFor(lvl, 'S', i + 1, 'support'));
+            });
+
+            container.innerHTML = parts.join('');
         }
 
         function renderChannels(channels) {
             const container = document.getElementById('channelList');
             if (!channels || !channels.length) {
-                container.innerHTML = `<div class='range-card'><div class='range-top'><div class='range-name'>Channels unavailable</div><div class='range-width'>--</div></div><div class='range-track'><div class='range-fill' style='width:0%'></div></div><div class='range-meta'><span>No usable bounds</span><span>Awaiting structure</span></div></div>`;
+                container.innerHTML = `<div class='range-card'><div class='range-top'><div class='range-name'>No channels</div><div class='range-width'>—</div></div></div>`;
                 return;
             }
             const maxWidth = Math.max(...channels.map(channel => Number(channel.width || 0)), 0.01);
@@ -1735,37 +1762,14 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             document.getElementById('sourceMeta').textContent = formatSourceMeta(data) || 'Live source pending';
             document.getElementById('quoteTimezone').textContent = data.quote_timezone || 'ET';
             document.getElementById('analysisMeta').textContent = `${data.interval || '--'} · ${data.periods || '--'} bars${data.live_status === 'stale_fallback' ? ' · degraded mode' : ''}`;
-            setLiveStatusChip(data);
+            updateStatusChip(data);
             document.getElementById('upProbability').textContent = formatPercent(data?.probabilities?.up);
             document.getElementById('downProbability').textContent = formatPercent(data?.probabilities?.down);
             document.getElementById('upProbabilitySub').textContent = `Bias ${data?.probabilities?.bias || 'neutral'}`;
             document.getElementById('downProbabilitySub').textContent = `Confidence ${data?.probabilities?.confidence || 'low'}`;
-            setBiasChip(data?.probabilities || {});
-
-            const upProb = Number(data?.probabilities?.up || 0);
-            const downProb = Number(data?.probabilities?.down || 0);
-            const pressureDirection = upProb >= downProb ? 'Upside' : 'Downside';
-            const pressureStrength = Math.max(upProb, downProb);
-            document.getElementById('pressureValue').textContent = `${pressureDirection} ${formatPercent(pressureStrength)}`;
-            document.getElementById('pressureFill').style.width = `${Math.max(4, Math.min(100, pressureStrength))}%`;
-            document.getElementById('pressureSubtext').textContent = `Spread ${Math.abs(upProb - downProb).toFixed(1)} pts between up/down scenarios`;
-
-            const currentChannel = (data?.channels || []).find(channel => channel.name === 'current') || (data?.channels || [])[0];
-            const channelWidth = Number(currentChannel?.width || 0);
-            const atr = Number(data?.analysis_parameters?.atr || 0);
-            const widthRatio = atr > 0 ? Math.min(100, (channelWidth / atr) * 50) : 0;
-            document.getElementById('channelWidthValue').textContent = channelWidth ? `$${formatPrice(channelWidth)}` : '--';
-            document.getElementById('channelWidthFill').style.width = `${Math.max(4, widthRatio)}%`;
-            document.getElementById('channelWidthSubtext').textContent = currentChannel ? `${currentChannel.location} · ATR ${formatPrice(atr)}` : 'No current channel detected';
-
-            const stress = Math.min(100, ((Number(data?.attempts?.failed_up_today || 0) + Number(data?.attempts?.failed_down_today || 0)) / 6) * 100);
-            document.getElementById('attemptStressValue').textContent = `${Number(data?.attempts?.failed_up_today || 0) + Number(data?.attempts?.failed_down_today || 0)} probes`;
-            document.getElementById('attemptStressFill').style.width = `${Math.max(4, stress)}%`;
-            document.getElementById('attemptStressSubtext').textContent = `Up ${data?.attempts?.failed_up_today || 0} · Down ${data?.attempts?.failed_down_today || 0} · Rule-of-three ${(data?.attempts?.rule_of_three_block_up || data?.attempts?.rule_of_three_block_down) ? 'active' : 'inactive'}`;
 
             renderChannels(data?.channels || []);
-            renderLevelList('resistanceList', 'R', data?.upper_resistances || []);
-            renderLevelList('supportList', 'S', data?.lower_supports || []);
+            renderLevelLadder(data);
             renderProbeGraph(data?.attempts || {});
             renderAttempts(data?.attempts || {});
             renderDrivers(data?.score_drivers || []);

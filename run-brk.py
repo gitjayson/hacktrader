@@ -1,6 +1,5 @@
 import json
 import os
-import random
 import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
@@ -39,30 +38,20 @@ UTC_TZ = ZoneInfo("UTC")
 
 
 def load_api_keys():
-    keys = {"massive": None, "twelvedata": []}
-    twelvedata_fallback_keys = [
-        "1dbc799fe411479686be512ee797a777",
-        "8e13917d80264a63935d62aa2c448076",
-    ]
+    """Load API credentials. Massive is the only live data provider;
+    we previously also supported TwelveData and yfinance as fallbacks but
+    those were removed once we standardized on a paid Massive subscription.
+    """
+    keys = {"massive": None}
     if os.path.exists(secrets_path):
         try:
             with open(secrets_path) as f:
                 secrets = json.load(f)
             massive_key = secrets.get("MASSIVE_API_KEY")
-            td_key = secrets.get("TWELVEDATA_API_KEY")
             if massive_key:
                 keys["massive"] = massive_key
-            if td_key:
-                keys["twelvedata"].append(td_key)
         except Exception:
             pass
-    seen = set()
-    deduped_td = []
-    for key in keys["twelvedata"] + twelvedata_fallback_keys:
-        if key and key not in seen:
-            deduped_td.append(key)
-            seen.add(key)
-    keys["twelvedata"] = deduped_td
     return keys
 
 
@@ -99,15 +88,6 @@ def cache_quote_to_value(quote):
         return None
 
 
-def interval_to_yfinance(interval):
-    return {
-        "1min": "1m",
-        "5min": "5m",
-        "1h": "60m",
-        "1day": "1d",
-    }.get(interval, "1d")
-
-
 def interval_to_minutes(interval):
     return {
         "1min": 1,
@@ -115,20 +95,6 @@ def interval_to_minutes(interval):
         "1h": 60,
         "1day": 390,
     }.get(interval, 5)
-
-
-def yfinance_range_for_interval(interval, periods):
-    try:
-        periods = int(periods)
-    except Exception:
-        periods = 100
-    if interval == "1min":
-        return "7d" if periods <= 390 * 7 else "30d"
-    if interval == "5min":
-        return "60d"
-    if interval == "1h":
-        return "730d"
-    return "5y"
 
 
 def safe_float(value):
@@ -883,98 +849,6 @@ def fetch_massive(ticker, interval, periods):
     return (trimmed, "massive", None) if trimmed else (None, None, "No usable Massive rows")
 
 
-def fetch_twelvedata(ticker, interval, periods, session_id=None):
-    api_keys = API_KEYS.get("twelvedata", [])[:]
-    random.shuffle(api_keys)
-    last_error = "No Twelve Data API keys configured"
-    for apikey in api_keys:
-        url = f"https://api.twelvedata.com/time_series?symbol={ticker}&interval={interval}&apikey={apikey}&outputsize={periods}"
-        response = subprocess.run(["curl", "-s", url], capture_output=True, text=True)
-        try:
-            data = json.loads(response.stdout)
-        except Exception:
-            last_error = "Could not fetch data from Twelve Data"
-            continue
-        if "code" in data:
-            last_error = data.get("message", "Twelve Data API Error")
-            continue
-        if "values" not in data or not data["values"]:
-            last_error = "No values in Twelve Data response"
-            continue
-        return (
-            [
-                {
-                    "high": entry.get("high"),
-                    "low": entry.get("low"),
-                    "close": entry.get("close"),
-                    "volume": entry.get("volume"),
-                    "datetime": entry.get("datetime"),
-                }
-                for entry in data["values"]
-            ],
-            "twelvedata",
-            None,
-        )
-    return None, None, last_error
-
-
-def fetch_yfinance(ticker, interval, periods):
-    yf_interval = interval_to_yfinance(interval)
-    yf_range = yfinance_range_for_interval(interval, periods)
-    pycode = r"""
-import json, sys
-try:
-    import yfinance as yf
-except Exception as e:
-    print(json.dumps({'error': f'yfinance import failed: {e}'}))
-    raise SystemExit(0)
-symbol, interval, period = sys.argv[1], sys.argv[2], sys.argv[3]
-try:
-    df = yf.Ticker(symbol).history(interval=interval, period=period, auto_adjust=False, prepost=False)
-    if df is None or df.empty:
-        print(json.dumps({'error': 'No values in yfinance response'}))
-        raise SystemExit(0)
-    rows = []
-    for idx, row in df.iterrows():
-        high = row.get('High'); low = row.get('Low'); close = row.get('Close')
-        if high is None or low is None or close is None:
-            continue
-        volume = row.get('Volume')
-        try:
-            dt_value = idx.isoformat()
-        except Exception:
-            dt_value = str(idx)
-        rows.append({'high': float(high), 'low': float(low), 'close': float(close), 'volume': float(volume) if volume is not None else None, 'datetime': dt_value})
-    if not rows:
-        print(json.dumps({'error': 'No usable yfinance rows'}))
-        raise SystemExit(0)
-    rows.reverse()
-    print(json.dumps({'values': rows}))
-except Exception as e:
-    print(json.dumps({'error': str(e)}))
-"""
-    response = subprocess.run(
-        [sys.executable, "-c", pycode, ticker, yf_interval, yf_range],
-        capture_output=True,
-        text=True,
-    )
-    try:
-        data = json.loads(response.stdout)
-    except Exception:
-        return None, None, "Could not parse yfinance response"
-    if data.get("error"):
-        return None, None, data["error"]
-    values = data.get("values", [])
-    try:
-        periods_int = int(periods)
-    except Exception:
-        periods_int = 100
-    trimmed = values[:periods_int] if periods_int > 0 else values
-    return (
-        (trimmed, "yfinance", None) if trimmed else (None, None, "No values in yfinance response")
-    )
-
-
 def run_breakout(
     ticker="TSLA",
     interval="1day",
@@ -983,30 +857,25 @@ def run_breakout(
     output_json="false",
     session_id=None,
 ):
+    """Run a breakout analysis for `ticker`.
+
+    Data flow: cache (fast path) -> Massive (the only live provider).
+    No fallback providers — the user runs a paid Massive subscription that
+    won't deny service, so any Massive failure should surface to the caller
+    rather than silently fall back. api.php is responsible for serving stale
+    cache as a degraded mode if Massive errors and a prior pipeline exists.
+    """
     values, source, cache_error = fetch_from_cache(ticker, periods)
     massive_error = None
-    yf_error = None
-    td_error = None
-    backend_error = None
     if values is None:
         values, source, massive_error = fetch_massive(ticker, interval, periods)
     if values is None:
-        values, source, yf_error = fetch_yfinance(ticker, interval, periods)
-    if values is None:
-        values, source, td_error = fetch_twelvedata(
-            ticker, interval, periods, session_id=session_id
-        )
-        if values is None:
-            backend_error = {
-                "cache": cache_error,
-                "massive": massive_error,
-                "yfinance": yf_error,
-                "twelvedata": td_error,
-            }
-    if values is None:
         error_payload = {
             "error": "Unable to fetch market data",
-            "details": backend_error,
+            "details": {
+                "cache": cache_error,
+                "massive": massive_error,
+            },
             "ticker": ticker,
             "display": display,
             "periods": int(periods),
@@ -1017,8 +886,6 @@ def run_breakout(
             print("Error: Unable to fetch market data")
         return
     output = compute_output(ticker, interval, display, periods, values, source)
-    if yf_error and source == "twelvedata":
-        output["fallback_reason"] = yf_error
     if output_json == "true":
         print(json.dumps(output, indent=2))
         return

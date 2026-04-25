@@ -6,7 +6,7 @@ import os
 import statistics
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
@@ -234,32 +234,46 @@ def load_universe_symbols():
     return sorted(symbols)
 
 
-def load_twelvedata_api_key():
+def load_massive_api_key():
     for path in (SERVER_SECRETS_PATH, LOCAL_SECRETS_PATH):
         secrets = load_json(path, {})
-        api_key = secrets.get("TWELVEDATA_API_KEY")
+        api_key = secrets.get("MASSIVE_API_KEY")
         if api_key:
             return api_key
     return None
 
 
 def fetch_series(symbol):
-    api_key = load_twelvedata_api_key()
+    """Fetch ~260 daily closes for `symbol` from Massive.
+
+    Same endpoint family as run-brk.fetch_massive, just scoped to daily bars
+    and a year-ish lookback. Returns a list of closes ordered oldest→newest,
+    or None if the request fails or returns too few points for a meaningful
+    correlation.
+    """
+    api_key = load_massive_api_key()
     if not api_key:
         return None
-    url = f"https://api.twelvedata.com/time_series?symbol={symbol}&interval=1day&apikey={api_key}&outputsize=260"
+    today = datetime.now().date()
+    # Pull ~13 months back to make sure we always have ≥260 trading days.
+    from_date = (today - timedelta(days=400)).isoformat()
+    to_date = today.isoformat()
+    url = (
+        f"https://api.massive.com/v2/aggs/ticker/{symbol}/range/1/day/"
+        f"{from_date}/{to_date}?adjusted=true&sort=asc&limit=400&apiKey={api_key}"
+    )
     proc = subprocess.run(["curl", "-s", url], capture_output=True, text=True)
     try:
         payload = json.loads(proc.stdout or "{}")
     except Exception:
         return None
-    values = payload.get("values")
-    if not isinstance(values, list):
+    results = payload.get("results")
+    if not isinstance(results, list):
         return None
     closes = []
-    for row in reversed(values):
+    for row in results:
         try:
-            closes.append(float(row.get("close")))
+            closes.append(float(row.get("c")))
         except Exception:
             continue
     return closes if len(closes) >= MIN_SERIES_POINTS else None
