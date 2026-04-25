@@ -1738,15 +1738,45 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 
             const channels = Array.isArray(data?.channels) ? data.channels : [];
             const currentChannel = channels.find(c => c?.name === 'current') || channels[0];
+            const aboveChannel = channels.find(c => c?.name === 'above_resistance');
+            const belowChannel = channels.find(c => c?.name === 'below_support');
             const channelWidth = Number(currentChannel?.width || 0);
             const atr = Number(data?.analysis_parameters?.atr || 0);
             const widthRatio = atr > 0 ? Math.min(100, (channelWidth / atr) * 50) : 0;
+
+            // Pick the breakout-target channel based on bias direction —
+            // upside breakout enters the above-resistance channel, downside
+            // breakout enters the below-support channel. Falls back to
+            // whichever channel exists if bias is neutral.
+            const breakoutSide = upProb >= downProb ? 'up' : 'down';
+            const breakoutChannel = breakoutSide === 'up' ? (aboveChannel || belowChannel) : (belowChannel || aboveChannel);
+            const breakoutWidth = Number(breakoutChannel?.width || 0);
+
             const cwValue = document.getElementById('channelWidthValue');
             const cwFill = document.getElementById('channelWidthFill');
             const cwSub = document.getElementById('channelWidthSubtext');
-            if (cwValue) cwValue.textContent = channelWidth ? `$${formatPrice(channelWidth)}` : '—';
+            if (cwValue) {
+                // Show "current → breakout" so the trader sees what room
+                // opens up if price breaks the current channel boundary.
+                if (channelWidth && breakoutWidth) {
+                    const arrow = breakoutSide === 'up' ? '↑' : '↓';
+                    cwValue.textContent = `$${formatPrice(channelWidth)} ${arrow} $${formatPrice(breakoutWidth)}`;
+                } else if (channelWidth) {
+                    cwValue.textContent = `$${formatPrice(channelWidth)}`;
+                } else {
+                    cwValue.textContent = '—';
+                }
+            }
             if (cwFill) cwFill.style.width = `${Math.max(4, widthRatio)}%`;
-            if (cwSub) cwSub.textContent = currentChannel ? `${String(currentChannel.location || '—').replaceAll('_', ' ')} · ATR ${atr ? formatPrice(atr) : '—'}` : 'No current channel';
+            if (cwSub) {
+                const parts = [];
+                if (currentChannel?.location) parts.push(String(currentChannel.location).replaceAll('_', ' '));
+                if (atr) parts.push(`ATR ${formatPrice(atr)}`);
+                if (breakoutChannel?.lower != null && breakoutChannel?.upper != null) {
+                    parts.push(`breakout band $${formatPrice(breakoutChannel.lower)}–$${formatPrice(breakoutChannel.upper)}`);
+                }
+                cwSub.textContent = parts.length ? parts.join(' · ') : 'No current channel';
+            }
 
             const upAttempts = Number(data?.attempts?.failed_up_today || 0);
             const downAttempts = Number(data?.attempts?.failed_down_today || 0);
@@ -2330,17 +2360,18 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                     showBanner(`Researching ${ticker} indicator basket… showing fallback set for now.`, false);
                     scheduleCorrelationRefresh(requestId, ticker, 4000);
                 }
-                document.querySelectorAll('.indicator-node').forEach(el => el.remove());
-                document.querySelectorAll('#lines line[id^="line-"]').forEach(line => line.remove());
+                // ---- In-place radar refresh -----------------------------
+                // Don't wipe nodes/lines up front — the user reads a blanked
+                // radar as "data lost" rather than "data refreshing". Instead
+                // reposition existing nodes (so geometry follows new scores)
+                // and let each indicator's previous values stay rendered until
+                // its replacement fetch resolves. After Promise.all, prune
+                // any nodes whose symbol fell out of the new basket.
                 const clock = document.getElementById('clock');
                 const clockRect = clock.getBoundingClientRect();
                 const smallWindow = window.innerWidth <= 720;
                 const mediumWindow = window.innerWidth <= 980;
 
-                // Geometry for the score-driven layout. min_dist sits just outside
-                // the focus node, max_dist sits just inside the stage edge. A
-                // perfect-1.0 correlation lands at min_dist; a 0.0 correlation
-                // lands at max_dist; everything else interpolates linearly.
                 const indicatorHalf = smallWindow ? 39 : (mediumWindow ? 44 : 52);
                 const focusHalf     = smallWindow ? 64 : (mediumWindow ? 72 : 85);
                 const padding       = smallWindow ? 14 : 18;
@@ -2351,14 +2382,15 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 
                 drawRadarRings(center, minDist, maxDist);
 
-                // Sort by descending score so strongest correlations render on
-                // top when nodes overlap visually. Angles still distribute
-                // evenly around the circle — only radius encodes strength.
                 const sortedIndicators = [...indicators].sort((a, b) => {
                     const aScore = a.score === null ? -1 : Math.abs(a.score);
                     const bScore = b.score === null ? -1 : Math.abs(b.score);
                     return aScore - bScore;
                 });
+
+                // Track which symbols are in the current basket so we can prune
+                // nodes that fell out at the end of the refresh.
+                const newBasketSymbols = new Set(sortedIndicators.map(o => o.symbol));
 
                 const indicatorStates = [];
                 const promises = sortedIndicators.map(async (indObj, i) => {
@@ -2367,18 +2399,33 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                     const x = Math.cos(angle) * r;
                     const y = Math.sin(angle) * r;
                     const isInverse = indObj.relation === 'negative';
-                    const el = document.createElement('button');
-                    el.type = 'button';
-                    el.className = `indicator-node neutral${isInverse ? ' inverse' : ''}`;
-                    el.dataset.symbol = indObj.symbol;
+
+                    // Reuse the existing node if we already have one for this
+                    // symbol, so its prior price/bias stays on screen until
+                    // the new fetch returns. Only first-time symbols get the
+                    // "—" placeholder; everything else is a continuous update.
+                    let el = clock.querySelector(`.indicator-node[data-symbol="${CSS.escape(indObj.symbol)}"]`);
+                    const isNew = !el;
+                    if (isNew) {
+                        el = document.createElement('button');
+                        el.type = 'button';
+                        el.dataset.symbol = indObj.symbol;
+                        el.onclick = () => updateDashboard(indObj.symbol);
+                        // First render: show ticker + score so the node isn't blank
+                        const scoreLabel = indObj.score === null
+                            ? `<div class='mini-bias'>—</div>`
+                            : `<div class='mini-bias'>${(isInverse ? '−' : '')}${Math.abs(indObj.score).toFixed(2)}</div>`;
+                        el.innerHTML = `<div class='ticker'>${indObj.symbol}</div><div class='price'>—</div>${scoreLabel}`;
+                        clock.appendChild(el);
+                    }
+                    // Keep the inverse class fresh and reposition. We don't
+                    // overwrite the bias color class here — that stays at
+                    // whatever the previous fetch set it to until the new
+                    // fetch lands a fresh bias.
+                    el.classList.toggle('inverse', isInverse);
                     el.style.left = `calc(50% + ${x}px)`;
                     el.style.top = `calc(50% + ${y}px)`;
-                    el.onclick = () => updateDashboard(indObj.symbol);
-                    const scoreLabel = indObj.score === null
-                        ? ''
-                        : `<div class='mini-bias'>${(isInverse ? '−' : '')}${Math.abs(indObj.score).toFixed(2)}</div>`;
-                    el.innerHTML = `<div class='ticker'>${indObj.symbol}</div><div class='price'>—</div>${scoreLabel || `<div class='mini-bias'>scanning</div>`}`;
-                    clock.appendChild(el);
+
                     try {
                         const data = await fetchTickerData(indObj.symbol, period, lookback);
                         if (requestId !== dashboardRequestSeq) return;
@@ -2395,11 +2442,25 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                         indicatorStates.push({ symbol: indObj.symbol, relation: indObj.relation, data });
                     } catch (err) {
                         indicatorStates.push({ symbol: indObj.symbol, relation: indObj.relation, data: null, error: err });
-                        el.className = `indicator-node neutral${isInverse ? ' inverse' : ''}`;
-                        el.innerHTML = `<div class='ticker'>${indObj.symbol}</div><div class='price'>—</div><div class='mini-bias'>err</div>`;
+                        // Keep the prior node text intact — failing one fetch
+                        // shouldn't blank a previously-good indicator.
+                        if (isNew) {
+                            el.className = `indicator-node neutral${isInverse ? ' inverse' : ''}`;
+                            el.innerHTML = `<div class='ticker'>${indObj.symbol}</div><div class='price'>—</div><div class='mini-bias'>err</div>`;
+                        }
                     }
                 });
                 await Promise.all(promises);
+                if (requestId !== dashboardRequestSeq) return;
+                // Prune nodes + lines for symbols that fell out of the basket.
+                clock.querySelectorAll('.indicator-node').forEach((el) => {
+                    const sym = el.dataset.symbol;
+                    if (sym && !newBasketSymbols.has(sym)) {
+                        el.remove();
+                        const orphanLine = document.getElementById(`line-${sym}`);
+                        if (orphanLine) orphanLine.remove();
+                    }
+                });
                 if (requestId !== dashboardRequestSeq) return;
                 const summary = summarizeRelationshipBias(indicatorStates, tolerance);
                 // Refresh the focus node with the basket verdict ("9/12 ↑")
