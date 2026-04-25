@@ -18,8 +18,15 @@ if (!defined('HACKTRADER_DB_LOADED')) {
             $path = __DIR__ . '/../users.sqlite';
             $pdo = new PDO('sqlite:' . $path);
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $pdo->exec('PRAGMA journal_mode=WAL');
+            // Stay on the default DELETE journal mode. WAL is faster for
+            // concurrent writes but requires creating -wal / -shm sidecar
+            // files in the same directory, which surfaces permission edge
+            // cases that aren't worth fighting for a low-write subscription
+            // table. DELETE mode just touches the main file + an ephemeral
+            // .journal during transactions.
+            $pdo->exec('PRAGMA journal_mode=DELETE');
             $pdo->exec('PRAGMA foreign_keys=ON');
+            $pdo->exec('PRAGMA busy_timeout=5000');
             hacktrader_db_migrate($pdo);
         }
         return $pdo;
