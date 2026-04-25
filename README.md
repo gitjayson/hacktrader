@@ -1,10 +1,17 @@
 # HackTrader Dashboard
 
-- **Version:** v0.8.0
+- **Version:** v0.8.1
 - **Status:** Active
 - **Codebase:** HackTrader FUI dashboard
 
 HackTrader is a market dashboard for tracking a focus ticker, breakout probabilities, support/resistance ladders, volume context, and correlated indicators in a sci-fi control-panel interface.
+
+## Highlights in v0.8.1
+
+- **Indicator nodes are circles.** Roughly 60% smaller than the old rectangles, with a dot-on-radar feel that matches the radar metaphor. Inverse-correlation indicators get a dashed circular border. Per-node price display dropped — hover any indicator for a tooltip with ticker, price, bias, breakout %, and correlation score.
+- **Animated repositioning.** Indicators "swim" to new radii when their breakout strength changes between refreshes. The connecting lines follow smoothly. Combined with the in-place refresh, the radar reads as a continuous-momentum visual rather than a tick-tock snap.
+- **Channel width microchart shows the breakout target.** Reads `$3.48 ↑ $5.92` — current channel width, arrow tracking bias, projected width if price breaks the current channel boundary.
+- **Distance now encodes breakout strength.** `radius = max(upProb, downProb)/100` instead of static correlation. The basket visibly compresses when a setup tightens.
 
 ## Highlights in v0.8.0
 

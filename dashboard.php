@@ -14,7 +14,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>HackTrader | v0.8.0</title>
+    <title>HackTrader | v0.8.1</title>
     <link rel='preconnect' href='https://fonts.googleapis.com'>
     <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
     <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap' rel='stylesheet'>
@@ -632,37 +632,74 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         .focus-symbol { font-size: 32px; font-weight: 600; letter-spacing: -0.03em; }
         .focus-price { font-size: 24px; font-weight: 600; margin-top: 6px; font-variant-numeric: tabular-nums; }
         .focus-bias { margin-top: 8px; font-size: 12px; color: var(--muted); }
+        /* v0.8.1 — indicator nodes are now circles. The rounded-rectangle
+           form fought the polar geometry of the radar; circles read as
+           data points on a polar chart. Per-node price display moved into
+           a hover tooltip; only ticker + breakout % live in the circle. */
         .indicator-node {
             position: absolute;
-            width: clamp(78px, 16vw, 106px);
-            min-height: clamp(70px, 14vw, 94px);
-            padding: 10px 8px;
-            border-radius: 20px;
-            background: rgba(5, 12, 21, 0.88);
-            border: 1px solid rgba(148,163,184,0.15);
-            box-shadow: 0 16px 30px rgba(0,0,0,0.22);
+            width: clamp(48px, 7.4vw, 64px);
+            height: clamp(48px, 7.4vw, 64px);
+            padding: 0;
+            border-radius: 50%;
+            background: rgba(5, 12, 21, 0.92);
+            border: 1.5px solid rgba(148,163,184,0.45);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.30);
             display: flex;
             flex-direction: column;
             justify-content: center;
-            gap: 4px;
+            align-items: center;
+            gap: 1px;
             text-align: center;
             transform: translate(-50%, -50%);
             cursor: pointer;
             z-index: 4;
-            /* Ease into new positions when the breakout strength changes between
-               refreshes — gives the radar a continuous-momentum feel rather than
-               a tick-tock snap. Only animate the position, not the colors. */
+            font-family: inherit;
+            color: var(--text);
+            /* Ease into new positions when breakout strength changes
+               between refreshes — gives the radar a continuous-momentum
+               feel. Scale on hover for affordance. */
             transition: left 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-                        top  0.45s cubic-bezier(0.22, 1, 0.36, 1);
+                        top  0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                        transform 0.15s ease,
+                        box-shadow 0.15s ease,
+                        border-color 0.15s ease;
+        }
+        .indicator-node:hover {
+            transform: translate(-50%, -50%) scale(1.08);
+            z-index: 6;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.45);
+        }
+        .indicator-node:focus-visible {
+            outline: 2px solid var(--cyan);
+            outline-offset: 2px;
         }
         /* Connecting lines also animate to follow the node smoothly. */
         #lines line[id^='line-'] {
             transition: x2 0.45s cubic-bezier(0.22, 1, 0.36, 1),
                         y2 0.45s cubic-bezier(0.22, 1, 0.36, 1);
         }
-        .indicator-node .ticker { font-size: 14px; font-weight: 800; }
-        .indicator-node .price { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted); }
-        .indicator-node .mini-bias { font-size: 11px; font-weight: 700; }
+        .indicator-node .ticker {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            line-height: 1;
+        }
+        /* Score line inside the circle: tight monospace, slight muted color
+           so the ticker remains the primary read at a glance. */
+        .indicator-node .mini-bias {
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            font-size: 9px;
+            font-weight: 500;
+            line-height: 1;
+            margin-top: 2px;
+            color: rgba(232,241,255,0.78);
+            font-variant-numeric: tabular-nums;
+        }
+        /* The .price element no longer renders inside the circle (circles
+           don't have room for prices). Hidden but kept for any legacy
+           innerHTML that may still write to it during transitions. */
+        .indicator-node .price { display: none; }
         .indicator-node.green { border-color: rgba(34,197,94,0.55); }
         .indicator-node.red { border-color: rgba(248,113,113,0.55); }
         .indicator-node.neutral { border-color: rgba(148,163,184,0.45); }
@@ -1432,7 +1469,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 
             </section>
         </section>
-        <footer>HackTrader v0.8.0 · by @gitjayson</footer>
+        <footer>HackTrader v0.8.1 · by @gitjayson</footer>
     </main>
 
     <script>
@@ -2395,9 +2432,13 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 const smallWindow = window.innerWidth <= 720;
                 const mediumWindow = window.innerWidth <= 980;
 
-                const indicatorHalf = smallWindow ? 39 : (mediumWindow ? 44 : 52);
+                // Smaller indicators (v0.8.1 circles ~48–64px diameter) so
+                // we recover usable radius. The min ring sits closer to the
+                // focus, the outer ring sits closer to the stage edge —
+                // strong-vs-weak signal separation reads with more clarity.
+                const indicatorHalf = smallWindow ? 24 : (mediumWindow ? 28 : 32);
                 const focusHalf     = smallWindow ? 64 : (mediumWindow ? 72 : 85);
-                const padding       = smallWindow ? 14 : 18;
+                const padding       = smallWindow ? 12 : 16;
                 const stageRadius   = clockRect.width / 2;
                 const center        = stageRadius;
                 const minDist       = focusHalf + indicatorHalf + padding;
@@ -2434,11 +2475,15 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                         el.type = 'button';
                         el.dataset.symbol = indObj.symbol;
                         el.onclick = () => updateDashboard(indObj.symbol);
-                        // First render: show ticker + score so the node isn't blank
+                        // First render: ticker + score (or — if no score yet).
+                        // Price moves to the hover tooltip.
                         const scoreLabel = indObj.score === null
                             ? `<div class='mini-bias'>—</div>`
                             : `<div class='mini-bias'>${(isInverse ? '−' : '')}${Math.abs(indObj.score).toFixed(2)}</div>`;
-                        el.innerHTML = `<div class='ticker'>${indObj.symbol}</div><div class='price'>—</div>${scoreLabel}`;
+                        el.innerHTML = `<div class='ticker'>${indObj.symbol}</div>${scoreLabel}`;
+                        // Native title acts as the hover tooltip until per-fetch
+                        // data lands; gets updated below with full info.
+                        el.title = `${indObj.symbol}${indObj.score !== null ? ` · corr ${(isInverse ? '−' : '')}${Math.abs(indObj.score).toFixed(2)}` : ''}`;
                         clock.appendChild(el);
                     }
                     // Keep the inverse class fresh and reposition. We don't
@@ -2468,13 +2513,15 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                         el.style.top  = `calc(50% + ${newY}px)`;
 
                         const arrow = bias === 'up' ? '↑' : bias === 'down' ? '↓' : '·';
-                        // Show the breakout %, which is what the radius now encodes.
-                        // Score (correlation) shifts to the second-line context if present.
+                        // Inside the circle: ticker + dominant breakout % only.
+                        // Price, full bias, correlation move to the title tooltip
+                        // because circles don't have room for that much content.
                         const dominant = Math.max(Number(probs.up || 0), Number(probs.down || 0));
-                        const corrLabel = indObj.score !== null
-                            ? ` · ${(isInverse ? '−' : '')}${Math.abs(indObj.score).toFixed(2)}`
+                        el.innerHTML = `<div class='ticker'>${indObj.symbol}</div><div class='mini-bias'>${dominant.toFixed(0)}${arrow}</div>`;
+                        const corrText = indObj.score !== null
+                            ? ` · corr ${(isInverse ? '−' : '')}${Math.abs(indObj.score).toFixed(2)}`
                             : '';
-                        el.innerHTML = `<div class='ticker'>${indObj.symbol}</div><div class='price'>$${formatPrice(data.current_price)}</div><div class='mini-bias'>${formatPercent(dominant)} ${arrow}${corrLabel}</div>`;
+                        el.title = `${indObj.symbol} · $${formatPrice(data.current_price)} · ${bias} bias · up ${formatPercent(probs.up)} · down ${formatPercent(probs.down)}${corrText}`;
                         drawOrUpdateLine(`line-${indObj.symbol}`, newX, newY, lineColor, isInverse);
                         indicatorStates.push({ symbol: indObj.symbol, relation: indObj.relation, data });
                     } catch (err) {
