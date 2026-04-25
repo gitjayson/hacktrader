@@ -649,6 +649,16 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             transform: translate(-50%, -50%);
             cursor: pointer;
             z-index: 4;
+            /* Ease into new positions when the breakout strength changes between
+               refreshes — gives the radar a continuous-momentum feel rather than
+               a tick-tock snap. Only animate the position, not the colors. */
+            transition: left 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                        top  0.45s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        /* Connecting lines also animate to follow the node smoothly. */
+        #lines line[id^='line-'] {
+            transition: x2 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                        y2 0.45s cubic-bezier(0.22, 1, 0.36, 1);
         }
         .indicator-node .ticker { font-size: 14px; font-weight: 800; }
         .indicator-node .price { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted); }
@@ -1262,7 +1272,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 <section class='radar-card glass'>
                     <div class='section-title'>
                         <h2>Correlation radar</h2>
-                        <span id='indicatorBiasSubtext'>Distance from center = correlation strength</span>
+                        <span id='indicatorBiasSubtext'>Distance from center = breakout strength</span>
                     </div>
                     <div class='radar-stage' id='clock'>
                         <svg id='lines' class='radar-lines'></svg>
@@ -2271,19 +2281,32 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             }
         }
 
-        // Map a Pearson-style correlation score in [-1, 1] (or null) to a
-        // pixel radius. Higher |score| pulls the indicator closer to the
-        // focus node; missing/garbage scores fall back to a default-mid
-        // ring so the radar still lays out cleanly on legacy data that
-        // doesn't carry the score field yet.
-        function radiusForScore(score, minR, maxR) {
+        // Map a normalized strength in [0, 1] to a pixel radius.
+        // Higher strength = closer to the focus node. Used by both the
+        // correlation-score fallback (first paint, before per-ticker fetches
+        // resolve) and the breakout-strength repositioning (after fetch).
+        function radiusForStrength(strength, minR, maxR) {
             const fallback = 0.4;  // a touch outside the 0.5 ring
-            let s = (score === null || score === undefined || Number.isNaN(Number(score)))
+            let s = (strength === null || strength === undefined || Number.isNaN(Number(strength)))
                 ? fallback
-                : Math.abs(Number(score));
-            // Clamp so even a perfect-1.0 doesn't visually merge into the focus node
+                : Math.abs(Number(strength));
+            // Clamp so even a perfect 1.0 doesn't visually merge into the focus node
             s = Math.max(0, Math.min(0.95, s));
             return maxR - (maxR - minR) * s;
+        }
+        // Backwards-compatible alias for the correlation-score code path.
+        function radiusForScore(score, minR, maxR) {
+            return radiusForStrength(score, minR, maxR);
+        }
+        // Convert per-ticker probability data into a [0, 1] strength value.
+        // We treat decisiveness — max(up, down) / 100 — as the encoding:
+        // an indicator screaming up at 90% is just as "strong" a signal as
+        // one screaming down at 90%. Confirmation vs. opposition is encoded
+        // separately by the connecting line color, not the radius.
+        function breakoutStrength(data) {
+            const up = Number(data?.probabilities?.up || 0);
+            const down = Number(data?.probabilities?.down || 0);
+            return Math.max(up, down) / 100;
         }
 
         function computeLineColor(data, relation, tolerance) {
@@ -2433,12 +2456,26 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                         const probs = data?.probabilities || {};
                         const bias = probs.bias || 'neutral';
                         el.className = `indicator-node ${bias}${isInverse ? ' inverse' : ''}`;
+
+                        // Re-position based on breakout strength now that we
+                        // have it. The CSS transition makes this read as the
+                        // node "swimming" inward as its signal strengthens.
+                        const strength = breakoutStrength(data);
+                        const newR = radiusForStrength(strength, minDist, maxDist);
+                        const newX = Math.cos(angle) * newR;
+                        const newY = Math.sin(angle) * newR;
+                        el.style.left = `calc(50% + ${newX}px)`;
+                        el.style.top  = `calc(50% + ${newY}px)`;
+
                         const arrow = bias === 'up' ? '↑' : bias === 'down' ? '↓' : '·';
-                        const scoreText = indObj.score !== null
-                            ? `${(isInverse ? '−' : '')}${Math.abs(indObj.score).toFixed(2)} ${arrow}`
-                            : `${formatPercent(probs.up)} ${arrow}`;
-                        el.innerHTML = `<div class='ticker'>${indObj.symbol}</div><div class='price'>$${formatPrice(data.current_price)}</div><div class='mini-bias'>${scoreText}</div>`;
-                        drawOrUpdateLine(`line-${indObj.symbol}`, x, y, lineColor, isInverse);
+                        // Show the breakout %, which is what the radius now encodes.
+                        // Score (correlation) shifts to the second-line context if present.
+                        const dominant = Math.max(Number(probs.up || 0), Number(probs.down || 0));
+                        const corrLabel = indObj.score !== null
+                            ? ` · ${(isInverse ? '−' : '')}${Math.abs(indObj.score).toFixed(2)}`
+                            : '';
+                        el.innerHTML = `<div class='ticker'>${indObj.symbol}</div><div class='price'>$${formatPrice(data.current_price)}</div><div class='mini-bias'>${formatPercent(dominant)} ${arrow}${corrLabel}</div>`;
+                        drawOrUpdateLine(`line-${indObj.symbol}`, newX, newY, lineColor, isInverse);
                         indicatorStates.push({ symbol: indObj.symbol, relation: indObj.relation, data });
                     } catch (err) {
                         indicatorStates.push({ symbol: indObj.symbol, relation: indObj.relation, data: null, error: err });
