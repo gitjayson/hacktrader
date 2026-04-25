@@ -7,9 +7,16 @@ setup_git.sh
 # --- composer dev dependencies (installed locally, not deployed) ---
 vendor/
 
-# --- phpstan binary downloaded by `make install` ---
+# --- dev binaries downloaded by `make install` ---
 bin/phpstan.phar
+bin/phpunit.phar
 bin/
+
+# --- pytest venv ---
+.venv/
+
+# --- phpunit cache ---
+.phpunit.cache/
 
 # --- Secrets / credentials ---
 api-accounts.json
