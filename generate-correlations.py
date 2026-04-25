@@ -408,7 +408,17 @@ def sanitize_relationships(target, relationships):
             if str(item.get("relation", "positive")).lower() == "negative"
             else "positive"
         )
-        clean.append({"symbol": sym, "relation": rel})
+        # Preserve the Pearson-derived blended score so the dashboard can
+        # use |score| as the radius when laying out the correlation radar
+        # (closer to focus = stronger correlation). Score is roughly in
+        # [-1, 1]; missing/garbage values pass through as None and the
+        # frontend falls back to a default mid-ring placement.
+        raw_score = item.get("score")
+        try:
+            score = float(raw_score) if raw_score is not None else None
+        except (TypeError, ValueError):
+            score = None
+        clean.append({"symbol": sym, "relation": rel, "score": score})
         seen.add(sym)
         if len(clean) >= MAX_RELATIONSHIPS:
             break

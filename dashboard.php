@@ -514,9 +514,63 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         .indicator-node .ticker { font-size: 14px; font-weight: 800; }
         .indicator-node .price { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted); }
         .indicator-node .mini-bias { font-size: 11px; font-weight: 700; }
-        .indicator-node.green { border-color: rgba(34,197,94,0.42); }
-        .indicator-node.red { border-color: rgba(248,113,113,0.42); }
-        .indicator-node.neutral { border-color: rgba(96,165,250,0.3); }
+        .indicator-node.green { border-color: rgba(34,197,94,0.55); }
+        .indicator-node.red { border-color: rgba(248,113,113,0.55); }
+        .indicator-node.neutral { border-color: rgba(148,163,184,0.45); }
+        /* Inverse-correlation indicators get a dashed border so the encoding
+           survives even if the user can't tell green-stroke from green-stroke
+           (color blindness, low-contrast, screenshot grayscaling). */
+        .indicator-node.inverse {
+            border-style: dashed;
+            border-width: 1.5px;
+        }
+        /* Concentric SVG rings at strength thresholds (0.5 / 0.7 / 0.9).
+           Together with the score-driven radius, they turn the radar from
+           decoration into a real correlation chart. */
+        .radar-ring {
+            fill: none;
+            stroke: rgba(148,163,184,0.18);
+            stroke-dasharray: 2,5;
+        }
+        .radar-ring-label {
+            fill: rgba(148,163,184,0.45);
+            font-size: 10px;
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            font-variant-numeric: tabular-nums;
+            text-anchor: middle;
+        }
+        .radar-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(148,163,184,0.08);
+            font-size: 11px;
+            color: var(--muted);
+            justify-content: center;
+        }
+        .radar-legend-item { display: inline-flex; align-items: center; gap: 6px; }
+        .radar-legend-swatch { width: 22px; height: 2px; border-radius: 1px; background: var(--green); }
+        .radar-legend-swatch.inverse { background: transparent; border-top: 2px dashed var(--green); height: 0; }
+        .radar-legend-swatch.neutral { background: rgba(148,163,184,0.6); height: 1px; }
+        .radar-legend-swatch.dot {
+            width: 10px; height: 10px; border-radius: 50%;
+            background: transparent;
+            border: 1px dashed rgba(148,163,184,0.6);
+        }
+        /* Verdict line in the center node — "9/12 ↑". Tells the user the
+           basket disposition at a glance without parsing every indicator. */
+        .focus-verdict {
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            font-size: 12px;
+            color: var(--cyan);
+            margin-top: 6px;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 0.04em;
+        }
+        .focus-node.up    .focus-verdict { color: #86efac; }
+        .focus-node.down  .focus-verdict { color: #fca5a5; }
         .breakout-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1057,7 +1111,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                         <div class='radar-card'>
                             <div class='section-title'>
                                 <h2>Correlation radar</h2>
-                                <span id='indicatorBiasSubtext'>0 processed</span>
+                                <span id='indicatorBiasSubtext'>Distance from center = correlation strength</span>
                             </div>
                             <div class='radar-stage' id='clock'>
                                 <svg id='lines' class='radar-lines'></svg>
@@ -1066,6 +1120,12 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                                     <div class='focus-price'>SCAN</div>
                                     <div class='focus-bias'>—</div>
                                 </div>
+                            </div>
+                            <div class='radar-legend' aria-hidden='true'>
+                                <span class='radar-legend-item'><span class='radar-legend-swatch'></span> confirming</span>
+                                <span class='radar-legend-item'><span class='radar-legend-swatch inverse'></span> inverse confirm</span>
+                                <span class='radar-legend-item'><span class='radar-legend-swatch neutral'></span> neutral</span>
+                                <span class='radar-legend-item'><span class='radar-legend-swatch dot'></span> dashed border = inverse</span>
                             </div>
                         </div>
                         <div class='breakout-card'>
@@ -1817,21 +1877,41 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             updateFocusNarrative(symbol, data);
         }
 
-        function setFocusNode(symbol, data, tolerance) {
+        function setFocusNode(symbol, data, tolerance, verdict) {
             const focus = document.getElementById('focus');
             const probs = data?.probabilities || {};
             const bias = probs.bias || 'neutral';
             const directionGlyph = bias === 'up' ? '↑' : (bias === 'down' ? '↓' : '→');
             focus.className = `focus-node ${bias}`;
+            // verdict is a small "N/M ↑" line that summarizes the indicator
+            // basket disposition (set later when the correlation fetch finishes).
+            // setFocusNode renders empty space for it on the first call so the
+            // node doesn't visually jump when the verdict arrives.
+            const verdictHtml = verdict
+                ? `<div class='focus-verdict'>${verdict}</div>`
+                : `<div class='focus-verdict'>&nbsp;</div>`;
             focus.innerHTML = `
                 <div class='focus-symbol'>${symbol}</div>
                 <div class='focus-price'>$${formatPrice(data?.current_price)}</div>
                 <div class='focus-direction' aria-hidden='true'>${directionGlyph}</div>
-                <div class='focus-bias'>↑ ${formatPercent(probs.up)} · ↓ ${formatPercent(probs.down)} · ${bias}</div>
+                ${verdictHtml}
             `;
         }
 
-        function drawOrUpdateLine(lineId, x, y, lineColor) {
+        // Build the "9/12 ↑" verdict line shown inside the focus node.
+        function formatBasketVerdict(summary) {
+            if (!summary) return '';
+            const up = Number(summary.up || 0);
+            const down = Number(summary.down || 0);
+            const neutral = Number(summary.neutral || 0);
+            const total = up + down + neutral;
+            if (!total) return '';
+            const winning = Math.max(up, down);
+            const arrow = up >= down ? '↑' : '↓';
+            return `${winning}/${total} ${arrow}`;
+        }
+
+        function drawOrUpdateLine(lineId, x, y, lineColor, isInverse) {
             const lines = document.getElementById('lines');
             const clock = document.getElementById('clock');
             const size = clock ? clock.getBoundingClientRect().width : 560;
@@ -1847,9 +1927,63 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             line.setAttribute('x2', String(center + x));
             line.setAttribute('y2', String(center + y));
             line.setAttribute('stroke', lineColor);
-            line.setAttribute('stroke-width', lineColor === '#64748b' ? '1' : '2');
-            if (lineColor === '#64748b') line.setAttribute('stroke-dasharray', '4,4');
+            // Confirmed-signal lines render thicker so the eye lands on them
+            // first; neutral lines stay 1px. Inverse-confirming relations
+            // get a dashed stroke so the encoding reads even at a glance.
+            const isNeutral = lineColor === '#64748b';
+            line.setAttribute('stroke-width', isNeutral ? '1' : '2.5');
+            if (isInverse && !isNeutral) line.setAttribute('stroke-dasharray', '5,4');
+            else if (isNeutral) line.setAttribute('stroke-dasharray', '4,4');
             else line.removeAttribute('stroke-dasharray');
+        }
+
+        // Draw labeled concentric rings inside the radar SVG. The rings sit
+        // at strength thresholds (0.5 / 0.7 / 0.9) computed against the same
+        // min/max radius the indicators use, so a node sitting on the 0.7
+        // ring really does have ~0.7 correlation with focus. Cleared and
+        // redrawn on every layout pass.
+        function drawRadarRings(center, minR, maxR) {
+            const lines = document.getElementById('lines');
+            if (!lines) return;
+            // Remove any rings/labels from a prior render
+            lines.querySelectorAll('.radar-ring, .radar-ring-label').forEach(n => n.remove());
+            const SVG = 'http://www.w3.org/2000/svg';
+            const thresholds = [
+                { score: 0.9, label: '0.9' },
+                { score: 0.7, label: '0.7' },
+                { score: 0.5, label: '0.5' },
+            ];
+            for (const t of thresholds) {
+                const r = maxR - (maxR - minR) * t.score;
+                const ring = document.createElementNS(SVG, 'circle');
+                ring.setAttribute('class', 'radar-ring');
+                ring.setAttribute('cx', String(center));
+                ring.setAttribute('cy', String(center));
+                ring.setAttribute('r', String(r));
+                lines.appendChild(ring);
+
+                const label = document.createElementNS(SVG, 'text');
+                label.setAttribute('class', 'radar-ring-label');
+                label.setAttribute('x', String(center));
+                label.setAttribute('y', String(center - r - 4));
+                label.textContent = t.label;
+                lines.appendChild(label);
+            }
+        }
+
+        // Map a Pearson-style correlation score in [-1, 1] (or null) to a
+        // pixel radius. Higher |score| pulls the indicator closer to the
+        // focus node; missing/garbage scores fall back to a default-mid
+        // ring so the radar still lays out cleanly on legacy data that
+        // doesn't carry the score field yet.
+        function radiusForScore(score, minR, maxR) {
+            const fallback = 0.4;  // a touch outside the 0.5 ring
+            let s = (score === null || score === undefined || Number.isNaN(Number(score)))
+                ? fallback
+                : Math.abs(Number(score));
+            // Clamp so even a perfect-1.0 doesn't visually merge into the focus node
+            s = Math.max(0, Math.min(0.95, s));
+            return maxR - (maxR - minR) * s;
         }
 
         function computeLineColor(data, relation, tolerance) {
@@ -1903,10 +2037,19 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 const corrPayload = await corrRes.json();
                 if (requestId !== dashboardRequestSeq) return;
                 const rawIndicators = Array.isArray(corrPayload) ? corrPayload : (Array.isArray(corrPayload.indicators) ? corrPayload.indicators : []);
-                const indicators = rawIndicators.map(ind => ({
-                    symbol: String(ind?.symbol || '').toUpperCase().trim(),
-                    relation: String(ind?.relation || ind?.relationship || ind?.sign || 'positive').toLowerCase() === 'negative' ? 'negative' : 'positive'
-                })).filter(ind => ind.symbol);
+                const indicators = rawIndicators.map(ind => {
+                    const rawScore = ind?.score ?? ind?.correlation ?? ind?.coefficient;
+                    let score = null;
+                    if (rawScore !== undefined && rawScore !== null) {
+                        const parsed = Number(rawScore);
+                        if (!Number.isNaN(parsed)) score = parsed;
+                    }
+                    return {
+                        symbol: String(ind?.symbol || '').toUpperCase().trim(),
+                        relation: String(ind?.relation || ind?.relationship || ind?.sign || 'positive').toLowerCase() === 'negative' ? 'negative' : 'positive',
+                        score,
+                    };
+                }).filter(ind => ind.symbol);
                 const corrStatus = Array.isArray(corrPayload) ? { status: 'ready' } : (corrPayload.status || { status: 'ready' });
                 const usedFallback = !Array.isArray(corrPayload) && !!corrPayload.used_fallback;
                 if (!indicators.length) {
@@ -1923,22 +2066,48 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 const clockRect = clock.getBoundingClientRect();
                 const smallWindow = window.innerWidth <= 720;
                 const mediumWindow = window.innerWidth <= 980;
+
+                // Geometry for the score-driven layout. min_dist sits just outside
+                // the focus node, max_dist sits just inside the stage edge. A
+                // perfect-1.0 correlation lands at min_dist; a 0.0 correlation
+                // lands at max_dist; everything else interpolates linearly.
                 const indicatorHalf = smallWindow ? 39 : (mediumWindow ? 44 : 52);
-                const usableRadius = (clockRect.width / 2) - indicatorHalf - (smallWindow ? 28 : (mediumWindow ? 24 : 18));
-                const radius = Math.max(smallWindow ? 74 : 88, Math.min(usableRadius, smallWindow ? 150 : 205));
+                const focusHalf     = smallWindow ? 64 : (mediumWindow ? 72 : 85);
+                const padding       = smallWindow ? 14 : 18;
+                const stageRadius   = clockRect.width / 2;
+                const center        = stageRadius;
+                const minDist       = focusHalf + indicatorHalf + padding;
+                const maxDist       = Math.max(minDist + 30, stageRadius - indicatorHalf - padding);
+
+                drawRadarRings(center, minDist, maxDist);
+
+                // Sort by descending score so strongest correlations render on
+                // top when nodes overlap visually. Angles still distribute
+                // evenly around the circle — only radius encodes strength.
+                const sortedIndicators = [...indicators].sort((a, b) => {
+                    const aScore = a.score === null ? -1 : Math.abs(a.score);
+                    const bScore = b.score === null ? -1 : Math.abs(b.score);
+                    return aScore - bScore;
+                });
+
                 const indicatorStates = [];
-                const promises = indicators.map(async (indObj, i) => {
-                    const angle = (i / Math.max(indicators.length, 1)) * Math.PI * 2;
-                    const x = Math.cos(angle) * radius;
-                    const y = Math.sin(angle) * radius;
+                const promises = sortedIndicators.map(async (indObj, i) => {
+                    const angle = (i / Math.max(sortedIndicators.length, 1)) * Math.PI * 2;
+                    const r = radiusForScore(indObj.score, minDist, maxDist);
+                    const x = Math.cos(angle) * r;
+                    const y = Math.sin(angle) * r;
+                    const isInverse = indObj.relation === 'negative';
                     const el = document.createElement('button');
                     el.type = 'button';
-                    el.className = 'indicator-node neutral';
+                    el.className = `indicator-node neutral${isInverse ? ' inverse' : ''}`;
                     el.dataset.symbol = indObj.symbol;
                     el.style.left = `calc(50% + ${x}px)`;
                     el.style.top = `calc(50% + ${y}px)`;
                     el.onclick = () => updateDashboard(indObj.symbol);
-                    el.innerHTML = `<div class='ticker'>${indObj.symbol}</div><div class='price'>Loading…</div><div class='mini-bias'>Scanning</div>`;
+                    const scoreLabel = indObj.score === null
+                        ? ''
+                        : `<div class='mini-bias'>${(isInverse ? '−' : '')}${Math.abs(indObj.score).toFixed(2)}</div>`;
+                    el.innerHTML = `<div class='ticker'>${indObj.symbol}</div><div class='price'>—</div>${scoreLabel || `<div class='mini-bias'>scanning</div>`}`;
                     clock.appendChild(el);
                     try {
                         const data = await fetchTickerData(indObj.symbol, period, lookback);
@@ -1946,19 +2115,26 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                         const lineColor = computeLineColor(data, indObj.relation, tolerance);
                         const probs = data?.probabilities || {};
                         const bias = probs.bias || 'neutral';
-                        el.className = `indicator-node ${bias}`;
-                        el.innerHTML = `<div class='ticker'>${indObj.symbol}</div><div class='price'>$${formatPrice(data.current_price)}</div><div class='mini-bias'>↑ ${formatPercent(probs.up)} · ↓ ${formatPercent(probs.down)}</div>`;
-                        drawOrUpdateLine(`line-${indObj.symbol}`, x, y, lineColor);
+                        el.className = `indicator-node ${bias}${isInverse ? ' inverse' : ''}`;
+                        const arrow = bias === 'up' ? '↑' : bias === 'down' ? '↓' : '·';
+                        const scoreText = indObj.score !== null
+                            ? `${(isInverse ? '−' : '')}${Math.abs(indObj.score).toFixed(2)} ${arrow}`
+                            : `${formatPercent(probs.up)} ${arrow}`;
+                        el.innerHTML = `<div class='ticker'>${indObj.symbol}</div><div class='price'>$${formatPrice(data.current_price)}</div><div class='mini-bias'>${scoreText}</div>`;
+                        drawOrUpdateLine(`line-${indObj.symbol}`, x, y, lineColor, isInverse);
                         indicatorStates.push({ symbol: indObj.symbol, relation: indObj.relation, data });
                     } catch (err) {
                         indicatorStates.push({ symbol: indObj.symbol, relation: indObj.relation, data: null, error: err });
-                        el.className = 'indicator-node neutral';
-                        el.innerHTML = `<div class='ticker'>${indObj.symbol}</div><div class='price'>ERR</div><div class='mini-bias'>Data unavailable</div>`;
+                        el.className = `indicator-node neutral${isInverse ? ' inverse' : ''}`;
+                        el.innerHTML = `<div class='ticker'>${indObj.symbol}</div><div class='price'>—</div><div class='mini-bias'>err</div>`;
                     }
                 });
                 await Promise.all(promises);
                 if (requestId !== dashboardRequestSeq) return;
                 const summary = summarizeRelationshipBias(indicatorStates, tolerance);
+                // Refresh the focus node with the basket verdict ("9/12 ↑")
+                // now that we know the indicator dispositions.
+                setFocusNode(ticker, currentFocus, tolerance, formatBasketVerdict(summary));
                 updateFocusPanel(currentFocus, summary, ticker);
                 showDebug(`focus=${ticker} | corr=${indicators.length} | fallback=${usedFallback} | status=${corrStatus.status || 'unknown'}`);
             } catch (e) {
