@@ -14,7 +14,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>HackTrader | v0.7.7</title>
+    <title>HackTrader | v0.8.0</title>
     <link rel='preconnect' href='https://fonts.googleapis.com'>
     <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
     <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap' rel='stylesheet'>
@@ -341,15 +341,154 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             color: var(--blue);
             white-space: pre-wrap;
         }
+        /* v0.8.0 — single-column layout. Right rail removed; Activity/Context/
+           Usage moved to a tabs card below the chart. The radar earns the
+           full content width and becomes the unambiguous visual centerpiece. */
         .dashboard-grid {
             display: grid;
-            grid-template-columns: minmax(0, 1.28fr) minmax(340px, 0.92fr);
+            grid-template-columns: minmax(0, 1fr);
             gap: 18px;
             align-items: start;
         }
-        .main-column, .side-column {
+        .main-column {
             display: grid;
             gap: 18px;
+            min-width: 0;
+        }
+        /* Status pill that lives in the topbar (replaces the old yellow
+           full-width banner). Cyan dot for live, amber/blue/slate variants
+           via the same .stale/.error/.cached classes the bias chip uses. */
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 11px;
+            color: var(--muted);
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(148,163,184,0.16);
+        }
+        .status-pill::before {
+            content: '';
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--cyan);
+            box-shadow: 0 0 0 3px rgba(94,234,212,0.14);
+        }
+        .status-pill.stale::before { background: var(--amber); box-shadow: 0 0 0 3px rgba(251,191,36,0.16); }
+        .status-pill.error::before { background: #94a3b8; box-shadow: 0 0 0 3px rgba(148,163,184,0.18); }
+        .status-pill.cached::before { background: var(--blue); box-shadow: 0 0 0 3px rgba(96,165,250,0.14); }
+        /* Hero row: focus header + price stat side by side. Replaces the
+           old hero-panel that had a big H1 + paragraph + side quote pill. */
+        .hero-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 16px;
+            padding: 6px 4px 0;
+        }
+        .focus-header { min-width: 0; }
+        .focus-eyebrow {
+            font-size: 10px;
+            color: var(--muted);
+            letter-spacing: 0.06em;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        .focus-line {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 12px;
+            margin-top: 4px;
+        }
+        .focus-line .focus-symbol-text {
+            font-size: 28px;
+            font-weight: 600;
+            letter-spacing: -0.03em;
+        }
+        .focus-narrative-line {
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 6px;
+            line-height: 1.5;
+        }
+        .focus-stat { text-align: right; }
+        .focus-stat .focus-stat-price {
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            font-size: 28px;
+            font-weight: 600;
+            letter-spacing: -0.03em;
+            font-variant-numeric: tabular-nums;
+        }
+        .focus-stat .focus-stat-sub {
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 2px;
+            font-variant-numeric: tabular-nums;
+        }
+        /* Microcharts strip below the radar. Three equal cards with a label,
+           a value, a small horizontal meter, and a one-line subtext. */
+        .microcharts-row {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+        }
+        .microchart-card {
+            border-radius: 14px;
+            padding: 14px 16px;
+            background: var(--panel-2);
+            border: 1px solid rgba(148,163,184,0.12);
+        }
+        .microchart-label {
+            font-size: 10px;
+            letter-spacing: 0.06em;
+            color: var(--muted);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        .microchart-value {
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.02em;
+        }
+        .meter {
+            position: relative;
+            width: 100%;
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.06);
+            overflow: hidden;
+        }
+        .meter-fill {
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 0%;
+            border-radius: inherit;
+            background: var(--cyan);
+            transition: width 0.18s ease;
+        }
+        .meter-fill.green { background: var(--green); }
+        .meter-fill.red   { background: var(--red); }
+        .meter-fill.amber { background: var(--amber); }
+        .meter-subtext {
+            margin-top: 8px;
+            font-size: 11px;
+            color: var(--muted);
+            line-height: 1.4;
+        }
+        /* The single intel card below the chart absorbs the old right-rail
+           Activity / Context / Usage tabs. */
+        .intel-card { padding: 18px; }
+        @media (max-width: 720px) {
+            .hero-row { align-items: flex-start; }
+            .focus-stat { text-align: left; }
+            .microcharts-row { grid-template-columns: 1fr; }
         }
         .hero-panel {
             border-radius: 28px;
@@ -1079,13 +1218,17 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 <button class='primary-btn' onclick='updateDashboard()'>Scan</button>
                 <button class='ghost-btn' onclick='resetDashboard()'>Reset</button>
                 <button class='ghost-btn' onclick='window.location.href="logout.php"'>Logout</button>
+                <div id='topbarStatus' class='status-pill' aria-live='polite'>—</div>
             </div>
         </header>
 
-        <section class='banner-wrap'>
-            <div id='statusBanner' class='status-banner'></div>
-            <div id='debugBanner' class='debug-banner'></div>
-        </section>
+        <!-- Debug banner only. The old yellow source/status banner is gone;
+             it's replaced by the topbar status-pill that sits next to the
+             logout button. Cleaner because system-level facts (live, stale)
+             belong with system controls, not in the page body. -->
+        <div id='debugBanner' class='debug-banner' style='display:none;'></div>
+        <!-- Hidden-but-present so legacy JS that targets statusBanner won't error. -->
+        <div id='statusBanner' class='status-banner' style='display:none;'></div>
 
         <div id='pengoPopup' class='pengo-popup' role='status' aria-live='polite'>
             <span class='emoji'>🐧</span>
@@ -1093,73 +1236,76 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         </div>
 
         <section class='dashboard-grid'>
-            <section class='main-column' aria-label='Primary market dashboard'>
-                <section class='hero-panel glass'>
-                    <div class='hero-top'>
-                        <div class='focus-meta'>
-                            <div class='eyebrow'>Focus symbol</div>
-                            <h1 id='focusHeadline'>TSLA breakout monitor</h1>
-                            <p id='focusNarrative'>Scanning live price, breakout bias, and confirmation signals for the selected symbol.</p>
+            <section class='main-column' aria-label='HackTrader cockpit'>
+
+                <!-- Hero row: focus header (eyebrow + symbol + bias pill +
+                     one-line narrative) on the left, live price stat on the
+                     right. No more giant H1, no more giant quote pill. -->
+                <section class='hero-row'>
+                    <div class='focus-header'>
+                        <div class='focus-eyebrow' id='focusHeadline'>Focus symbol</div>
+                        <div class='focus-line'>
+                            <span class='focus-symbol-text' id='focusSymbolText'>TSLA</span>
+                            <span id='statusChip' class='bias-chip neutral'>—</span>
                         </div>
-                        <div class='quote-pill'>
-                            <div class='label'>Live quote</div>
-                            <div class='value' id='focusPriceBox'>$--</div>
-                            <div class='sub' id='focusTimeBox'>—</div>
-                        </div>
+                        <p class='focus-narrative-line' id='focusNarrative'>—</p>
                     </div>
-                    <div class='hero-grid'>
-                        <div class='radar-card'>
-                            <div class='section-title'>
-                                <h2>Correlation radar</h2>
-                                <span id='indicatorBiasSubtext'>Distance from center = correlation strength</span>
-                            </div>
-                            <div class='radar-stage' id='clock'>
-                                <svg id='lines' class='radar-lines'></svg>
-                                <div class='focus-node neutral' id='focus' onclick='resetDashboard()' style='cursor:pointer;'>
-                                    <div class='focus-symbol'>INIT</div>
-                                    <div class='focus-price'>SCAN</div>
-                                    <div class='focus-bias'>—</div>
-                                </div>
-                            </div>
-                            <div class='radar-legend' aria-hidden='true'>
-                                <span class='radar-legend-item'><span class='radar-legend-swatch'></span> confirming</span>
-                                <span class='radar-legend-item'><span class='radar-legend-swatch inverse'></span> inverse confirm</span>
-                                <span class='radar-legend-item'><span class='radar-legend-swatch neutral'></span> neutral</span>
-                                <span class='radar-legend-item'><span class='radar-legend-swatch dot'></span> dashed border = inverse</span>
-                            </div>
-                        </div>
-                        <div class='breakout-card'>
-                            <div class='section-title'>
-                                <h2>Breakout bias</h2>
-                                <span id='analysisMeta'>Channel structure</span>
-                            </div>
-                            <div class='breakout-grid'>
-                                <div class='signal-card up'>
-                                    <div class='label'>Upside probability</div>
-                                    <div class='value' id='upProbability'>--</div>
-                                    <div class='sub' id='upProbabilitySub'>—</div>
-                                </div>
-                                <div class='signal-card down'>
-                                    <div class='label'>Downside probability</div>
-                                    <div class='value' id='downProbability'>--</div>
-                                    <div class='sub' id='downProbabilitySub'>—</div>
-                                </div>
-                            </div>
-                            <div id='statusChip' class='bias-chip neutral'>—</div>
-                            <div class='range-grid' id='channelList'>
-                                <div class='range-card'>
-                                    <div class='range-top'>
-                                        <div class='range-name'>Current channel</div>
-                                        <div class='range-width'>—</div>
-                                    </div>
-                                    <div class='range-track'><div class='range-fill' style='width: 0%'></div></div>
-                                    <div class='range-meta'><span>--</span><span>--</span></div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class='focus-stat'>
+                        <div class='focus-stat-price' id='focusPriceBox'>$—</div>
+                        <div class='focus-stat-sub' id='focusTimeBox'>—</div>
                     </div>
                 </section>
 
+                <!-- Correlation radar — full content width now, no longer
+                     fighting a side-by-side breakout card. Indicators plot
+                     at radius proportional to correlation strength. -->
+                <section class='radar-card glass'>
+                    <div class='section-title'>
+                        <h2>Correlation radar</h2>
+                        <span id='indicatorBiasSubtext'>Distance from center = correlation strength</span>
+                    </div>
+                    <div class='radar-stage' id='clock'>
+                        <svg id='lines' class='radar-lines'></svg>
+                        <div class='focus-node neutral' id='focus' onclick='resetDashboard()' style='cursor:pointer;'>
+                            <div class='focus-symbol'>INIT</div>
+                            <div class='focus-price'>SCAN</div>
+                            <div class='focus-bias'>—</div>
+                        </div>
+                    </div>
+                    <div class='radar-legend' aria-hidden='true'>
+                        <span class='radar-legend-item'><span class='radar-legend-swatch'></span> confirming</span>
+                        <span class='radar-legend-item'><span class='radar-legend-swatch inverse'></span> inverse confirm</span>
+                        <span class='radar-legend-item'><span class='radar-legend-swatch neutral'></span> neutral</span>
+                        <span class='radar-legend-item'><span class='radar-legend-swatch dot'></span> dashed border = inverse</span>
+                    </div>
+                </section>
+
+                <!-- Microcharts strip: 3 satellite cards under the radar.
+                     Re-introduced after v0.7.7 stripped them out — in the
+                     single-column layout there's room and they don't
+                     duplicate other on-screen elements anymore. -->
+                <section class='microcharts-row'>
+                    <div class='microchart-card'>
+                        <div class='microchart-label'>Breakout pressure</div>
+                        <div class='microchart-value' id='pressureValue'>—</div>
+                        <div class='meter'><div class='meter-fill green' id='pressureFill'></div></div>
+                        <div class='meter-subtext' id='pressureSubtext'>—</div>
+                    </div>
+                    <div class='microchart-card'>
+                        <div class='microchart-label'>Channel width</div>
+                        <div class='microchart-value' id='channelWidthValue'>—</div>
+                        <div class='meter'><div class='meter-fill' id='channelWidthFill'></div></div>
+                        <div class='meter-subtext' id='channelWidthSubtext'>—</div>
+                    </div>
+                    <div class='microchart-card'>
+                        <div class='microchart-label'>Attempt stress</div>
+                        <div class='microchart-value' id='attemptStressValue'>—</div>
+                        <div class='meter'><div class='meter-fill amber' id='attemptStressFill'></div></div>
+                        <div class='meter-subtext' id='attemptStressSubtext'>—</div>
+                    </div>
+                </section>
+
+                <!-- Price action chart -->
                 <section class='stack-card glass' style='padding-top: 16px; padding-bottom: 8px;'>
                     <div class='section-title'>
                         <h2>Price action</h2>
@@ -1168,15 +1314,28 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                     <div id='tvChartContainer' style='width: 100%; height: 420px; margin-top: 10px; border-radius: 12px; overflow: hidden;'></div>
                 </section>
 
-            </section>
-
-            <aside class='side-column' aria-label='Supplementary market intelligence'>
+                <!-- Levels ladder — moved out of the deleted right rail
+                     into the main column. Compact, sits between chart and
+                     intel card so traders can glance at structural prices
+                     without scrolling. -->
                 <section class='stack-card glass'>
                     <div class='section-title'>
-                        <h2>Intel stack</h2>
-                        <span id='quoteTimezone'>ET</span>
+                        <h2>Levels</h2>
+                        <span id='sourceMeta'>—</span>
                     </div>
-                    <div class='panel-tabs' role='tablist' aria-label='Right rail views'>
+                    <div class='levels-ladder' id='levelsLadder' aria-label='Price levels ladder'></div>
+                </section>
+
+                <!-- Intel card: tabs that previously lived in the right
+                     rail. Activity (probes + attempts + drivers) /
+                     Context (volume + indicator bias + extremes) /
+                     Usage (API counters). -->
+                <section class='intel-card glass'>
+                    <div class='section-title'>
+                        <h2>Intel</h2>
+                        <span id='analysisMeta'>—</span>
+                    </div>
+                    <div class='panel-tabs' role='tablist' aria-label='Intel views'>
                         <button type='button' role='tab' aria-selected='true' aria-controls='rightPanel-activity' class='panel-tab active' id='rightTab-activity' onclick="switchRightPanelTab('activity')">Activity</button>
                         <button type='button' role='tab' aria-selected='false' aria-controls='rightPanel-context' class='panel-tab' id='rightTab-context' onclick="switchRightPanelTab('context')">Context</button>
                         <button type='button' role='tab' aria-selected='false' aria-controls='rightPanel-usage' class='panel-tab' id='rightTab-usage' onclick="switchRightPanelTab('usage')">Usage</button>
@@ -1187,6 +1346,17 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                         <div class='attempt-list' id='attemptList'></div>
                         <div class='activity-section-label'>Top drivers</div>
                         <div class='drivers-list' id='driversList'></div>
+                        <div class='activity-section-label'>Channels</div>
+                        <div class='range-grid' id='channelList'>
+                            <div class='range-card'>
+                                <div class='range-top'>
+                                    <div class='range-name'>Current channel</div>
+                                    <div class='range-width'>—</div>
+                                </div>
+                                <div class='range-track'><div class='range-fill' style='width: 0%'></div></div>
+                                <div class='range-meta'><span>--</span><span>--</span></div>
+                            </div>
+                        </div>
                     </div>
                     <div class='tab-panel' role='tabpanel' aria-labelledby='rightTab-context' id='rightPanel-context'>
                         <div class='metric-grid'>
@@ -1203,7 +1373,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                             <div class='metric-card'>
                                 <div class='label'>Indicator bias</div>
                                 <div class='value' id='indicatorBiasValue'>--</div>
-                                <div class='sub'>Correlation basket disposition</div>
+                                <div class='sub' id='indicatorBiasSubtextCtx'>Correlation basket disposition</div>
                             </div>
                             <div class='metric-card'>
                                 <div class='label'>Recent extremes</div>
@@ -1241,16 +1411,18 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                     </div>
                 </section>
 
-                <section class='stack-card glass'>
-                    <div class='section-title'>
-                        <h2>Levels</h2>
-                        <span id='sourceMeta'>—</span>
-                    </div>
-                    <div class='levels-ladder' id='levelsLadder' aria-label='Price levels ladder'></div>
-                </section>
-            </aside>
+                <!-- Hidden compatibility shims: a couple of legacy IDs that
+                     JS still writes to but no longer have a UI position
+                     (they were inside the breakout-card we deleted). -->
+                <span style='display:none' id='upProbability'>--</span>
+                <span style='display:none' id='downProbability'>--</span>
+                <span style='display:none' id='upProbabilitySub'>—</span>
+                <span style='display:none' id='downProbabilitySub'>—</span>
+                <span style='display:none' id='quoteTimezone'>ET</span>
+
+            </section>
         </section>
-        <footer>HackTrader v0.7.7 · by @gitjayson</footer>
+        <footer>HackTrader v0.8.0 · by @gitjayson</footer>
     </main>
 
     <script>
@@ -1524,6 +1696,71 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             el.textContent = parts.join(' · ');
         }
 
+        // v0.8.0 — small status pill in the topbar, mirrors freshness only
+        // (bias direction does NOT belong here; this pill is for system
+        // health). Replaces the old full-width yellow source banner.
+        function updateTopbarStatus(data) {
+            const el = document.getElementById('topbarStatus');
+            if (!el) return;
+            const liveStatus = String(data?.live_status || '').toLowerCase();
+            const source = data?.source ? String(data.source).toUpperCase() : '';
+            let cls = '';
+            let label = 'Live';
+            if (liveStatus === 'stale_fallback') { cls = 'stale'; label = 'Stale'; }
+            else if (liveStatus === 'error')     { cls = 'error'; label = 'Error'; }
+            else if (liveStatus === 'cache_hit') {
+                cls = 'cached';
+                const age = Number(data?.cache?.age_seconds);
+                label = `Cached${Number.isFinite(age) ? ` ${age}s` : ''}`;
+            }
+            el.className = `status-pill ${cls}`.trim();
+            el.textContent = source ? `${label} · ${source}` : label;
+        }
+
+        // v0.8.0 — re-introduced microcharts strip below the radar.
+        // Three meters: breakout pressure (up vs down probability spread),
+        // channel width (ATR-relative), attempt stress (failed probes).
+        function updateMicrocharts(data) {
+            const probs = data?.probabilities || {};
+            const upProb = Number(probs.up || 0);
+            const downProb = Number(probs.down || 0);
+            const dominantSide = upProb >= downProb ? 'Up' : 'Down';
+            const dominantPct = Math.max(upProb, downProb);
+            const fillEl = document.getElementById('pressureFill');
+            const valueEl = document.getElementById('pressureValue');
+            const subEl = document.getElementById('pressureSubtext');
+            if (valueEl) valueEl.textContent = `${dominantSide} ${formatPercent(dominantPct)}`;
+            if (fillEl) {
+                fillEl.style.width = `${Math.max(4, Math.min(100, dominantPct))}%`;
+                fillEl.className = `meter-fill ${dominantSide === 'Up' ? 'green' : 'red'}`;
+            }
+            if (subEl) subEl.textContent = `Spread ${Math.abs(upProb - downProb).toFixed(1)} pts`;
+
+            const channels = Array.isArray(data?.channels) ? data.channels : [];
+            const currentChannel = channels.find(c => c?.name === 'current') || channels[0];
+            const channelWidth = Number(currentChannel?.width || 0);
+            const atr = Number(data?.analysis_parameters?.atr || 0);
+            const widthRatio = atr > 0 ? Math.min(100, (channelWidth / atr) * 50) : 0;
+            const cwValue = document.getElementById('channelWidthValue');
+            const cwFill = document.getElementById('channelWidthFill');
+            const cwSub = document.getElementById('channelWidthSubtext');
+            if (cwValue) cwValue.textContent = channelWidth ? `$${formatPrice(channelWidth)}` : '—';
+            if (cwFill) cwFill.style.width = `${Math.max(4, widthRatio)}%`;
+            if (cwSub) cwSub.textContent = currentChannel ? `${String(currentChannel.location || '—').replaceAll('_', ' ')} · ATR ${atr ? formatPrice(atr) : '—'}` : 'No current channel';
+
+            const upAttempts = Number(data?.attempts?.failed_up_today || 0);
+            const downAttempts = Number(data?.attempts?.failed_down_today || 0);
+            const totalProbes = upAttempts + downAttempts;
+            const stress = Math.min(100, (totalProbes / 6) * 100);
+            const ruleArmed = !!(data?.attempts?.rule_of_three_block_up || data?.attempts?.rule_of_three_block_down);
+            const asValue = document.getElementById('attemptStressValue');
+            const asFill = document.getElementById('attemptStressFill');
+            const asSub = document.getElementById('attemptStressSubtext');
+            if (asValue) asValue.textContent = `${totalProbes} ${totalProbes === 1 ? 'probe' : 'probes'}`;
+            if (asFill) asFill.style.width = `${Math.max(4, stress)}%`;
+            if (asSub) asSub.textContent = `Up ${upAttempts} · Down ${downAttempts}${ruleArmed ? ' · rule-of-3 armed' : ''}`;
+        }
+
         // Unified levels ladder: stacks resistances above current price above supports,
         // mapping the on-screen vertical order to actual price order. The current
         // price marker sits in the middle and shows the live quote.
@@ -1675,15 +1912,31 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             `).join('');
         }
 
-        function updateFocusNarrative(symbol, data) {
-            const headline = document.getElementById('focusHeadline');
+        function updateFocusNarrative(symbol, data, indicatorSummary) {
+            // v0.8.0 hero structure: focusHeadline is the small "FOCUS SYMBOL"
+            // eyebrow above the ticker — leave it static. focusSymbolText
+            // shows the ticker. focusNarrative is the muted one-liner below.
+            const symbolText = document.getElementById('focusSymbolText');
             const narrative = document.getElementById('focusNarrative');
+            if (symbolText) symbolText.textContent = symbol;
+
             const bias = data?.probabilities?.bias || 'neutral';
             const confidence = data?.probabilities?.confidence || 'low';
-            const upAttempts = data?.attempts?.failed_up_today ?? 0;
-            const downAttempts = data?.attempts?.failed_down_today ?? 0;
-            headline.textContent = `${symbol} breakout monitor`;
-            narrative.textContent = `${bias} setup · ${confidence} confidence · ${upAttempts} failed upside probes · ${downAttempts} failed downside probes.`;
+            const upAttempts = Number(data?.attempts?.failed_up_today || 0);
+            const downAttempts = Number(data?.attempts?.failed_down_today || 0);
+            const parts = [];
+            if (indicatorSummary) {
+                const up = Number(indicatorSummary.up || 0);
+                const down = Number(indicatorSummary.down || 0);
+                const neutral = Number(indicatorSummary.neutral || 0);
+                const total = up + down + neutral;
+                const winning = Math.max(up, down);
+                if (total > 0) parts.push(`${winning} of ${total} indicators confirm`);
+            }
+            if (upAttempts) parts.push(`${upAttempts} failed upside ${upAttempts === 1 ? 'probe' : 'probes'}`);
+            if (downAttempts) parts.push(`${downAttempts} failed downside ${downAttempts === 1 ? 'probe' : 'probes'}`);
+            if (!parts.length) parts.push(`${bias} setup · ${confidence} confidence`);
+            if (narrative) narrative.textContent = parts.join(' · ');
         }
 
         
@@ -1844,16 +2097,33 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         }
 
         function updateFocusPanel(data, indicatorSummary = null, symbol = 'TSLA') {
+            // Hero stat
             document.getElementById('focusPriceBox').textContent = `$${formatPrice(data.focus_price ?? data.current_price)}`;
-            document.getElementById('focusTimeBox').textContent = data.quote_time_eastern ? `${data.quote_time_eastern} ${data.quote_timezone || 'ET'}` : 'Time unavailable';
-            document.getElementById('sourceMeta').textContent = formatSourceMeta(data) || 'Live source pending';
-            document.getElementById('quoteTimezone').textContent = data.quote_timezone || 'ET';
-            document.getElementById('analysisMeta').textContent = `${data.interval || '--'} · ${data.periods || '--'} bars${data.live_status === 'stale_fallback' ? ' · degraded mode' : ''}`;
+            document.getElementById('focusTimeBox').textContent = data.quote_time_eastern ? `${data.quote_time_eastern} ${data.quote_timezone || 'ET'}` : '—';
+
+            // Various meta strings (some now write to hidden compat shims)
+            const sourceMetaEl = document.getElementById('sourceMeta');
+            if (sourceMetaEl) sourceMetaEl.textContent = formatSourceMeta(data) || '—';
+            const quoteTzEl = document.getElementById('quoteTimezone');
+            if (quoteTzEl) quoteTzEl.textContent = data.quote_timezone || 'ET';
+            const analysisMetaEl = document.getElementById('analysisMeta');
+            if (analysisMetaEl) analysisMetaEl.textContent = `${data.interval || '--'} · ${data.periods || '--'} bars${data.live_status === 'stale_fallback' ? ' · degraded mode' : ''}`;
+
             updateStatusChip(data);
-            document.getElementById('upProbability').textContent = formatPercent(data?.probabilities?.up);
-            document.getElementById('downProbability').textContent = formatPercent(data?.probabilities?.down);
-            document.getElementById('upProbabilitySub').textContent = `Bias ${data?.probabilities?.bias || 'neutral'}`;
-            document.getElementById('downProbabilitySub').textContent = `Confidence ${data?.probabilities?.confidence || 'low'}`;
+            updateTopbarStatus(data);
+
+            // Hidden shims keep legacy code paths alive
+            const upEl = document.getElementById('upProbability');
+            const downEl = document.getElementById('downProbability');
+            const upSubEl = document.getElementById('upProbabilitySub');
+            const downSubEl = document.getElementById('downProbabilitySub');
+            if (upEl)   upEl.textContent = formatPercent(data?.probabilities?.up);
+            if (downEl) downEl.textContent = formatPercent(data?.probabilities?.down);
+            if (upSubEl)   upSubEl.textContent = `Bias ${data?.probabilities?.bias || 'neutral'}`;
+            if (downSubEl) downSubEl.textContent = `Confidence ${data?.probabilities?.confidence || 'low'}`;
+
+            // v0.8.0: microcharts strip below the radar
+            updateMicrocharts(data);
 
             renderChannels(data?.channels || []);
             renderLevelLadder(data);
@@ -1874,7 +2144,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 document.getElementById('indicatorBiasValue').textContent = `${up}↑ / ${down}↓`;
                 document.getElementById('indicatorBiasSubtext').textContent = `${total} processed · ${neutral} neutral`;
             }
-            updateFocusNarrative(symbol, data);
+            updateFocusNarrative(symbol, data, indicatorSummary);
         }
 
         function setFocusNode(symbol, data, tolerance, verdict) {

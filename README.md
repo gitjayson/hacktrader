@@ -1,10 +1,21 @@
 # HackTrader Dashboard
 
-- **Version:** v0.7.7
+- **Version:** v0.8.0
 - **Status:** Active
 - **Codebase:** HackTrader FUI dashboard
 
 HackTrader is a market dashboard for tracking a focus ticker, breakout probabilities, support/resistance ladders, volume context, and correlated indicators in a sci-fi control-panel interface.
+
+## Highlights in v0.8.0
+
+- **Single-column layout.** Right rail eliminated. The correlation radar earns the full content width and is the unambiguous visual centerpiece. Activity / Context / Usage tabs collapse into a single intel card below the chart.
+- **Score-driven correlation radar.** Indicators plot at radius proportional to their Pearson coefficient — strong correlations cluster near focus, weak ones drift to the edge. Concentric labeled rings (0.5 / 0.7 / 0.9) make the encoding readable. Inverse-correlation indicators render with a dashed border.
+- **Basket verdict in the focus node.** The center of the radar shows "N/M ↑" — at-a-glance confirmation of how many indicators agree with the breakout bias.
+- **Hero rebalance.** The 56px display H1 is gone. TSLA + bias pill share one line; price + delta + time live in a horizontal stat block. A single muted subtitle ("9 of 12 indicators confirm · 2 failed upside probes") replaces the multi-line narrative.
+- **Color separation.** Bias colors (green/red) are now reserved strictly for market direction. System status (live / stale / error / cached) is encoded as a leading dot color (cyan / amber / slate / blue), so a "stale-but-up" state reads as a green chip with an amber dot rather than fighting itself.
+- **Topbar status pill.** Replaces the old full-width yellow source banner. Lives next to the action buttons because it's a system-level fact, not page content.
+- **Massive-only data path.** TwelveData and yfinance fallbacks removed. `run-brk.py` calls Massive directly; on failure it surfaces an error rather than silently degrading.
+- **Spawn-flood fix.** `api.php` checks correlation-locks and `correlation-status.json` before spawning `generate-correlations.py`. The generator acquires per-symbol locks before any HTTP work, so duplicate spawns exit fast instead of each blowing ~50 Massive requests.
 
 ## Highlights in v0.7.7
 - **Tabbed right rail:** The top-right card now uses tabs for **Probes**, **Context**, and **Usage**, with **Probes** selected by default for better visibility.
