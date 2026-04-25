@@ -41,23 +41,18 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             margin: 0;
             font-family: 'Inter', sans-serif;
             color: var(--text);
+            /* Quieter background. Two faint radial gradients give the page a
+               center of gravity; dropped the grid overlay since at 3% opacity
+               it was mostly imperceptible noise that didn't encode anything. */
             background:
-                radial-gradient(circle at top left, rgba(96,165,250,0.12), transparent 28%),
-                radial-gradient(circle at top right, rgba(94,234,212,0.08), transparent 24%),
+                radial-gradient(circle at top left, rgba(96,165,250,0.06), transparent 30%),
+                radial-gradient(circle at top right, rgba(94,234,212,0.04), transparent 26%),
                 linear-gradient(180deg, #06111d 0%, #081420 100%);
             min-height: 100vh;
             overflow-x: hidden;
-        }
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background-image:
-                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-            background-size: 36px 36px;
-            pointer-events: none;
-            mask-image: radial-gradient(circle at center, black 42%, transparent 100%);
+            /* Tabular numerals everywhere — prices, ratios, percentages all
+               line up vertically and won't jitter as values change. */
+            font-variant-numeric: tabular-nums;
         }
         .app-shell {
             width: min(1520px, calc(100vw - 28px));
@@ -110,10 +105,10 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         }
         .brand-title .title-text {
             display: inline-block;
-            font-size: 32px;
-            font-weight: 800;
-            letter-spacing: -0.04em;
-            line-height: 0.98;
+            font-size: 18px;
+            font-weight: 500;
+            letter-spacing: -0.02em;
+            line-height: 1.2;
         }
         .pengo-trigger {
             display: inline-flex;
@@ -367,11 +362,15 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             align-items: flex-start;
             margin-bottom: 20px;
         }
+        /* Demoted from display heading (was up to 56px, weight 800) to a
+           proper section title size. This is a label ("TSLA breakout monitor"),
+           not a metric — the focus node price + symbol is the real hero. */
         .focus-meta h1 {
             margin: 0 0 8px;
-            font-size: clamp(36px, 4vw, 56px);
-            line-height: 0.94;
-            letter-spacing: -0.05em;
+            font-size: 22px;
+            line-height: 1.2;
+            font-weight: 600;
+            letter-spacing: -0.02em;
         }
         .focus-meta p {
             margin: 0;
@@ -388,17 +387,16 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             min-width: 220px;
         }
         .quote-pill .label {
-            font-size: 11px;
+            font-size: 10px;
             color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: 0.14em;
-            margin-bottom: 8px;
-            font-weight: 700;
+            letter-spacing: 0.06em;
+            margin-bottom: 6px;
+            font-weight: 500;
         }
         .quote-pill .value {
-            font-size: 30px;
-            font-weight: 800;
-            letter-spacing: -0.04em;
+            font-size: 26px;
+            font-weight: 600;
+            letter-spacing: -0.03em;
             font-variant-numeric: tabular-nums;
         }
         .quote-pill .sub {
@@ -490,9 +488,11 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         .focus-node.up .focus-direction { color: #86efac; }
         .focus-node.down .focus-direction { color: #fca5a5; }
         .focus-node.neutral .focus-direction { color: #bfdbfe; }
-        .focus-symbol { font-size: 34px; font-weight: 800; letter-spacing: -0.04em; }
-        .focus-price { font-size: 22px; font-weight: 700; margin-top: 8px; }
-        .focus-bias { margin-top: 10px; font-size: 12px; color: var(--muted); }
+        /* The focus node IS the hero — this is the largest, heaviest text on
+           screen because it's what traders actually look at. */
+        .focus-symbol { font-size: 32px; font-weight: 600; letter-spacing: -0.03em; }
+        .focus-price { font-size: 24px; font-weight: 600; margin-top: 6px; font-variant-numeric: tabular-nums; }
+        .focus-bias { margin-top: 8px; font-size: 12px; color: var(--muted); }
         .indicator-node {
             position: absolute;
             width: clamp(78px, 16vw, 106px);
@@ -530,17 +530,17 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             border: 1px solid rgba(148,163,184,0.12);
         }
         .signal-card .label {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.14em;
+            font-size: 10px;
+            letter-spacing: 0.06em;
             color: var(--muted);
-            margin-bottom: 10px;
-            font-weight: 700;
+            margin-bottom: 8px;
+            font-weight: 500;
         }
         .signal-card .value {
-            font-size: 28px;
-            font-weight: 800;
-            letter-spacing: -0.04em;
+            font-size: 26px;
+            font-weight: 600;
+            letter-spacing: -0.03em;
+            font-variant-numeric: tabular-nums;
         }
         .signal-card .sub {
             margin-top: 6px;
@@ -549,24 +549,40 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         }
         .signal-card.up .value { color: var(--green); }
         .signal-card.down .value { color: var(--red); }
+        /* Status chip composes two facts: bias (green/red/blue background)
+           and freshness (a small dot at the start). Green/red are reserved
+           for market direction only — system status (live/stale/error) is
+           encoded as the dot color, not the chip background, so the eye
+           never reads "green chip" as "system OK" and vice versa. */
         .bias-chip {
             display: inline-flex;
             align-items: center;
             gap: 8px;
             margin-top: 12px;
-            padding: 10px 12px;
+            padding: 8px 14px;
             border-radius: 999px;
             font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
+            font-weight: 500;
+            letter-spacing: 0.04em;
         }
-        .bias-chip.up { background: rgba(34,197,94,0.12); color: #86efac; }
-        .bias-chip.down { background: rgba(248,113,113,0.12); color: #fca5a5; }
-        .bias-chip.neutral { background: rgba(96,165,250,0.12); color: #bfdbfe; }
-        .bias-chip.live { background: rgba(96,165,250,0.12); color: #bfdbfe; }
-        .bias-chip.stale { background: rgba(251,191,36,0.14); color: #fde68a; border-color: rgba(251,191,36,0.28); }
-        .bias-chip.error { background: rgba(148,163,184,0.16); color: #dbe4f0; border-color: rgba(148,163,184,0.28); }
+        .bias-chip::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--cyan);
+            box-shadow: 0 0 0 3px rgba(94,234,212,0.14);
+            flex-shrink: 0;
+        }
+        .bias-chip.up { background: rgba(34,197,94,0.10); color: #86efac; }
+        .bias-chip.down { background: rgba(248,113,113,0.10); color: #fca5a5; }
+        .bias-chip.neutral { background: rgba(148,163,184,0.10); color: #bfdbfe; }
+        /* Freshness modifier — only changes the dot, never the chip body,
+           so up-bias-but-stale still reads as up, with a clearly-flagged
+           stale dot rather than a chip that fights the bias signal. */
+        .bias-chip.stale::before { background: var(--amber); box-shadow: 0 0 0 3px rgba(251,191,36,0.16); }
+        .bias-chip.error::before { background: #94a3b8; box-shadow: 0 0 0 3px rgba(148,163,184,0.18); }
+        .bias-chip.cached::before { background: var(--blue); box-shadow: 0 0 0 3px rgba(96,165,250,0.14); }
         .range-grid {
             display: grid;
             gap: 10px;
@@ -1398,8 +1414,12 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         }
 
         // Unified status chip: combines market bias + data freshness in one badge.
-        // Format: "<icon> <BIAS> bias · <freshness> · <source>"
-        // Example: "▲ Up bias · Live · MASSIVE"  /  "■ Neutral · Stale · cached 47s"
+        // Bias drives the chip background color (green/red/neutral). Freshness
+        // drives only the leading dot color (cyan = live, blue = cached,
+        // amber = stale, slate = error). This separation prevents the
+        // pre-attentive misread of "green chip = system OK" since green is
+        // strictly market direction.
+        // Example: "▲ Up bias · high confidence · Live · MASSIVE"
         function updateStatusChip(data) {
             const el = document.getElementById('statusChip');
             if (!el) return;
@@ -1407,7 +1427,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             const probs = data?.probabilities || {};
             const bias = probs.bias || 'neutral';
             const confidence = probs.confidence || 'low';
-            const biasIcon = bias === 'up' ? '▲' : bias === 'down' ? '▼' : '■';
+            const biasIcon = bias === 'up' ? '↑' : bias === 'down' ? '↓' : '→';
             const biasLabel = bias === 'neutral'
                 ? 'Neutral'
                 : `${bias.charAt(0).toUpperCase()}${bias.slice(1)} bias`;
@@ -1416,29 +1436,31 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             const source = data?.source ? String(data.source).toUpperCase() : '';
             const summary = data?.live_error_summary ? String(data.live_error_summary) : '';
 
-            // Pick the chip's color class. Stale/error trump bias direction so the
-            // user notices data-quality issues before reacting to the signal.
-            let cls = bias;
-            let freshness;
+            // Two independent state classes: the bias class paints the chip
+            // background, the freshness class paints only the leading dot.
+            const biasClass = bias;  // 'up' | 'down' | 'neutral'
+            let freshnessClass = '';  // '' = live (default cyan dot)
+            let freshnessLabel;
             if (liveStatus === 'stale_fallback') {
-                cls = 'stale';
-                freshness = `Stale${summary ? ` (${summary})` : ''}`;
+                freshnessClass = 'stale';
+                freshnessLabel = `Stale${summary ? ` (${summary})` : ''}`;
             } else if (liveStatus === 'error') {
-                cls = 'error';
-                freshness = `Error${summary ? ` (${summary})` : ''}`;
+                freshnessClass = 'error';
+                freshnessLabel = `Error${summary ? ` (${summary})` : ''}`;
             } else if (liveStatus === 'cache_hit') {
+                freshnessClass = 'cached';
                 const age = Number(data?.cache?.age_seconds);
-                freshness = `Cached ${Number.isFinite(age) ? `${age}s` : ''}`.trim();
+                freshnessLabel = `Cached${Number.isFinite(age) ? ` ${age}s` : ''}`;
             } else {
-                freshness = 'Live';
+                freshnessLabel = 'Live';
             }
 
             const parts = [`${biasIcon} ${biasLabel}`];
             if (confidence && bias !== 'neutral') parts.push(`${confidence} confidence`);
-            parts.push(freshness);
+            parts.push(freshnessLabel);
             if (source) parts.push(source);
 
-            el.className = `bias-chip ${cls}`;
+            el.className = `bias-chip ${biasClass} ${freshnessClass}`.trim();
             el.textContent = parts.join(' · ');
         }
 
@@ -1719,10 +1741,15 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 });
             };
 
-            if (data.resistance_1) r1Line = drawLine(data.resistance_1.price, '#f87171', 'R1');
-            if (data.resistance_2) r2Line = drawLine(data.resistance_2.price, '#fbbf24', 'R2');
-            if (data.support_1) s1Line = drawLine(data.support_1.price, '#22c55e', 'S1');
-            if (data.support_2) s2Line = drawLine(data.support_2.price, '#34d399', 'S2');
+            // Two colors at two opacities. Was four (red, amber, green, emerald)
+            // for what's conceptually two things in two strengths. Strong
+            // (R1/S1, the nearer level) gets full color; weak (R2/S2, the
+            // outer level) gets muted opacity so the eye reads "two of the
+            // same thing" rather than four competing signals.
+            if (data.resistance_1) r1Line = drawLine(data.resistance_1.price, 'rgba(248,113,113,0.95)', 'R1');
+            if (data.resistance_2) r2Line = drawLine(data.resistance_2.price, 'rgba(248,113,113,0.55)', 'R2');
+            if (data.support_1)    s1Line = drawLine(data.support_1.price,    'rgba(34,197,94,0.95)',  'S1');
+            if (data.support_2)    s2Line = drawLine(data.support_2.price,    'rgba(34,197,94,0.55)',  'S2');
 
             tvChartInstance.timeScale().fitContent();
 
