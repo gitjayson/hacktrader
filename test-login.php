@@ -85,6 +85,9 @@ if (!in_array($status, ['none', 'trialing', 'active', 'past_due', 'canceled'], t
 }
 
 // ---- Upsert + plan override -----------------------------------------------
+// Test endpoint — surface the actual exception in the response so QA can
+// see what's wrong without needing server log access. (Don't do this in
+// real-user-facing endpoints.)
 try {
     $googleSub = 'test-login:' . substr(sha1($email), 0, 16);
     $displayName = ucfirst(explode('@', $email)[0]) . ' (test)';
@@ -101,8 +104,12 @@ try {
     $stmt->execute([$plan, $status, $periodEnd, $periodEnd, $now, $email]);
 } catch (Throwable $e) {
     http_response_code(500);
-    error_log('test-login.php upsert failed: ' . $e->getMessage());
-    echo 'internal error during user upsert';
+    $msg = 'test-login.php upsert failed: ' . $e->getMessage()
+        . ' (file: ' . $e->getFile() . ':' . $e->getLine() . ')';
+    error_log($msg);
+    header('Content-Type: text/plain');
+    echo $msg . "\n\n";
+    echo $e->getTraceAsString();
     exit;
 }
 
