@@ -339,6 +339,51 @@ function with_usage_summary($payload, $sessionId) {
     return $payload;
 }
 
+function should_skip_correlation_spawn($ticker) {
+    // Three reasons to skip spawning generate-correlations.py for $ticker:
+    //   1. A non-stale lock exists in correlation-locks/$ticker.lock — another
+    //      worker is currently generating this symbol's correlations.
+    //   2. correlation-status.json says this symbol is "pending" — same idea,
+    //      a generation is in flight.
+    //   3. correlation-status.json says this symbol is "ready" and its
+    //      updated_at is within CORRELATION_REFRESH_MIN_SECONDS — recent enough
+    //      that we shouldn't refresh on every dashboard scan.
+    $sanitized = preg_replace('/[^A-Z0-9_-]/', '_', strtoupper($ticker));
+    if ($sanitized === '') {
+        return false;
+    }
+
+    $lockPath = __DIR__ . '/correlation-locks/' . $sanitized . '.lock';
+    $lockStaleSeconds = 20 * 60;  // matches LOCK_STALE_SECONDS in generate-correlations.py
+    if (file_exists($lockPath)) {
+        $lockAge = time() - filemtime($lockPath);
+        if ($lockAge < $lockStaleSeconds) {
+            return true;
+        }
+    }
+
+    $statusPath = __DIR__ . '/correlation-status.json';
+    if (file_exists($statusPath)) {
+        $status = json_decode(file_get_contents($statusPath), true);
+        if (is_array($status) && isset($status[$ticker]) && is_array($status[$ticker])) {
+            $entry = $status[$ticker];
+            $entryStatus = $entry['status'] ?? null;
+            if ($entryStatus === 'pending') {
+                return true;
+            }
+            if ($entryStatus === 'ready') {
+                $updatedAt = strtotime($entry['updated_at'] ?? '');
+                $refreshMinSeconds = 60 * 60;  // don't refresh more than once an hour
+                if ($updatedAt && (time() - $updatedAt) < $refreshMinSeconds) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
 function remember_focus_symbol($ticker, $focusUniverseFile, $marketWatchlistFile, $correlationGenerator) {
     $ticker = strtoupper(trim((string) $ticker));
     if ($ticker === '') {
@@ -366,7 +411,7 @@ function remember_focus_symbol($ticker, $focusUniverseFile, $marketWatchlistFile
         save_json_file($marketWatchlistFile, array_values($watchlist));
     }
 
-    if (file_exists($correlationGenerator)) {
+    if (file_exists($correlationGenerator) && !should_skip_correlation_spawn($ticker)) {
         $cmd = 'python3 ' . escapeshellarg($correlationGenerator) . ' ' . escapeshellarg($ticker) . ' > /dev/null 2>&1 &';
         @exec($cmd);
     }
