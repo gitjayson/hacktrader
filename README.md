@@ -1,10 +1,19 @@
 # HackTrader Dashboard
 
-- **Version:** v0.8.2
+- **Version:** v0.10.0
 - **Status:** Active
 - **Codebase:** HackTrader FUI dashboard
 
-HackTrader is a market dashboard for tracking a focus ticker, breakout probabilities, support/resistance ladders, volume context, and correlated indicators in a sci-fi control-panel interface.
+HackTrader is a market structure visualization tool. It surfaces correlation geometry, support/resistance ladders, channel bands, and volume context for a focus ticker and its peers — a way to *see* the chart faster, not a forecast or signal service.
+
+## Highlights in v0.10.0
+
+- **Reframed as a visualization tool, not a prediction engine.** A walking-forward backtest of the v0.9.x scoring (1,365 daily trades on real Massive bars; ~47.3% hit rate; ~-0.48% per trade after costs; 2,747 5-minute trades at ~17.1% hit rate) confirmed the score has no predictive edge after costs. Rather than continue to imply one, the product now describes only what it observes in current price, level, and correlation structure.
+- **Language sweep across the UI.** "Breakout probability" → *directional pressure*. "Confidence" → *alignment*. "Bias" → *leaning*. "Predicted bounds" → *next channel band where price would sit if the current level breaks*. The numbers, meters, and radar haven't changed; the claims they make about the future have.
+- **Honest disclaimer gate.** `disclaimer.php` no longer hedges with "informational only" — it states explicitly that scores describe what is currently visible in chart structure, are not forecasts or probabilities of future moves, and that most retail technical analysis loses money to costs and behavioral error.
+- **Landing page repositioning.** `index.php` hero now leads with "Market structure visualization" and "See the structure, faster." Three-tile callout grid: *what it is* (visualization aid), *centerpiece* (correlation radar), *honest stance* (no signals, no advice).
+- **Score symmetrization (v0.9.x carryover).** PDH/PDL weights equalized at 6.5, volume clamp made symmetric at ±1.0, tight-channel penalty zeroed out. Backtests after the fix showed mean signal centered closer to neutral but still no edge — confirming that visual framing, not parameter tuning, is the right next step.
+- **Backtest harness shipped.** `scripts/backtest_breakout.py` is a walking-forward signal evaluator with cost-per-side and synthetic random-walk control. Anyone forking the repo can re-run the honesty check.
 
 ## Highlights in v0.9.0
 

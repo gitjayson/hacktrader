@@ -88,7 +88,7 @@ function save_json_file($path, $payload) {
 
 function update_health_status($path, $ticker, $period, $liveStatus, $provider = null, $errorSummary = null, $cacheAgeSeconds = null) {
     $state = load_json_file($path, [
-        'meta' => ['updated_at' => null, 'version' => 'v0.9.0'],
+        'meta' => ['updated_at' => null, 'version' => 'v0.10.0'],
         'counters' => [
             'total_requests' => 0,
             'live_successes' => 0,
@@ -165,7 +165,7 @@ function update_health_status($path, $ticker, $period, $liveStatus, $provider = 
     ];
     $state['recent_events'] = array_slice($state['recent_events'], -100);
     $state['meta']['updated_at'] = $timestamp;
-    $state['meta']['version'] = 'v0.9.0';
+    $state['meta']['version'] = 'v0.10.0';
 
     save_json_file($path, $state);
 }
@@ -193,7 +193,7 @@ function summarize_live_error($details): ?string {
 
 function record_usage_event($trackerPath, $sessionId, $provider, $ticker, $interval, $periods, $outcome, $cacheState = null) {
     $tracker = load_json_file($trackerPath, [
-        'meta' => ['updated_at' => null, 'version' => 'v0.9.0'],
+        'meta' => ['updated_at' => null, 'version' => 'v0.10.0'],
         'sessions' => [],
         'recent_events' => [],
     ]);
@@ -273,7 +273,7 @@ function record_usage_event($trackerPath, $sessionId, $provider, $ticker, $inter
     ];
     $tracker['recent_events'] = array_slice($tracker['recent_events'], -200);
     $tracker['meta']['updated_at'] = $timestamp;
-    $tracker['meta']['version'] = 'v0.9.0';
+    $tracker['meta']['version'] = 'v0.10.0';
 
     save_json_file($trackerPath, $tracker);
 }
@@ -439,7 +439,7 @@ if (function_exists('log_api_usage')) {
     log_api_usage($usageActor, '/api.php', $ticker);
 }
 
-// v0.9.0 — subscription gate.
+// v0.10.0 — subscription gate.
 // Soft mode for now: resolve the user, count the call, log when over-quota,
 // but DON'T block the response. Once Stripe is wired and the trial flow is
 // validated end-to-end, flip $hardGate to true to enforce.
@@ -457,7 +457,7 @@ if ($sessionAuthorized && file_exists($libPath)) {
             if ($sub_user) {
                 $allowed = user_can_make_api_call($sub_user);
                 if (!$allowed) {
-                    error_log("v0.9.0 quota: user {$sub_user['email']} over plan {$sub_user['plan']} call limit");
+                    error_log("v0.10.0 quota: user {$sub_user['email']} over plan {$sub_user['plan']} call limit");
                     if ($hardGate) {
                         http_response_code(402);
                         header('Content-Type: application/json');
@@ -475,7 +475,7 @@ if ($sessionAuthorized && file_exists($libPath)) {
         }
     } catch (Throwable $e) {
         // Subscription system is dark — log and let api.php proceed normally.
-        error_log('v0.9.0 subscription gate failed (non-fatal): ' . $e->getMessage());
+        error_log('v0.10.0 subscription gate failed (non-fatal): ' . $e->getMessage());
     }
 }
 

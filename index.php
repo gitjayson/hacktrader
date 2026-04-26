@@ -211,7 +211,7 @@
             .hero, .signin-container { min-height: auto; }
             .hero-metrics { grid-template-columns: 1fr; }
         }
-        /* v0.9.0 pricing section */
+        /* v0.10.0 pricing section */
         .pricing-section {
             margin-top: 48px;
             padding: 32px 24px 40px;
@@ -352,25 +352,25 @@
     <main class='shell'>
         <section class='hero'>
             <div>
-                <div class='eyebrow'>Realtime market intelligence</div>
-                <h1><span class='gradient hero-title-main'>HackTrader</span><span class='hero-title-sub'>Signal cockpit</span></h1>
+                <div class='eyebrow'>Market structure visualization</div>
+                <h1><span class='gradient hero-title-main'>HackTrader</span><span class='hero-title-sub'>See the structure, faster</span></h1>
                 <p>
-                    Monitor breakout pressure, channel structure, sector correlation, and focus-symbol momentum in one modern command view.
-                    Built for fast scans, cleaner reads, and fewer fishy false signals.
+                    A focused visualization of correlation structure, support and resistance levels, channel geometry, and recent volume context — for one ticker and the basket that moves with it.
+                    Built for traders who already have a thesis and want to see the chart, the basket, and the levels at a glance instead of clicking between five windows.
                 </p>
             </div>
             <div class='hero-metrics'>
                 <div class='metric'>
-                    <div class='metric-label'>Breakout engine</div>
-                    <div class='metric-value'>v0.9.0</div>
+                    <div class='metric-label'>What it is</div>
+                    <div class='metric-value'>Visualization aid</div>
                 </div>
                 <div class='metric'>
-                    <div class='metric-label'>Visual system</div>
-                    <div class='metric-value'>Modern glass UI</div>
+                    <div class='metric-label'>Centerpiece</div>
+                    <div class='metric-value'>Correlation radar</div>
                 </div>
                 <div class='metric'>
-                    <div class='metric-label'>Focus</div>
-                    <div class='metric-value'>Bias + channels</div>
+                    <div class='metric-label'>Honest stance</div>
+                    <div class='metric-value'>No signals, no advice</div>
                 </div>
             </div>
         </section>
@@ -379,16 +379,16 @@
             <div class='signin-card-label'>Secure access</div>
             <h2>Sign in to launch the dashboard</h2>
             <p class='signin-copy'>
-                Authenticate with Google to access the HackTrader workspace, watch the live correlation ring, and inspect support/resistance channel behavior in real time.
+                Authenticate with Google to access the HackTrader workspace. See your focus ticker, its correlated basket, and structural levels rendered in a single view — built to support your own analysis, not replace it.
             </p>
             <a href='callback.php' class='signin-button'>
                 <span>Continue with Google</span>
             </a>
-            <div class='signin-note'>Free tier included. New users start with a 7-day Plus trial.</div>
+            <div class='signin-note'>Free tier included. New users start with a 7-day Plus trial. No credit card required to try.</div>
         </section>
 
         <?php
-            // v0.9.0 pricing block. Reads the entitlement matrix from
+            // v0.10.0 pricing block. Reads the entitlement matrix from
             // lib/plans.php so a price change in one place flows through.
             require_once __DIR__ . '/lib/plans.php';
             $allPlans = hacktrader_plans();
@@ -430,6 +430,6 @@
             </div>
         </section>
     </main>
-    <footer>HackTrader v0.9.0 · © 2026 Jayson Hawley · All rights reserved.</footer>
+    <footer>HackTrader v0.10.0 · © 2026 Jayson Hawley · All rights reserved.</footer>
 </body>
 </html>

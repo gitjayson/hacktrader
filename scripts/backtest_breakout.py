@@ -30,8 +30,6 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
-import json
-import math
 import random
 import statistics
 import sys
@@ -109,7 +107,7 @@ def signal_for_window(bars_chrono: list[dict], ticker: str = "TEST",
         )
         probs = out.get("probabilities", {})
         return float(probs.get("up", 0)), float(probs.get("down", 0))
-    except Exception as e:
+    except Exception:
         return 0.0, 0.0
 
 
@@ -216,7 +214,7 @@ def main() -> int:
     args = parser.parse_args()
 
     cost_per_side = args.cost_bps / 10000.0
-    print(f"\n=== HackTrader breakout backtest ===")
+    print("\n=== HackTrader breakout backtest ===")
     print(f"Mode: {args.mode}")
     print(f"Threshold: {args.threshold}%")
     print(f"Holding period: {args.holding} bars")

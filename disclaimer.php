@@ -244,23 +244,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accept'])) {
         <section class='hero glass'>
             <div>
                 <div class='eyebrow'>HackTrader legal gate</div>
-                <h1>Read the risk before you launch the cockpit.</h1>
+                <h1>This is a visualization tool, not a prediction engine.</h1>
                 <p>
-                    HackTrader surfaces market structure, breakout levels, correlation data, and trading context. It is a research interface — not a promise, signal service, or investment recommendation engine.
+                    HackTrader displays correlation structure, support/resistance levels, channel geometry, and recent volume context for a chosen ticker and its peers. It is a way to <em>see</em> the market faster — not a forecast, signal service, or recommendation system.
                 </p>
             </div>
             <div class='callouts'>
                 <div class='callout'>
-                    <div class='callout-title'>Purpose</div>
-                    <div class='callout-value'>Decision support, not financial advice</div>
+                    <div class='callout-title'>What it is</div>
+                    <div class='callout-value'>A visualization aid for technical structure</div>
                 </div>
                 <div class='callout'>
-                    <div class='callout-title'>Risk posture</div>
-                    <div class='callout-value'>You remain fully responsible for every trade</div>
+                    <div class='callout-title'>What it is not</div>
+                    <div class='callout-value'>A predictor of future price; a recommendation</div>
                 </div>
                 <div class='callout'>
-                    <div class='callout-title'>Market reality</div>
-                    <div class='callout-value'>Breakout models can fail, reverse, or overfit noisy conditions</div>
+                    <div class='callout-title'>Your responsibility</div>
+                    <div class='callout-value'>Every trading decision is yours alone</div>
                 </div>
             </div>
         </section>
@@ -271,16 +271,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accept'])) {
             <div class='warning'>
                 <div class='warning-icon'>!</div>
                 <div>
-                    This platform does <strong>not</strong> provide trading, financial, tax, or investment advice. All analytics are informational and may be incomplete, delayed, or wrong.
+                    This platform does <strong>not</strong> provide trading, financial, tax, or investment advice. The numerical scores it shows (directional pressure, alignment, basket verdict) describe <strong>what is currently visible</strong> in price, level, and correlation data — they are not forecasts, probabilities of future moves, or guidance to take any action.
                 </div>
             </div>
             <div class='copy'>
-                By continuing, you acknowledge that HackTrader is a research tool and that any action you take based on its output is entirely your own responsibility.
+                By continuing, you acknowledge that HackTrader is a visualization and analysis tool. Any action you take based on what you see here is entirely your own responsibility. Markets are uncertain and most short-term predictive signals — including ours, when measured — do not generate edge after costs.
             </div>
             <ul class='terms-list'>
-                <li>Analytics, probabilities, channels, and breakout signals are informational only.</li>
-                <li>No displayed data should be treated as a recommendation to buy, sell, or hold any asset.</li>
-                <li>You accept full responsibility for losses, execution errors, and decisions made using this interface.</li>
+                <li>All scores, percentages, levels, and channels describe current chart structure — they do not predict future price.</li>
+                <li>Nothing displayed is a recommendation to buy, sell, hold, or take any specific position in any asset.</li>
+                <li>You accept full responsibility for any losses, execution errors, slippage, fees, or decisions made while using this interface.</li>
+                <li>Past chart structure does not imply future returns. Most retail technical analysis loses money to costs and behavioral error.</li>
             </ul>
             <form method='post'>
                 <div class='actions'>
@@ -291,6 +292,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accept'])) {
             <div class='footnote'>Proceed only if you understand and accept the above limitations.</div>
         </section>
     </main>
-    <footer>HackTrader · disclaimer · v0.9.0 · © 2026 Jayson Hawley · All rights reserved.</footer>
+    <footer>HackTrader · disclaimer · v0.10.0 · © 2026 Jayson Hawley · All rights reserved.</footer>
 </body>
 </html>

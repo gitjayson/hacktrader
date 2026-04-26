@@ -14,7 +14,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>HackTrader | v0.9.0</title>
+    <title>HackTrader | v0.10.0</title>
     <link rel='preconnect' href='https://fonts.googleapis.com'>
     <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
     <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap' rel='stylesheet'>
@@ -168,7 +168,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         .controls > * {
             min-width: 0;
         }
-        /* v0.9.0 subscription panel — sits above the API activity block in
+        /* v0.10.0 subscription panel — sits above the API activity block in
            the Usage tab, showing plan + quota usage + manage-billing link. */
         .sub-panel {
             display: grid;
@@ -1318,7 +1318,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
     <main class='app-shell'>
         <header class='topbar glass'>
             <div class='brand'>
-                <strong class='brand-title'><span class='pengo-trigger' id='pengoTrigger' title='Activate pengo'>🐧</span><span class='title-text'>Signal cockpit</span></strong>
+                <strong class='brand-title'><span class='pengo-trigger' id='pengoTrigger' title='Activate pengo'>🐧</span><span class='title-text'>Structure cockpit</span></strong>
             </div>
             <div class='controls'>
                 <input type='text' id='ticker' list='ticker-list' placeholder='Ticker' autocomplete='off' spellcheck='false'>
@@ -1381,7 +1381,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 <section class='radar-card glass'>
                     <div class='section-title'>
                         <h2>Correlation radar</h2>
-                        <span id='indicatorBiasSubtext'>Distance from center = breakout strength</span>
+                        <span id='indicatorBiasSubtext'>Distance from center = directional pressure</span>
                     </div>
                     <div class='radar-stage' id='clock'>
                         <svg id='lines' class='radar-lines'></svg>
@@ -1405,13 +1405,13 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                      duplicate other on-screen elements anymore. -->
                 <section class='microcharts-row'>
                     <div class='microchart-card'>
-                        <div class='microchart-label'>Breakout pressure</div>
+                        <div class='microchart-label'>Directional pressure</div>
                         <div class='microchart-value' id='pressureValue'>—</div>
                         <div class='meter'><div class='meter-fill green' id='pressureFill'></div></div>
                         <div class='meter-subtext' id='pressureSubtext'>—</div>
                     </div>
                     <div class='microchart-card'>
-                        <div class='microchart-label'>Breakout target</div>
+                        <div class='microchart-label'>Next channel band</div>
                         <div class='microchart-value' id='channelWidthValue'>—</div>
                         <div class='meter'><div class='meter-fill' id='channelWidthFill'></div></div>
                         <div class='meter-subtext' id='channelWidthSubtext'>—</div>
@@ -1502,7 +1502,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                         </div>
                     </div>
                     <div class='tab-panel' role='tabpanel' aria-labelledby='rightTab-usage' id='rightPanel-usage'>
-                        <!-- v0.9.0 subscription summary. Populated by
+                        <!-- v0.10.0 subscription summary. Populated by
                              updateSubscriptionPanel() from /me.php. -->
                         <div class='sub-panel'>
                             <div class='sub-panel-top'>
@@ -1571,7 +1571,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 
             </section>
         </section>
-        <footer>HackTrader v0.9.0 · © 2026 Jayson Hawley · All rights reserved.</footer>
+        <footer>HackTrader v0.10.0 · © 2026 Jayson Hawley · All rights reserved.</footer>
     </main>
 
     <script>
@@ -1800,18 +1800,24 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         // amber = stale, slate = error). This separation prevents the
         // pre-attentive misread of "green chip = system OK" since green is
         // strictly market direction.
-        // Example: "▲ Up bias · high confidence · Live · MASSIVE"
+        // v0.10.0 status chip — language reframed. The underlying score from
+        // run-brk.py was originally framed as "breakout probability"; backtest
+        // showed it has no predictive edge after costs (47% hit rate, anti-
+        // predictive on intraday). Reframed here as "directional pressure" /
+        // "leaning" — observational structure, NOT a prediction. Same data,
+        // honest labeling.
+        // Example: "↑ Up-leaning · structure-aligned · Live · MASSIVE"
         function updateStatusChip(data) {
             const el = document.getElementById('statusChip');
             if (!el) return;
 
             const probs = data?.probabilities || {};
             const bias = probs.bias || 'neutral';
-            const confidence = probs.confidence || 'low';
+            const alignment = probs.confidence || 'low';  // alignment, not confidence
             const biasIcon = bias === 'up' ? '↑' : bias === 'down' ? '↓' : '→';
             const biasLabel = bias === 'neutral'
-                ? 'Neutral'
-                : `${bias.charAt(0).toUpperCase()}${bias.slice(1)} bias`;
+                ? 'Balanced'
+                : `${bias.charAt(0).toUpperCase()}${bias.slice(1)}-leaning`;
 
             const liveStatus = String(data?.live_status || '').toLowerCase();
             const source = data?.source ? String(data.source).toUpperCase() : '';
@@ -1837,7 +1843,10 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             }
 
             const parts = [`${biasIcon} ${biasLabel}`];
-            if (confidence && bias !== 'neutral') parts.push(`${confidence} confidence`);
+            // "high alignment" rather than "high confidence" — describes
+            // how many indicators point the same way, not how confident
+            // the system is about the future.
+            if (alignment && bias !== 'neutral') parts.push(`${alignment} alignment`);
             parts.push(freshnessLabel);
             if (source) parts.push(source);
 
@@ -1885,9 +1894,11 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             }
             if (subEl) subEl.textContent = `Spread ${Math.abs(upProb - downProb).toFixed(1)} pts`;
 
-            // Breakout target microchart — shows the predicted bounds of the
-            // NEW trading channel that price would enter on a breakout.
-            // Trader uses these as concrete exit / take-profit zones.
+            // Next-channel-band microchart — shows the price band of the
+            // NEXT structural trading channel above (or below) the current
+            // one. NOT a prediction — it's where the chart-defined level
+            // structure would place price IF current support or resistance
+            // breaks. A reference, not a target.
             const channels = Array.isArray(data?.channels) ? data.channels : [];
             const currentChannel = channels.find(c => c?.name === 'current') || channels[0];
             const aboveChannel = channels.find(c => c?.name === 'above_resistance');
@@ -1908,9 +1919,9 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             const cwFill = document.getElementById('channelWidthFill');
             const cwSub = document.getElementById('channelWidthSubtext');
             if (cwValue) {
-                // Headline: the predicted bounds of the new channel. This is
-                // what a trader sets exits against — "if it breaks up, exits
-                // at $375.92–$379.50".
+                // Headline: the bounds of the next structural channel.
+                // Reference where price would sit if the current level
+                // breaks; not a prediction or recommendation.
                 if (Number.isFinite(targetLower) && Number.isFinite(targetUpper)) {
                     const arrow = breakoutSide === 'up' ? '↑' : '↓';
                     cwValue.textContent = `${arrow} $${formatPrice(targetLower)} – $${formatPrice(targetUpper)}`;
@@ -1944,7 +1955,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                         parts.push(`${formatPrice(distance)} away`);
                     }
                 }
-                cwSub.textContent = parts.length ? parts.join(' · ') : 'No breakout channel';
+                cwSub.textContent = parts.length ? parts.join(' · ') : 'No channel data';
             }
 
             const upAttempts = Number(data?.attempts?.failed_up_today || 0);
@@ -2119,8 +2130,11 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             const narrative = document.getElementById('focusNarrative');
             if (symbolText) symbolText.textContent = symbol;
 
+            // v0.10.0: structural framing only. Describe what's on the
+            // chart ("aligned", "leaning", "probes"), never claim what
+            // will happen next.
             const bias = data?.probabilities?.bias || 'neutral';
-            const confidence = data?.probabilities?.confidence || 'low';
+            const alignment = data?.probabilities?.confidence || 'low';
             const upAttempts = Number(data?.attempts?.failed_up_today || 0);
             const downAttempts = Number(data?.attempts?.failed_down_today || 0);
             const parts = [];
@@ -2130,11 +2144,14 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 const neutral = Number(indicatorSummary.neutral || 0);
                 const total = up + down + neutral;
                 const winning = Math.max(up, down);
-                if (total > 0) parts.push(`${winning} of ${total} indicators confirm`);
+                if (total > 0) parts.push(`${winning} of ${total} indicators aligned`);
             }
             if (upAttempts) parts.push(`${upAttempts} failed upside ${upAttempts === 1 ? 'probe' : 'probes'}`);
             if (downAttempts) parts.push(`${downAttempts} failed downside ${downAttempts === 1 ? 'probe' : 'probes'}`);
-            if (!parts.length) parts.push(`${bias} setup · ${confidence} confidence`);
+            if (!parts.length) {
+                const biasLabel = bias === 'neutral' ? 'balanced structure' : `${bias}-leaning structure`;
+                parts.push(`${biasLabel} · ${alignment} alignment`);
+            }
             if (narrative) narrative.textContent = parts.join(' · ');
         }
 
@@ -2318,8 +2335,8 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             const downSubEl = document.getElementById('downProbabilitySub');
             if (upEl)   upEl.textContent = formatPercent(data?.probabilities?.up);
             if (downEl) downEl.textContent = formatPercent(data?.probabilities?.down);
-            if (upSubEl)   upSubEl.textContent = `Bias ${data?.probabilities?.bias || 'neutral'}`;
-            if (downSubEl) downSubEl.textContent = `Confidence ${data?.probabilities?.confidence || 'low'}`;
+            if (upSubEl)   upSubEl.textContent = `Lean ${data?.probabilities?.bias || 'neutral'}`;
+            if (downSubEl) downSubEl.textContent = `Alignment ${data?.probabilities?.confidence || 'low'}`;
 
             // v0.8.0: microcharts strip below the radar
             updateMicrocharts(data);
@@ -2351,12 +2368,14 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             const probs = data?.probabilities || {};
             const bias = probs.bias || 'neutral';
             const directionGlyph = bias === 'up' ? '↑' : (bias === 'down' ? '↓' : '→');
-            // Headline number: the breakout probability in the bias direction.
-            // This is the most important single piece of focus-ticker data, so
-            // it lives inside the focus node alongside the direction glyph.
+            // v0.10.0: this is the focus node's directional pressure score.
+            // It's NOT a probability of breakout — backtests showed the
+            // signal is anti-predictive at this timeframe. It's a
+            // structural snapshot: how lopsided is the current pivot /
+            // level / volume picture, scored 0-100.
             const dominantPct = Math.max(Number(probs.up || 0), Number(probs.down || 0));
             const dominantText = Number.isFinite(dominantPct) && dominantPct > 0
-                ? `${dominantPct.toFixed(1)}%`
+                ? `${dominantPct.toFixed(1)}`
                 : '—';
             focus.className = `focus-node ${bias}`;
             // verdict is a small "N/M ↑" line that summarizes the indicator
@@ -2692,7 +2711,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
         // visibly as the dashboard auto-refreshes.
         setInterval(updateSubscriptionPanel, 60000);
 
-        // v0.9.0 — fetch /me.php and paint the Subscription panel inside
+        // v0.10.0 — fetch /me.php and paint the Subscription panel inside
         // the Usage tab. Silently no-ops on unauthenticated responses (some
         // dev paths might not be logged in).
         async function updateSubscriptionPanel() {
