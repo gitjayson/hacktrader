@@ -435,8 +435,12 @@ def score_breakout(
     if previous_day:
         pdh = previous_day.get("high")
         pdl = previous_day.get("low")
+        # Symmetric weighting (both 6.5). Old code weighted PDH 8 and PDL 5,
+        # which produced a systemic down bias on any day where price sat
+        # inside the prior day's range — the negative pdh contribution
+        # outweighed the positive pdl contribution by 60%.
         if pdh is not None:
-            impact = clamp((current - pdh) / atr, -1.5, 1.5) * 8.0
+            impact = clamp((current - pdh) / atr, -1.5, 1.5) * 6.5
             score += impact
             drivers.append(
                 {
@@ -446,7 +450,7 @@ def score_breakout(
                 }
             )
         if pdl is not None:
-            impact = clamp((current - pdl) / atr, -1.5, 1.5) * 5.0
+            impact = clamp((current - pdl) / atr, -1.5, 1.5) * 6.5
             score += impact
             drivers.append(
                 {
@@ -468,8 +472,12 @@ def score_breakout(
             )
     bar_ratio = volume_profile.get("bar_ratio")
     day_ratio = volume_profile.get("day_ratio")
+    # Symmetric clamp range. Old code clamped to (-0.75, +1.5), which let
+    # high-volume bars push the score up twice as far as low-volume bars
+    # could push it down. Volume should be a magnitude signal, not a
+    # directional one — directionality is encoded in price separately.
     if bar_ratio is not None:
-        impact = clamp(bar_ratio - 1.0, -0.75, 1.5) * 8.0
+        impact = clamp(bar_ratio - 1.0, -1.0, 1.0) * 8.0
         score += impact
         drivers.append(
             {
@@ -479,7 +487,7 @@ def score_breakout(
             }
         )
     if day_ratio is not None:
-        impact = clamp(day_ratio - 1.0, -0.75, 1.5) * 4.0
+        impact = clamp(day_ratio - 1.0, -1.0, 1.0) * 4.0
         score += impact
         drivers.append(
             {
@@ -512,14 +520,19 @@ def score_breakout(
         score += 8.0
         drivers.append({"factor": "triple_failed_down_cap", "value": failed_down, "impact": 8.0})
     current_channel = next((c for c in channels if c["name"] == "current"), None)
+    # Compression is a direction-NEUTRAL signal — a tight channel often
+    # precedes a breakout, but doesn't say which direction. Old code
+    # unconditionally subtracted 4 when the channel got tight, which
+    # produced a structural down bias on every coiled-spring setup.
+    # Removing the directional fudge entirely. If we want to surface
+    # compression as information, do it as a separate non-scoring driver.
     if (
         current_channel
         and current_channel["width"] is not None
         and current_channel["width"] < atr * 1.2
     ):
-        score -= 4.0
         drivers.append(
-            {"factor": "tight_channel", "value": current_channel["width"], "impact": -4.0}
+            {"factor": "tight_channel", "value": current_channel["width"], "impact": 0.0}
         )
     up = round(clamp(50.0 + score, 1.0, 99.0), 1)
     down = round(100.0 - up, 1)
