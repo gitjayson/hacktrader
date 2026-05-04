@@ -8,13 +8,20 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
     header('Location: logout.php');
     exit;
 }
+
+// v0.11.0 — Lite mode. Render-only feature: hides supporting panels and lets
+// the correlation radar fill the viewport. Same fetch path, same data, same JS.
+// Initial state from ?lite=1 (shareable URL); JS layer also honors localStorage
+// for daily-use stickiness without dirtying the URL.
+$liteMode = isset($_GET['lite'])
+    && in_array(strtolower((string) $_GET['lite']), ['1', 'true', 'yes', 'on'], true);
 ?>
 <!DOCTYPE html>
 <html lang='en'>
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>HackTrader | v0.10.0</title>
+    <title>HackTrader | v0.11.0</title>
     <link rel='preconnect' href='https://fonts.googleapis.com'>
     <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
     <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap' rel='stylesheet'>
@@ -1303,9 +1310,65 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
             .indicator-node .price { font-size: 10px; }
             .indicator-node .mini-bias { font-size: 9px; }
         }
+
+        /* v0.11.0 — HackTrader Lite. A render-only theme that strips
+           everything except topbar, focus header, correlation radar, and
+           footer. Same data path; just hides the supporting cards and lets
+           the radar grow into the available viewport. Toggle via the Lite
+           button in the topbar or the ?lite=1 URL param. */
+        body.lite .microcharts-row,
+        body.lite .stack-card,
+        body.lite .intel-card,
+        body.lite #debugBanner,
+        body.lite #statusBanner {
+            display: none !important;
+        }
+        body.lite .controls .slider-wrap,
+        body.lite #lookback,
+        body.lite #period {
+            display: none;
+        }
+        body.lite .hero-row {
+            margin-bottom: 12px;
+        }
+        body.lite .radar-card {
+            min-height: calc(100vh - 260px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        body.lite .radar-stage {
+            max-width: min(78vh, 100%);
+            margin: 0 auto;
+            aspect-ratio: 1 / 1;
+        }
+        body.lite .focus-narrative-line { display: none; }
+        .lite-toggle {
+            border: 1px solid rgba(148,163,184,0.18);
+            background: rgba(255,255,255,0.03);
+            color: var(--muted);
+            border-radius: 999px;
+            padding: 6px 14px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: color 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+            font-family: inherit;
+        }
+        .lite-toggle:hover {
+            color: var(--text);
+            border-color: rgba(148,163,184,0.32);
+        }
+        body.lite .lite-toggle {
+            color: var(--cyan);
+            border-color: rgba(94,234,212,0.42);
+            background: rgba(94,234,212,0.08);
+        }
     </style>
 </head>
-<body onload='syncToleranceValue(); updateDashboard()'>
+<body class='<?= $liteMode ? "lite" : "" ?>' onload='syncToleranceValue(); applyLiteFromStorage(); updateDashboard()'>
     <?php
     $corrData = json_decode(file_get_contents('correlations.json'), true);
     $allTickers = array_keys($corrData);
@@ -1336,6 +1399,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
                 </div>
                 <button class='primary-btn' onclick='updateDashboard()'>Scan</button>
                 <button class='ghost-btn' onclick='resetDashboard()'>Reset</button>
+                <button type='button' class='lite-toggle' onclick='toggleLite()' title='Toggle Lite mode (radar-only view)'>Lite</button>
                 <button class='ghost-btn' onclick='window.location.href="logout.php"'>Logout</button>
                 <div id='topbarStatus' class='status-pill' aria-live='polite'>—</div>
             </div>
@@ -1571,7 +1635,7 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 
             </section>
         </section>
-        <footer>HackTrader v0.10.0 · © 2026 Jayson Hawley · All rights reserved.</footer>
+        <footer>HackTrader v0.11.0 · © 2026 Jayson Hawley · All rights reserved.</footer>
     </main>
 
     <script>
@@ -1583,6 +1647,47 @@ if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 86400)
 
         function syncToleranceValue() {
             document.getElementById('toleranceValue').textContent = document.getElementById('tolerance').value;
+        }
+
+        // v0.11.0 — Lite mode toggle. URL param wins on first paint (PHP
+        // already applied it); on subsequent visits localStorage carries
+        // the preference so the user doesn't have to re-toggle. Toggling
+        // is a CSS class swap — no reload — and we re-run updateDashboard
+        // so the radar nodes reposition to the new viewport.
+        function applyLiteFromStorage() {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const fromUrl = params.has('lite');
+                if (fromUrl) {
+                    return;
+                }
+                if (localStorage.getItem('htLite') === '1') {
+                    document.body.classList.add('lite');
+                }
+            } catch (e) {
+                // localStorage blocked / SSR-mode — no-op.
+            }
+        }
+
+        function toggleLite() {
+            const isLite = document.body.classList.toggle('lite');
+            try {
+                localStorage.setItem('htLite', isLite ? '1' : '0');
+                const url = new URL(window.location.href);
+                if (isLite) {
+                    url.searchParams.set('lite', '1');
+                } else {
+                    url.searchParams.delete('lite');
+                }
+                window.history.replaceState({}, '', url.toString());
+            } catch (e) {
+                // localStorage / history blocked — toggle still applied.
+            }
+            // Reflow happened; nudge the radar to recompute node positions
+            // for the new container size.
+            if (typeof updateDashboard === 'function') {
+                setTimeout(() => updateDashboard(), 60);
+            }
         }
 
         function showBanner(message, isError = false) {

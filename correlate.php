@@ -1,7 +1,7 @@
 <?php
 /**
  * correlate.php - Intelligent Market Correlation Endpoint
- * v0.10.0 - deterministic direct/sector/baseline fallback
+ * v0.11.0 - deterministic direct/sector/baseline fallback
  */
 
 $ticker = strtoupper(trim($_GET['ticker'] ?? 'TSLA'));

@@ -1,10 +1,17 @@
 # HackTrader Dashboard
 
-- **Version:** v0.10.0
+- **Version:** v0.11.0
 - **Status:** Active
 - **Codebase:** HackTrader FUI dashboard
 
 HackTrader is a market structure visualization tool. It surfaces correlation geometry, support/resistance ladders, channel bands, and volume context for a focus ticker and its peers — a way to *see* the chart faster, not a forecast or signal service.
+
+## Highlights in v0.11.0
+
+- **HackTrader Lite — radar-only render mode.** Strips the dashboard down to the topbar, focus header, correlation radar, and footer. The radar grows to fill the viewport and becomes the unambiguous visual centerpiece. Useful for distraction-free monitoring, screenshots, demo-ing the radial concept, and (eventually) embedding.
+- **Three ways to enter Lite.** `?lite=1` URL param for shareable / linkable Lite views; a "Lite" toggle button in the topbar for daily-use; and `localStorage` persistence so the preference sticks across visits without dirtying the URL.
+- **Pure render-mode pivot — zero data path changes.** Same fetch, same `run-brk.py`, same correlation feed, same radar layout code. Lite is a `body.lite` CSS class plus a few `display: none` rules. The supporting data is always there — just hidden until you want it.
+- **Patent-relevant simplification.** The novel claim — indicator nodes plotting at radius proportional to live correlation around a focus node — now has its own dedicated render. The cleanest possible expression of the IP, useful for demos and corp-dev conversations.
 
 ## Highlights in v0.10.0
 

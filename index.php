@@ -211,7 +211,7 @@
             .hero, .signin-container { min-height: auto; }
             .hero-metrics { grid-template-columns: 1fr; }
         }
-        /* v0.10.0 pricing section */
+        /* v0.11.0 pricing section */
         .pricing-section {
             margin-top: 48px;
             padding: 32px 24px 40px;
@@ -388,7 +388,7 @@
         </section>
 
         <?php
-            // v0.10.0 pricing block. Reads the entitlement matrix from
+            // v0.11.0 pricing block. Reads the entitlement matrix from
             // lib/plans.php so a price change in one place flows through.
             require_once __DIR__ . '/lib/plans.php';
             $allPlans = hacktrader_plans();
@@ -430,6 +430,6 @@
             </div>
         </section>
     </main>
-    <footer>HackTrader v0.10.0 · © 2026 Jayson Hawley · All rights reserved.</footer>
+    <footer>HackTrader v0.11.0 · © 2026 Jayson Hawley · All rights reserved.</footer>
 </body>
 </html>
