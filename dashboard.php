@@ -2483,6 +2483,22 @@ $liteMode = isset($_GET['lite'])
                 ? `${dominantPct.toFixed(1)}`
                 : '—';
             focus.className = `focus-node ${bias}`;
+
+            // v0.11.x — graded fill on the focus node, matching the indicator
+            // node treatment but with a punchier alpha cap (0.85 vs 0.6) so the
+            // centerpiece still visually leads when leaning strongly. Same
+            // power-curve so weak leans read quiet on both surfaces.
+            const t = Math.max(0, Math.min(1, dominantPct / 100));
+            const alpha = Math.pow(t, 1.3) * 0.85;
+            let centerColor = null;
+            if (bias === 'up') centerColor = `rgba(34, 197, 94, ${alpha.toFixed(3)})`;
+            else if (bias === 'down') centerColor = `rgba(248, 113, 113, ${alpha.toFixed(3)})`;
+            if (centerColor) {
+                focus.style.background = `radial-gradient(circle at 50% 50%, ${centerColor} 0%, rgba(5, 12, 21, 0.92) 80%)`;
+            } else {
+                focus.style.background = '';
+            }
+
             // verdict is a small "N/M ↑" line that summarizes the indicator
             // basket disposition (set later when the correlation fetch finishes).
             const verdictHtml = verdict
