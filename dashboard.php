@@ -173,7 +173,7 @@ $liteMode = isset($_GET['lite'])
                repeat to 5 and tighten the input widths slightly to keep the
                whole strip on one line at common laptop viewports. */
             display: grid;
-            grid-template-columns: minmax(120px, 1fr) minmax(72px, 84px) minmax(80px, 96px) minmax(160px, 0.8fr) repeat(5, minmax(0, max-content));
+            grid-template-columns: minmax(120px, 1fr) minmax(72px, 84px) minmax(80px, 96px) minmax(200px, 0.9fr) repeat(5, minmax(0, max-content));
             gap: 12px;
             align-items: center;
             min-width: 0;
@@ -372,7 +372,11 @@ $liteMode = isset($_GET['lite'])
             border: 1px solid rgba(148,163,184,0.22);
             border-radius: 14px;
             background: rgba(3, 9, 17, 0.72);
-            min-width: 160px;
+            /* 200px gives the label + range track + value comfortable room
+               without overflowing into the next grid column. Smaller than
+               this and the "90" value collides with the Scan button. */
+            min-width: 200px;
+            overflow: hidden;
         }
         .slider-wrap label {
             font-size: 11px;
