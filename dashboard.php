@@ -165,9 +165,16 @@ $liteMode = isset($_GET['lite'])
             font-size: 13px;
         }
         .controls {
+            /* v0.11.x — column count grew from 7 to 9 (added the Lite toggle
+               and the status pill became a trailing element). The grid had
+               only 3 max-content columns for the trailing buttons; with 5
+               actual trailing items (Scan / Reset / Lite / Logout / status
+               pill) the extras wrapped to a second row. Expand the trailing
+               repeat to 5 and tighten the input widths slightly to keep the
+               whole strip on one line at common laptop viewports. */
             display: grid;
-            grid-template-columns: minmax(140px, 1.2fr) minmax(86px, 96px) minmax(96px, 112px) minmax(180px, 0.9fr) repeat(3, minmax(0, max-content));
-            gap: 14px;
+            grid-template-columns: minmax(120px, 1fr) minmax(72px, 84px) minmax(80px, 96px) minmax(160px, 0.8fr) repeat(5, minmax(0, max-content));
+            gap: 12px;
             align-items: center;
             min-width: 0;
             width: 100%;
@@ -365,7 +372,7 @@ $liteMode = isset($_GET['lite'])
             border: 1px solid rgba(148,163,184,0.22);
             border-radius: 14px;
             background: rgba(3, 9, 17, 0.72);
-            min-width: 220px;
+            min-width: 160px;
         }
         .slider-wrap label {
             font-size: 11px;
@@ -1247,8 +1254,11 @@ $liteMode = isset($_GET['lite'])
                 grid-template-columns: 1fr;
                 align-items: stretch;
             }
+            /* v0.11.x — 5 cols (was 4) so the controls fall into two clean
+               rows: row 1 = ticker / period / lookback / slider (span 2),
+               row 2 = Scan / Reset / Lite / Logout / status pill. */
             .controls {
-                grid-template-columns: repeat(4, minmax(0, 1fr));
+                grid-template-columns: repeat(5, minmax(0, 1fr));
             }
             .controls .slider-wrap { grid-column: span 2; }
             .controls button { width: 100%; }
@@ -2651,7 +2661,12 @@ $liteMode = isset($_GET['lite'])
                 setFocusNode(ticker, currentFocus, tolerance);
                 updateFocusPanel(currentFocus, null, ticker);
                 renderTradingChart(currentFocus, ticker);
-                showBanner(formatSourceMeta(currentFocus), false);
+                // v0.11.x — drop the showBanner(formatSourceMeta(...)) call.
+                // The "Source MASSIVE · Status LIVE" line is now rendered by
+                // updateStatusChip() into the topbar status pill (a system
+                // affordance), so painting the same info into the page-body
+                // banner duplicates it and re-introduces the orange band we
+                // explicitly retired in v0.8.0.
             } catch (e) {
                 if (requestId !== dashboardRequestSeq) return;
                 document.getElementById('focus').className = 'focus-node neutral';
