@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Penguins LLC</title>
+    <meta name='description' content='Penguins LLC — software, data tools, and visualization products. Maker of HackTrader.'>
+    <link rel='preconnect' href='https://fonts.googleapis.com'>
+    <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
+    <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap' rel='stylesheet'>
+    <style>
+        :root {
+            --bg: #06111d;
+            --bg-2: #0a1828;
+            --panel: rgba(10, 22, 37, 0.78);
+            --panel-2: rgba(15, 28, 45, 0.72);
+            --border: rgba(148, 163, 184, 0.16);
+            --text: #e8f1ff;
+            --muted: #9cb0ca;
+            --cyan: #5eead4;
+            --blue: #60a5fa;
+            --amber: #fbbf24;
+            --shadow: 0 28px 80px rgba(0, 0, 0, 0.42);
+        }
+        * { box-sizing: border-box; }
+        html, body { min-height: 100%; }
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top left, rgba(96, 165, 250, 0.14), transparent 28%),
+                radial-gradient(circle at top right, rgba(94, 234, 212, 0.08), transparent 24%),
+                linear-gradient(180deg, #06111d 0%, #081420 100%);
+            line-height: 1.6;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 36px 36px;
+            pointer-events: none;
+            mask-image: radial-gradient(circle at center, black 42%, transparent 100%);
+            z-index: -1;
+        }
+        .shell {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 32px 24px 80px;
+        }
+        nav.topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            border: 1px solid var(--border);
+            background: var(--panel);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-radius: 999px;
+            margin-bottom: 56px;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+            letter-spacing: -0.01em;
+            font-size: 16px;
+        }
+        .brand-mark {
+            font-size: 22px;
+            line-height: 1;
+        }
+        .nav-links {
+            display: flex;
+            gap: 22px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--muted);
+        }
+        .nav-links a {
+            color: var(--muted);
+            text-decoration: none;
+            transition: color 0.16s ease;
+        }
+        .nav-links a:hover { color: var(--text); }
+
+        .hero {
+            text-align: left;
+            margin-bottom: 64px;
+        }
+        .eyebrow {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--cyan);
+            font-weight: 700;
+            margin-bottom: 18px;
+        }
+        h1 {
+            font-size: clamp(38px, 6vw, 68px);
+            line-height: 1.02;
+            letter-spacing: -0.04em;
+            margin: 0 0 20px;
+            max-width: 22ch;
+        }
+        h1 .accent {
+            background: linear-gradient(135deg, var(--blue), var(--cyan));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .hero p.lead {
+            font-size: 18px;
+            color: var(--muted);
+            max-width: 60ch;
+            margin: 0;
+        }
+
+        .glass {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            box-shadow: var(--shadow);
+        }
+
+        section.products {
+            margin-bottom: 64px;
+        }
+        .section-title {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            margin-bottom: 22px;
+            padding: 0 4px;
+        }
+        .section-title h2 {
+            margin: 0;
+            font-size: 22px;
+            letter-spacing: -0.02em;
+        }
+        .section-title .label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--muted);
+            font-weight: 700;
+        }
+
+        .product-card {
+            padding: 36px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+        .product-card .body h3 {
+            margin: 0 0 8px;
+            font-size: 28px;
+            letter-spacing: -0.02em;
+        }
+        .product-card .body .tag {
+            display: inline-block;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: var(--cyan);
+            font-weight: 700;
+            margin-bottom: 14px;
+        }
+        .product-card .body p {
+            margin: 0 0 18px;
+            color: var(--muted);
+            line-height: 1.7;
+            max-width: 68ch;
+        }
+        .product-card .cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: 999px;
+            border: 1px solid rgba(94, 234, 212, 0.32);
+            background: rgba(94, 234, 212, 0.08);
+            color: var(--cyan);
+            font-weight: 700;
+            font-size: 13px;
+            letter-spacing: 0.05em;
+            text-decoration: none;
+            transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+        }
+        .product-card .cta:hover {
+            transform: translateY(-1px);
+            border-color: rgba(94, 234, 212, 0.6);
+            background: rgba(94, 234, 212, 0.14);
+        }
+        .product-screenshot {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: 16px;
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            background: rgba(0, 0, 0, 0.3);
+            box-shadow: 0 22px 60px rgba(0, 0, 0, 0.5);
+        }
+        .product-screenshot-link {
+            display: block;
+            line-height: 0;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .product-screenshot-link:hover {
+            transform: translateY(-2px);
+        }
+        .product-screenshot-link:hover .product-screenshot {
+            border-color: rgba(94, 234, 212, 0.32);
+            box-shadow: 0 28px 72px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(94, 234, 212, 0.12);
+        }
+
+        section.contact {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .contact-card {
+            padding: 28px;
+        }
+        .contact-card .label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--muted);
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .contact-card address {
+            font-style: normal;
+            font-size: 16px;
+            line-height: 1.7;
+            color: var(--text);
+        }
+        .contact-card a {
+            color: var(--cyan);
+            text-decoration: none;
+            transition: color 0.16s ease;
+        }
+        .contact-card a:hover { color: var(--blue); }
+
+        footer {
+            margin-top: 72px;
+            padding: 24px 0;
+            text-align: center;
+            color: rgba(156, 176, 202, 0.7);
+            font-size: 11px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            border-top: 1px solid var(--border);
+        }
+
+        @media (max-width: 720px) {
+            nav.topbar {
+                flex-direction: column;
+                gap: 14px;
+                border-radius: 24px;
+            }
+            .product-card {
+                padding: 24px;
+            }
+            section.contact {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class='shell'>
+        <nav class='topbar'>
+            <div class='brand'>
+                <span class='brand-mark'>🐧</span>
+                <span>Penguins LLC</span>
+            </div>
+            <div class='nav-links'>
+                <a href='#products'>Products</a>
+                <a href='#contact'>Contact</a>
+            </div>
+        </nav>
+
+        <section class='hero'>
+            <div class='eyebrow'>Penguins LLC · est. California</div>
+            <h1>Tools for people who want to <span class='accent'>see the work</span>, not be told what to do.</h1>
+            <p class='lead'>
+                Penguins LLC builds focused software in domains where most products try to make decisions for you. We build the ones that hand you a clearer view and trust you to take it from there.
+            </p>
+        </section>
+
+        <section class='products' id='products'>
+            <div class='section-title'>
+                <h2>Products</h2>
+                <span class='label'>Currently shipping</span>
+            </div>
+            <div class='product-card glass'>
+                <div class='body'>
+                    <span class='tag'>Market structure visualization</span>
+                    <h3>HackTrader</h3>
+                    <p>
+                        HackTrader is a market visualization tool for active traders. A correlation radar plots a focus ticker at the center and its peers on rings whose radius tracks live correlation strength — so a basket's alignment around an idea is something you can see at a glance instead of read out of a table. Support/resistance ladders, channel bands, and volume context fill in the rest of the structural picture. It is explicitly not a signal service: HackTrader describes what is currently visible in price, level, and correlation data, never what is about to happen.
+                    </p>
+                    <a class='cta' href='https://dev.hacktrader.com' target='_blank' rel='noopener'>
+                        Visit HackTrader →
+                    </a>
+                </div>
+                <a class='product-screenshot-link' href='https://dev.hacktrader.com' target='_blank' rel='noopener' aria-label='Open HackTrader'>
+                    <img class='product-screenshot' src='hacktrader-lite.png' alt='HackTrader Lite mode — TSLA correlation radar with peer tickers (NVDA, AMZN, QQQ, SPY, XLY, XLK, IWM, SMH, DIA, GOOGL, XLC, SHOP) plotted at radius proportional to live correlation strength.'>
+                </a>
+            </div>
+        </section>
+
+        <section class='contact' id='contact'>
+            <div class='contact-card glass'>
+                <div class='label'>Office</div>
+                <address>
+                    Penguins LLC<br>
+                    999 Corporate Drive, Ste 100<br>
+                    Ladera Ranch, CA 92694
+                </address>
+            </div>
+            <div class='contact-card glass'>
+                <div class='label'>Get in touch</div>
+                <address>
+                    <a href='tel:+19493359688'>(949) 335-9688</a><br>
+                    <a href='mailto:info@pngs.us'>info@pngs.us</a>
+                </address>
+            </div>
+        </section>
+
+        <footer>Penguins LLC · © 2026 · pngs.us</footer>
+    </div>
+</body>
+</html>
