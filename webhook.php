@@ -118,7 +118,14 @@ function handle_subscription_changed(array $sub): void {
     elseif ($priceId === $config['price_pro']) $plan = 'pro';
 
     $status = $sub['status'] ?? 'none';
-    $end = (int) ($sub['current_period_end'] ?? 0);
+    // Stripe moved current_period_end off the subscription root and onto each
+    // subscription item in newer API versions (2025+). Try the item-level
+    // location first, fall back to the legacy root location for older APIs.
+    $end = (int) (
+        $sub['items']['data'][0]['current_period_end']
+        ?? $sub['current_period_end']
+        ?? 0
+    );
     $subId = $sub['id'] ?? null;
 
     $db = hacktrader_db();
