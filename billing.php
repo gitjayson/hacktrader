@@ -6,7 +6,8 @@
  * invoice history. We don't render any billing UI ourselves; Stripe owns
  * that surface.
  *
- * v0.9.0 STATUS: scaffold only. Filled in once Stripe keys are configured.
+ * STATUS: active. Creates a Customer Portal session via the Stripe SDK and
+ * 302s the user there.
  */
 
 declare(strict_types=1);
@@ -39,16 +40,19 @@ if (empty($user['stripe_customer_id'])) {
     exit;
 }
 
-// TODO once stripe/stripe-php is available:
-//   require_once __DIR__ . '/vendor/autoload.php';
-//   \Stripe\Stripe::setApiKey($config['secret_key']);
-//
-//   $session = \Stripe\BillingPortal\Session::create([
-//       'customer' => $user['stripe_customer_id'],
-//       'return_url' => 'https://dev.hacktrader.com/dashboard.php',
-//   ]);
-//   header('Location: ' . $session->url);
-//   exit;
+require_once __DIR__ . '/vendor/autoload.php';
+\Stripe\Stripe::setApiKey($config['secret_key']);
 
-http_response_code(501);
-echo 'Stripe billing portal integration pending.';
+try {
+    $session = \Stripe\BillingPortal\Session::create([
+        'customer'   => $user['stripe_customer_id'],
+        'return_url' => 'https://dev.hacktrader.com/dashboard.php',
+    ]);
+    header('Location: ' . $session->url);
+    exit;
+} catch (\Throwable $e) {
+    error_log('billing.php: Stripe error for user ' . ($user['id'] ?? '?') . ': ' . $e->getMessage());
+    http_response_code(502);
+    echo 'Could not open the billing portal. Please try again later.';
+    exit;
+}
