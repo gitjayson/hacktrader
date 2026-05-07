@@ -9,9 +9,12 @@
  *   - customer.subscription.updated  → plan changes, renewals, status flips
  *   - customer.subscription.deleted  → cancellation
  *   - invoice.payment_failed         → flip to past_due
+ *   - invoice.payment_succeeded      → audit-trail logging
  *
- * v0.9.0 STATUS: scaffold. Verifies signature, dispatches by event type,
- * with TODO bodies for each handler. Flesh out once SDK + keys are in.
+ * STATUS: active. Stripe SDK is wired in, signature is verified against the
+ * configured webhook signing secret, events dispatch to handler functions
+ * below. Handler errors are caught + logged so we always 200-ack to Stripe
+ * (a 500 would trigger their retry logic and re-fire the same event).
  */
 
 declare(strict_types=1);
@@ -28,42 +31,66 @@ if (!$config['secret_key'] || !$config['webhook_secret']) {
 $payload = file_get_contents('php://input');
 $sigHeader = $_SERVER['HTTP_STRIPE_SIGNATURE'] ?? '';
 
-// TODO once stripe/stripe-php is available:
-//   require_once __DIR__ . '/vendor/autoload.php';
-//   \Stripe\Stripe::setApiKey($config['secret_key']);
-//   try {
-//       $event = \Stripe\Webhook::constructEvent($payload, $sigHeader, $config['webhook_secret']);
-//   } catch (\UnexpectedValueException $e) {
-//       http_response_code(400); exit;
-//   } catch (\Stripe\Exception\SignatureVerificationException $e) {
-//       http_response_code(400); exit;
-//   }
+// SDK is now live. composer require stripe/stripe-php has been run on the
+// server, vendor/autoload.php exists, keys are in secrets.json. Verify the
+// signature with the webhook signing secret before trusting any payload —
+// without this anyone could POST fake subscription events at /webhook.php
+// and flip our DB rows.
+require_once __DIR__ . '/vendor/autoload.php';
+\Stripe\Stripe::setApiKey($config['secret_key']);
 
-// Until the SDK lands, log + 200 so dev doesn't trigger Stripe's retry logic
-// and we can see what events are coming through.
-$decoded = json_decode($payload, true);
-$type = is_array($decoded) ? ($decoded['type'] ?? 'unknown') : 'invalid-json';
-error_log('webhook.php received (unverified): ' . $type);
+try {
+    $event = \Stripe\Webhook::constructEvent($payload, $sigHeader, $config['webhook_secret']);
+} catch (\UnexpectedValueException $e) {
+    http_response_code(400);
+    error_log('webhook.php: invalid payload: ' . $e->getMessage());
+    exit;
+} catch (\Stripe\Exception\SignatureVerificationException $e) {
+    http_response_code(400);
+    error_log('webhook.php: signature verification failed: ' . $e->getMessage());
+    exit;
+}
 
-// $event = $decoded;  // <- uncomment + replace with the verified $event once SDK is in
-// switch ($event['type']) {
-//     case 'checkout.session.completed':
-//         handle_checkout_completed($event['data']['object']);
-//         break;
-//     case 'customer.subscription.created':
-//     case 'customer.subscription.updated':
-//         handle_subscription_changed($event['data']['object']);
-//         break;
-//     case 'customer.subscription.deleted':
-//         handle_subscription_deleted($event['data']['object']);
-//         break;
-//     case 'invoice.payment_failed':
-//         handle_payment_failed($event['data']['object']);
-//         break;
-// }
+$eventType = $event->type;
+// Convert the Stripe object graph into an associative array so the existing
+// handler functions (which take arrays) keep working unchanged.
+$eventData = $event->data->object->toArray();
+
+error_log('webhook.php verified: ' . $eventType);
+
+try {
+    switch ($eventType) {
+        case 'checkout.session.completed':
+            handle_checkout_completed($eventData);
+            break;
+        case 'customer.subscription.created':
+        case 'customer.subscription.updated':
+            handle_subscription_changed($eventData);
+            break;
+        case 'customer.subscription.deleted':
+            handle_subscription_deleted($eventData);
+            break;
+        case 'invoice.payment_failed':
+            handle_payment_failed($eventData);
+            break;
+        case 'invoice.payment_succeeded':
+            // Renewals re-emit subscription.updated separately, so this is
+            // mostly informational. Logged for the audit trail.
+            error_log('webhook.php: invoice paid for customer ' . ($eventData['customer'] ?? '?'));
+            break;
+        default:
+            // Acknowledge unhandled events with 200 so Stripe doesn't retry
+            // them. If we ever care about them, add a case above.
+            break;
+    }
+} catch (\Throwable $e) {
+    // Catch DB or handler errors so we still 200-ack to Stripe (a 500 would
+    // trigger their retry logic and re-fire the same event repeatedly).
+    error_log('webhook.php: handler error for ' . $eventType . ': ' . $e->getMessage());
+}
 
 http_response_code(200);
-echo json_encode(['received' => true, 'event_type' => $type]);
+echo json_encode(['received' => true, 'event_type' => $eventType]);
 
 // ---- Handler stubs (filled in alongside the SDK wiring) ---------------------
 
