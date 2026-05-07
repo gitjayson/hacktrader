@@ -69,3 +69,12 @@ temp/
 .idea/
 *.swp
 *.swo
+
+# --- Pipelines: per-ticker analyzer output, regenerated on every run ---
+pipelines/
+
+# --- Server-side health probe state ---
+state/health-status.json
+
+# --- Nginx default landing page on Ubuntu, irrelevant to the repo ---
+index.nginx-debian.html
