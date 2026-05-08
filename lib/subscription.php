@@ -228,4 +228,21 @@ if (!defined('HACKTRADER_SUBSCRIPTION_LOADED')) {
             'price_pro' => $json['STRIPE_PRICE_PRO'] ?? null,
         ];
     }
+
+    /**
+     * Build an absolute URL back into this app for the host the request
+     * came from. Used so success/cancel/return URLs given to Stripe match
+     * whatever environment is running — dev.hacktrader.com on the dev box,
+     * hacktrader.com in production, etc. Same code, different deploy hosts.
+     *
+     * Falls back to hacktrader.com if no Host header is available (e.g. CLI).
+     */
+    function hacktrader_app_url(string $path = ''): string {
+        $scheme = !empty($_SERVER['HTTP_X_FORWARDED_PROTO'])
+            ? $_SERVER['HTTP_X_FORWARDED_PROTO']
+            : ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http');
+        $host = $_SERVER['HTTP_HOST'] ?? 'hacktrader.com';
+        $path = $path === '' ? '' : '/' . ltrim($path, '/');
+        return $scheme . '://' . $host . $path;
+    }
 }

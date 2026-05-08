@@ -46,7 +46,9 @@ require_once __DIR__ . '/vendor/autoload.php';
 try {
     $session = \Stripe\BillingPortal\Session::create([
         'customer'   => $user['stripe_customer_id'],
-        'return_url' => 'https://dev.hacktrader.com/dashboard.php',
+        // Return the user to the same host they came from so dev/prod
+        // each bounce back to themselves.
+        'return_url' => hacktrader_app_url('dashboard.php'),
     ]);
     header('Location: ' . $session->url);
     exit;

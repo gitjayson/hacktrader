@@ -79,8 +79,11 @@ try {
         'mode'                  => 'subscription',
         'customer'              => $customerId,
         'line_items'            => [['price' => $priceId, 'quantity' => 1]],
-        'success_url'           => 'https://dev.hacktrader.com/dashboard.php?subscribed=1',
-        'cancel_url'            => 'https://dev.hacktrader.com/index.php?canceled=1',
+        // Bounce the user back to the same host they came from. Lets the
+        // same code serve dev.hacktrader.com (sandbox keys) and
+        // hacktrader.com (live keys) without per-host URL config.
+        'success_url'           => hacktrader_app_url('dashboard.php?subscribed=1'),
+        'cancel_url'            => hacktrader_app_url('index.php?canceled=1'),
         'allow_promotion_codes' => true,
         // user_id propagates onto the subscription object so the webhook
         // can resolve the local user even if the customer email differs.
