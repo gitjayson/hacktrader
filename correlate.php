@@ -147,10 +147,16 @@ if (isset($data[$ticker]) && is_array($data[$ticker])) {
     }
 }
 
+// v0.12.0 — Baseline expanded from 12 to 16 unique tickers so the basket
+// can still fill all 12 slots after the focus ticker is filtered out (and
+// after any duplicates collapse via push_unique_symbol). Added XLV
+// (healthcare) and XLE (energy) to the positive sector list, plus IEF
+// (mid-duration treasuries) and HYG (high-yield credit) to the negative
+// list — both common macro indicators.
 $baseline = [
     ['symbols' => ['SPY', 'QQQ', 'IWM', 'DIA'], 'relation' => 'positive'],
-    ['symbols' => ['XLK', 'XLF', 'XLY', 'XLI', 'SMH'], 'relation' => 'positive'],
-    ['symbols' => ['TLT', 'UUP', 'GLD'], 'relation' => 'negative'],
+    ['symbols' => ['XLK', 'XLF', 'XLY', 'XLI', 'SMH', 'XLV', 'XLE'], 'relation' => 'positive'],
+    ['symbols' => ['TLT', 'UUP', 'GLD', 'IEF', 'HYG'], 'relation' => 'negative'],
 ];
 
 foreach ($baseline as $bucket) {
