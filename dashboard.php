@@ -2051,7 +2051,14 @@ $liteMode = isset($_GET['lite'])
             // the system is about the future.
             if (alignment && bias !== 'neutral') parts.push(`${alignment} alignment`);
             parts.push(freshnessLabel);
-            if (source) parts.push(source);
+            // v0.12.0 — Massive provides 15-minute-delayed market data,
+            // so disclose that alongside the source name. Honesty stance
+            // requires users see this every time they look at a price,
+            // not just on the disclaimer gate.
+            if (source) {
+                const delaySuffix = source === 'MASSIVE' ? ' · 15m delayed' : '';
+                parts.push(`${source}${delaySuffix}`);
+            }
 
             el.className = `bias-chip ${biasClass} ${freshnessClass}`.trim();
             el.textContent = parts.join(' · ');

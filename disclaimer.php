@@ -278,6 +278,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accept'])) {
                 By continuing, you acknowledge that HackTrader is a visualization and analysis tool. Any action you take based on what you see here is entirely your own responsibility. Markets are uncertain and most short-term predictive signals — including ours, when measured — do not generate edge after costs.
             </div>
             <ul class='terms-list'>
+                <li><strong>Quotes are delayed by 15 minutes.</strong> The market data feed (Massive) provides 15-minute-delayed prices, not real-time. The status chip on the dashboard shows this on every render. Do not use HackTrader as your sole reference for time-sensitive trading decisions.</li>
                 <li>All scores, percentages, levels, and channels describe current chart structure — they do not predict future price.</li>
                 <li>Nothing displayed is a recommendation to buy, sell, hold, or take any specific position in any asset.</li>
                 <li>You accept full responsibility for any losses, execution errors, slippage, fees, or decisions made while using this interface.</li>

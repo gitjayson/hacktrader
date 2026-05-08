@@ -122,6 +122,16 @@
             font-size: 16px;
             line-height: 1.7;
         }
+        /* v0.12.0 — small italic note under the metrics row, low visual
+           weight so it doesn't fight the hero title but visible enough that
+           a careful reader can't miss it before clicking sign-in. */
+        .hero-note {
+            margin: 18px 0 0;
+            font-size: 12px;
+            font-style: italic;
+            color: rgba(159, 177, 203, 0.78);
+            letter-spacing: 0.02em;
+        }
         .hero-metrics {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -463,6 +473,11 @@
                     <div class='metric-value'>No signals, no advice</div>
                 </div>
             </div>
+            <!-- v0.12.0 — disclose 15-minute data delay up front. The platform
+                 uses Massive's delayed feed (not real-time), and traders
+                 deciding whether to authenticate with Google deserve to know
+                 that before they hit the OAuth button. -->
+            <p class='hero-note'>Quotes delayed 15 minutes (data via Massive). Not for time-sensitive trading.</p>
         </section>
 
         <section class='signin-container'>
