@@ -249,6 +249,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accept'])) {
             letter-spacing: 0.14em;
             text-transform: uppercase;
             color: rgba(156,176,202,0.72);
+            line-height: 1.8;
+        }
+        .footer-brand,
+        .footer-brand-link {
+            color: inherit;
+            text-decoration: none;
+            transition: color 0.16s ease;
+        }
+        .footer-brand:hover,
+        .footer-brand-link:hover {
+            color: var(--cyan);
+        }
+        .footer-brand-link {
+            font-size: 10px;
+            opacity: 0.82;
         }
         @media (max-width: 900px) {
             body { overflow: auto; }
@@ -325,6 +340,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accept'])) {
             <div class='footnote'>Proceed only if you understand and accept the above limitations.</div>
         </section>
     </main>
-    <footer>HackTrader · disclaimer · v0.12.0 · © 2026 Jayson Hawley · All rights reserved.</footer>
+    <footer>
+        HackTrader · disclaimer · v0.12.0 · © 2026 <a href='https://pngs.us' target='_blank' rel='noopener' class='footer-brand'>PENGUINS LLC</a> · All rights reserved.<br>
+        <a href='https://pngs.us' target='_blank' rel='noopener' class='footer-brand-link'>pngs.us</a>
+    </footer>
 </body>
 </html>

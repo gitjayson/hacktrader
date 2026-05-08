@@ -181,6 +181,21 @@
             letter-spacing: 0.14em;
             text-transform: uppercase;
             color: rgba(156,176,202,0.72);
+            line-height: 1.8;
+        }
+        .footer-brand,
+        .footer-brand-link {
+            color: inherit;
+            text-decoration: none;
+            transition: color 0.16s ease;
+        }
+        .footer-brand:hover,
+        .footer-brand-link:hover {
+            color: var(--cyan);
+        }
+        .footer-brand-link {
+            font-size: 10px;
+            opacity: 0.82;
         }
         @media (max-width: 920px) {
             .shell { grid-template-columns: 1fr; }
@@ -252,7 +267,10 @@
                 <a class='link-btn' href='index.php'>Back to sign in</a>
                 <a class='link-btn' href='privacy.html'>View privacy policy</a>
             </div>
-            <footer>HackTrader · terms of service · v0.12.0 · © 2026 Jayson Hawley · All rights reserved.</footer>
+            <footer>
+                HackTrader · terms of service · v0.12.0 · © 2026 <a href='https://pngs.us' target='_blank' rel='noopener' class='footer-brand'>PENGUINS LLC</a> · All rights reserved.<br>
+                <a href='https://pngs.us' target='_blank' rel='noopener' class='footer-brand-link'>pngs.us</a>
+            </footer>
         </section>
     </main>
 </body>

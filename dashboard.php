@@ -1254,7 +1254,25 @@ $liteMode = isset($_GET['lite'])
             letter-spacing: 0.14em;
             text-transform: uppercase;
             color: rgba(150,169,196,0.72);
-            padding: 4px 0 12px;
+            padding: 4px 0 16px;
+            line-height: 1.8;
+        }
+        /* v0.12.0 — copyright now held by Penguins LLC. Footer brand links
+           inherit the muted footer color but lift on hover so they read as
+           interactive without shouting. */
+        .footer-brand,
+        .footer-brand-link {
+            color: inherit;
+            text-decoration: none;
+            transition: color 0.16s ease;
+        }
+        .footer-brand:hover,
+        .footer-brand-link:hover {
+            color: var(--cyan);
+        }
+        .footer-brand-link {
+            font-size: 10px;
+            opacity: 0.78;
         }
         @media (max-width: 1260px) {
             .topbar {
@@ -1733,7 +1751,10 @@ $liteMode = isset($_GET['lite'])
 
             </section>
         </section>
-        <footer>HackTrader v0.12.0 · © 2026 Jayson Hawley · All rights reserved.</footer>
+        <footer>
+            HackTrader v0.12.0 · © 2026 <a href='https://pngs.us' target='_blank' rel='noopener' class='footer-brand'>PENGUINS LLC</a> · All rights reserved.<br>
+            <a href='https://pngs.us' target='_blank' rel='noopener' class='footer-brand-link'>pngs.us</a>
+        </footer>
     </main>
 
     <script>

@@ -297,6 +297,21 @@
         }
         .footer-copy {
             color: rgba(229, 238, 251, 0.52);
+            line-height: 1.8;
+        }
+        .footer-brand,
+        .footer-brand-link {
+            color: inherit;
+            text-decoration: none;
+            transition: color 0.16s ease;
+        }
+        .footer-brand:hover,
+        .footer-brand-link:hover {
+            color: var(--accent);
+        }
+        .footer-brand-link {
+            font-size: 10px;
+            opacity: 0.82;
         }
         @media (max-width: 880px) {
             body { overflow: auto; }
@@ -556,7 +571,10 @@
             <span aria-hidden='true'>·</span>
             <a href='disclaimer.php'>Disclaimer</a>
         </nav>
-        <div class='footer-copy'>HackTrader v0.12.0 · © 2026 Jayson Hawley · All rights reserved.</div>
+        <div class='footer-copy'>
+            HackTrader v0.12.0 · © 2026 <a href='https://pngs.us' target='_blank' rel='noopener' class='footer-brand'>PENGUINS LLC</a> · All rights reserved.<br>
+            <a href='https://pngs.us' target='_blank' rel='noopener' class='footer-brand-link'>pngs.us</a>
+        </div>
     </footer>
 </body>
 </html>
