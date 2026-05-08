@@ -140,6 +140,45 @@
             font-weight: 700;
             font-size: 19px;
         }
+        /* v0.12.0 — hero screenshot section. Spans the full shell width
+           (escapes the 2-column hero/signin grid by being its own row).
+           Glass border + faint outer glow so it reads as a polished
+           product surface rather than a bare image. */
+        .hero-shot {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: center;
+            margin: 8px 0 0;
+        }
+        .hero-shot figure {
+            margin: 0;
+            max-width: 1100px;
+            width: 100%;
+        }
+        .hero-shot img {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: 22px;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            background: rgba(0, 0, 0, 0.32);
+            box-shadow: 0 32px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(94, 234, 212, 0.06);
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+        .hero-shot img:hover {
+            transform: translateY(-3px);
+            border-color: rgba(94, 234, 212, 0.28);
+            box-shadow: 0 36px 92px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(94, 234, 212, 0.18);
+        }
+        .hero-shot figcaption {
+            margin-top: 14px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--muted);
+            letter-spacing: 0.06em;
+            font-style: italic;
+        }
+
         .signin-container {
             padding: 34px 28px;
             display: flex;
@@ -412,6 +451,19 @@
                 <span>Continue with Google</span>
             </a>
             <div class='signin-note'>Free tier included. New users start with a 7-day Plus trial. No credit card required to try.</div>
+        </section>
+
+        <!-- v0.12.0 — hero screenshot of the live radar. Co-Claude UI review
+             flagged the absence of a product visual as the single biggest
+             conversion leak on the page. Placed after the hero+signin row
+             (full-width second row) so the visual lives between the pitch
+             above and the pricing grid below. SPY going down with XLY/XLK
+             as green dissenters tells a divergence story at a glance. -->
+        <section class='hero-shot'>
+            <figure>
+                <img src='hero-radar.png' alt='HackTrader correlation radar showing SPY down-leaning with XLY and XLK diverging green' loading='eager'>
+                <figcaption>SPY and 12 correlated peers — basket disposition at a glance.</figcaption>
+            </figure>
         </section>
 
         <?php

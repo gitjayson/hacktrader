@@ -157,5 +157,13 @@ foreach ($baseline as $bucket) {
     append_symbol_list($result, $bucket['symbols'], $bucket['relation']);
 }
 
+// v0.12.0 — Filter out the focus ticker. A stock cannot correlate with
+// itself, and having it appear in its own basket is visually confusing
+// (the focus node is already in the center). Happens when the focus is
+// one of the general-baseline tickers (SPY, QQQ, etc.) that get appended.
+$result = array_values(array_filter($result, function ($item) use ($ticker) {
+    return ($item['symbol'] ?? '') !== $ticker;
+}));
+
 $result = array_values(array_slice($result, 0, 12));
 respond_json($result);
