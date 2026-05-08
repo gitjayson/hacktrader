@@ -102,6 +102,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accept'])) {
             line-height: 1.75;
             max-width: 48ch;
         }
+        /* v0.12.0 — radar thumbnail in the disclaimer's left rail. Fills
+           the empty middle space between the description and the callouts.
+           Subtle border + shadow so it reads as a polished preview, not
+           a placeholder. */
+        .hero-thumb {
+            margin: 28px 0 0;
+        }
+        .hero-thumb img {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: 16px;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            background: rgba(0, 0, 0, 0.32);
+            box-shadow: 0 18px 42px rgba(0, 0, 0, 0.45);
+        }
+        .hero-thumb figcaption {
+            margin-top: 10px;
+            font-size: 11px;
+            color: var(--muted);
+            font-style: italic;
+            letter-spacing: 0.04em;
+        }
         .callouts {
             display: grid;
             gap: 12px;
@@ -249,6 +272,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accept'])) {
                     HackTrader displays correlation structure, support/resistance levels, channel geometry, and recent volume context for a chosen ticker and its peers. It is a way to <em>see</em> the market faster — not a forecast, signal service, or recommendation system.
                 </p>
             </div>
+            <!-- v0.12.0 — small thumbnail of the live radar in the empty
+                 middle area. Reinforces what the user is being asked to
+                 accept the limits OF: a visualization tool, not a
+                 prediction engine. The screenshot says it faster than
+                 the body copy can. -->
+            <figure class='hero-thumb'>
+                <img src='hero-radar.png' alt='HackTrader correlation radar — example view of a focus ticker and its basket' loading='lazy'>
+                <figcaption>Example view — the dashboard you're about to see.</figcaption>
+            </figure>
             <div class='callouts'>
                 <div class='callout'>
                     <div class='callout-title'>What it is</div>
