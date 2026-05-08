@@ -457,12 +457,12 @@
              flagged the absence of a product visual as the single biggest
              conversion leak on the page. Placed after the hero+signin row
              (full-width second row) so the visual lives between the pitch
-             above and the pricing grid below. SPY going down with XLY/XLK
-             as green dissenters tells a divergence story at a glance. -->
+             above and the pricing grid below. NVDA up 69% with only 1 of
+             12 indicators confirming — the divergence is the story. -->
         <section class='hero-shot'>
             <figure>
-                <img src='hero-radar.png' alt='HackTrader correlation radar showing SPY down-leaning with XLY and XLK diverging green' loading='eager'>
-                <figcaption>SPY and 12 correlated peers — basket disposition at a glance.</figcaption>
+                <img src='hero-radar.png' alt='HackTrader correlation radar — NVDA leaning up while most of its basket sits neutral, illustrating divergence at a glance' loading='eager'>
+                <figcaption>NVDA leading 12 correlated peers — basket disposition at a glance.</figcaption>
             </figure>
         </section>
 
