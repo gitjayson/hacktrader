@@ -1261,11 +1261,14 @@ $liteMode = isset($_GET['lite'])
                 grid-template-columns: 1fr;
                 align-items: stretch;
             }
-            /* v0.12.0 — 4 cols (was 5) since Lite moved off the topbar:
-               row 1 = ticker / period / lookback / slider (span 2 over 2 cols),
-               row 2 = Scan / Reset / Logout / status pill. */
+            /* v0.12.0 — keep 5 cols at this breakpoint. The 4-col attempt
+               broke because the slider spans 2 cols, leaving 4 - 2 = 2 cols
+               for the 4 inputs (ticker, period, lookback) on row 1, forcing
+               another item to wrap. 5 cols cleanly accommodates row 1 =
+               ticker / period / lookback / slider(span 2) and row 2 =
+               Scan / Reset / Logout / status pill (4 items, 1 empty slot). */
             .controls {
-                grid-template-columns: repeat(4, minmax(0, 1fr));
+                grid-template-columns: repeat(5, minmax(0, 1fr));
             }
             .controls .slider-wrap { grid-column: span 2; }
             .controls button { width: 100%; }
