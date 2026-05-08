@@ -133,6 +133,10 @@
             border-radius: 18px;
             background: rgba(255,255,255,0.03);
             border: 1px solid rgba(255,255,255,0.08);
+            /* min-width: 0 lets grid items shrink below their content width
+               so long text wraps inside the card instead of bleeding past the
+               column boundary and overlapping the neighbor. */
+            min-width: 0;
         }
         .metric-label {
             font-size: 11px;
@@ -142,9 +146,18 @@
             margin-bottom: 8px;
         }
         .metric-value {
-            font-family: 'JetBrains Mono', monospace;
+            /* v0.12.0 — these are brand sentences (Visualization aid /
+               Correlation radar / No signals, no advice), not data. Switch
+               from JetBrains Mono 19px to inherited Inter at 15px so they
+               read as prose AND fit inside the narrow grid cells without
+               overflowing into the neighbor card. */
+            font-family: inherit;
             font-weight: 700;
-            font-size: 19px;
+            font-size: 15px;
+            line-height: 1.3;
+            letter-spacing: -0.005em;
+            word-break: break-word;
+            overflow-wrap: anywhere;
         }
         /* v0.12.0 — hero screenshot section. Spans the full shell width
            (escapes the 2-column hero/signin grid by being its own row).
