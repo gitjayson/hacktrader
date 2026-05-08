@@ -31,9 +31,15 @@
                 radial-gradient(circle at 80% 30%, rgba(94,234,212,0.14), transparent 28%),
                 linear-gradient(135deg, rgba(6,17,31,0.82), rgba(9,14,24,0.94)),
                 url('https://images.unsplash.com/photo-1449824913935-59a10b8d2000?q=80&w=2070&auto=format&fit=crop') center center / cover no-repeat fixed;
-            display: grid;
-            place-items: center;
-            overflow: hidden;
+            /* v0.12.0 — page is no longer a single-screen layout. Hero shot
+               + pricing grid push content past the viewport. Switch from
+               grid-centered + overflow:hidden to a normal flow that scrolls.
+               Top-padded so the hero isn't stuck to the very top edge. */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 36px 0 96px;
+            min-height: 100vh;
         }
         .grid {
             position: fixed;
@@ -231,9 +237,11 @@
             color: var(--muted);
         }
         footer {
-            position: fixed;
-            bottom: 12px;
-            width: 100%;
+            /* v0.12.0 — footer was position:fixed when the page was a
+               single-screen layout. With scroll-flow it lives at the
+               bottom of content like a normal block. */
+            margin-top: 56px;
+            width: min(960px, calc(100vw - 32px));
             text-align: center;
             font-size: 11px;
             letter-spacing: 0.12em;
@@ -279,6 +287,9 @@
         }
         /* v0.12.0 pricing section */
         .pricing-section {
+            /* The .shell is a 2-col grid; without this the pricing card would
+               render in col 1 only and look squashed. Span the full width. */
+            grid-column: 1 / -1;
             margin-top: 48px;
             padding: 32px 24px 40px;
             border-radius: 24px;
