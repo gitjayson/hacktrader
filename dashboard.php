@@ -21,7 +21,7 @@ $liteMode = isset($_GET['lite'])
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>HackTrader | v0.11.0</title>
+    <title>HackTrader | v0.12.0</title>
     <link rel='preconnect' href='https://fonts.googleapis.com'>
     <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
     <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap' rel='stylesheet'>
@@ -173,7 +173,10 @@ $liteMode = isset($_GET['lite'])
                repeat to 5 and tighten the input widths slightly to keep the
                whole strip on one line at common laptop viewports. */
             display: grid;
-            grid-template-columns: minmax(120px, 1fr) minmax(72px, 84px) minmax(80px, 96px) minmax(200px, 0.9fr) repeat(5, minmax(0, max-content));
+            /* v0.12.0 — Lite toggle moved out of the topbar to the radar
+               corner, so the trailing repeat dropped from 5 to 4 (Scan,
+               Reset, Logout, status pill). */
+            grid-template-columns: minmax(120px, 1fr) minmax(72px, 84px) minmax(80px, 96px) minmax(200px, 0.9fr) repeat(4, minmax(0, max-content));
             gap: 12px;
             align-items: center;
             min-width: 0;
@@ -1258,11 +1261,11 @@ $liteMode = isset($_GET['lite'])
                 grid-template-columns: 1fr;
                 align-items: stretch;
             }
-            /* v0.11.x — 5 cols (was 4) so the controls fall into two clean
-               rows: row 1 = ticker / period / lookback / slider (span 2),
-               row 2 = Scan / Reset / Lite / Logout / status pill. */
+            /* v0.12.0 — 4 cols (was 5) since Lite moved off the topbar:
+               row 1 = ticker / period / lookback / slider (span 2 over 2 cols),
+               row 2 = Scan / Reset / Logout / status pill. */
             .controls {
-                grid-template-columns: repeat(5, minmax(0, 1fr));
+                grid-template-columns: repeat(4, minmax(0, 1fr));
             }
             .controls .slider-wrap { grid-column: span 2; }
             .controls button { width: 100%; }
@@ -1324,6 +1327,71 @@ $liteMode = isset($_GET['lite'])
             .indicator-node .price { font-size: 10px; }
             .indicator-node .mini-bias { font-size: 9px; }
         }
+
+        /* v0.12.0 — persistent "not a forecast" tagline in the focus
+           header. Sits below the narrative line, low visual weight, but
+           always visible so the honesty stance is communicated through
+           the UI itself, not just the disclaimer gate. */
+        .focus-honesty-tagline {
+            margin: 6px 0 0;
+            font-size: 11px;
+            letter-spacing: 0.04em;
+            color: rgba(156, 176, 202, 0.55);
+            font-style: italic;
+        }
+        body.lite .focus-honesty-tagline { display: none; }
+
+        /* v0.12.0 — small-label contrast bump. Co-Claude flagged the
+           uppercase 10–11px muted-color labels (.microchart-label,
+           .focus-eyebrow, .panel-label, .slider-wrap label) as effortful
+           to read at that size. Bumping their weight a touch and tightening
+           the muted color closer to text white preserves the eyebrow look
+           while improving legibility. */
+        .microchart-label,
+        .focus-eyebrow,
+        .panel-label,
+        .slider-wrap label,
+        .callout-title,
+        .activity-section-label {
+            color: #b6c5dd;
+        }
+
+        /* v0.12.0 — Lite mode toggle relocated to bottom-right of the radar
+           card. Discoverable via spatial proximity rather than topbar label
+           scan. The topbar Lite button is hidden in favor of this. */
+        .radar-lite-toggle {
+            position: absolute;
+            right: 14px;
+            bottom: 14px;
+            z-index: 5;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.22);
+            background: rgba(5, 12, 21, 0.72);
+            color: var(--muted);
+            font-family: inherit;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            transition: color 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+        }
+        .radar-lite-toggle:hover {
+            color: var(--text);
+            border-color: rgba(94, 234, 212, 0.42);
+        }
+        body.lite .radar-lite-toggle {
+            color: var(--cyan);
+            border-color: rgba(94, 234, 212, 0.5);
+            background: rgba(94, 234, 212, 0.1);
+        }
+        .radar-card { position: relative; }
 
         /* v0.11.0 — HackTrader Lite. A render-only theme that strips
            everything except topbar, focus header, correlation radar, and
@@ -1413,7 +1481,8 @@ $liteMode = isset($_GET['lite'])
                 </div>
                 <button class='primary-btn' onclick='updateDashboard()'>Scan</button>
                 <button class='ghost-btn' onclick='resetDashboard()'>Reset</button>
-                <button type='button' class='lite-toggle' onclick='toggleLite()' title='Toggle Lite mode (radar-only view)'>Lite</button>
+                <!-- Lite toggle moved to the radar card bottom-right corner in
+                     v0.12.0 for spatial-proximity discoverability. -->
                 <button class='ghost-btn' onclick='window.location.href="logout.php"'>Logout</button>
                 <div id='topbarStatus' class='status-pill' aria-live='polite'>—</div>
             </div>
@@ -1446,6 +1515,11 @@ $liteMode = isset($_GET['lite'])
                             <span id='statusChip' class='bias-chip neutral'>—</span>
                         </div>
                         <p class='focus-narrative-line' id='focusNarrative'>—</p>
+                        <!-- v0.12.0 — persistent honesty stance. Counters the
+                             user's prior expectation (set by every other
+                             trading product) that this is forecasting. Low
+                             visual weight, always visible. -->
+                        <p class='focus-honesty-tagline'>Describing current structure — not a forecast.</p>
                     </div>
                     <div class='focus-stat'>
                         <div class='focus-stat-price' id='focusPriceBox'>$—</div>
@@ -1475,6 +1549,13 @@ $liteMode = isset($_GET['lite'])
                         <span class='radar-legend-item'><span class='radar-legend-swatch neutral'></span> neutral</span>
                         <span class='radar-legend-item'><span class='radar-legend-swatch dot'></span> dashed border = inverse</span>
                     </div>
+                    <!-- v0.12.0 — Lite toggle in the corner of the radar card.
+                         Relocated from the topbar so users discover it through
+                         spatial adjacency to the thing it affects. -->
+                    <button type='button' class='radar-lite-toggle' onclick='toggleLite()' title='Toggle Lite mode (radar-only view)' aria-label='Toggle Lite mode'>
+                        <span aria-hidden='true'>⤢</span>
+                        <span>Lite</span>
+                    </button>
                 </section>
 
                 <!-- Microcharts strip: 3 satellite cards under the radar.
@@ -1649,7 +1730,7 @@ $liteMode = isset($_GET['lite'])
 
             </section>
         </section>
-        <footer>HackTrader v0.11.0 · © 2026 Jayson Hawley · All rights reserved.</footer>
+        <footer>HackTrader v0.12.0 · © 2026 Jayson Hawley · All rights reserved.</footer>
     </main>
 
     <script>
@@ -2486,7 +2567,8 @@ $liteMode = isset($_GET['lite'])
             const focus = document.getElementById('focus');
             const probs = data?.probabilities || {};
             const bias = probs.bias || 'neutral';
-            const directionGlyph = bias === 'up' ? '↑' : (bias === 'down' ? '↓' : '→');
+            // v0.12.0 — same colorblind-safe glyph set as indicator nodes.
+            const directionGlyph = bias === 'up' ? '▲' : (bias === 'down' ? '▼' : '▪');
             // v0.10.0: this is the focus node's directional pressure score.
             // It's NOT a probability of breakout — backtests showed the
             // signal is anti-predictive at this timeframe. It's a
@@ -2643,8 +2725,21 @@ $liteMode = isset($_GET['lite'])
         async function updateDashboard(newTicker = null, options = {}) {
             const { preserveInput = false, silentFocus = false } = options;
             if (newTicker && !preserveInput) document.getElementById('ticker').value = newTicker;
-            const ticker = (newTicker || document.getElementById('ticker').value || 'TSLA').toUpperCase();
+            // v0.12.0 — default ticker priority: explicit arg > input value >
+            // last-used ticker from localStorage > SPY (universal first-run
+            // default — broad market index, every user understands it).
+            // Co-Claude UI review flagged TSLA as too brand-specific for a
+            // cold-start impression; SPY's basket also reads as more
+            // structurally informative for someone seeing the radar concept
+            // for the first time.
+            let lastTicker = null;
+            try { lastTicker = localStorage.getItem('htLastTicker'); } catch (e) {}
+            const ticker = (newTicker
+                || document.getElementById('ticker').value
+                || lastTicker
+                || 'SPY').toUpperCase();
             if (!preserveInput) document.getElementById('ticker').value = ticker;
+            try { localStorage.setItem('htLastTicker', ticker); } catch (e) {}
             const period = document.getElementById('period').value;
             const lookback = document.getElementById('lookback').value || 100;
             const tolerance = parseFloat(document.getElementById('tolerance').value || '90');
@@ -2798,7 +2893,11 @@ $liteMode = isset($_GET['lite'])
                         el.style.left = `calc(50% + ${newX}px)`;
                         el.style.top  = `calc(50% + ${newY}px)`;
 
-                        const arrow = bias === 'up' ? '↑' : bias === 'down' ? '↓' : '·';
+                        // v0.12.0 — colorblind-safe direction glyph. Triangles
+                        // ▲▼ are shape-distinct (a deuteranopic user can read
+                        // direction even if green/red collapse to the same
+                        // hue). Falls back to ▪ for neutral.
+                        const arrow = bias === 'up' ? '▲' : bias === 'down' ? '▼' : '▪';
                         // Inside the circle: ticker + dominant breakout % only.
                         // Price, full bias, correlation move to the title tooltip
                         // because circles don't have room for that much content.

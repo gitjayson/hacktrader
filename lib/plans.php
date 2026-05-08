@@ -29,7 +29,7 @@ if (!defined('HACKTRADER_PLANS_LOADED')) {
                 'ticker_limit'   => 5,
                 'api_call_limit' => 1000,
                 'stripe_price_id' => null,
-                'tagline'        => 'Try it on a focused watchlist',
+                'tagline'        => 'Enough to track one idea.',
                 'features'       => [
                     '5 focus tickers',
                     '1,000 API calls / month',
@@ -45,7 +45,7 @@ if (!defined('HACKTRADER_PLANS_LOADED')) {
                 'api_call_limit' => 25000,
                 // Filled in by lib/subscription.php from secrets.json STRIPE_PRICE_PLUS
                 'stripe_price_id' => null,
-                'tagline'        => 'For serious traders running a real watchlist',
+                'tagline'        => 'Cover a full watchlist.',
                 'features'       => [
                     '25 focus tickers',
                     '25,000 API calls / month',
@@ -60,7 +60,7 @@ if (!defined('HACKTRADER_PLANS_LOADED')) {
                 'ticker_limit'   => HACKTRADER_UNLIMITED,
                 'api_call_limit' => HACKTRADER_UNLIMITED,
                 'stripe_price_id' => null,
-                'tagline'        => 'Unlimited tickers and calls for power users',
+                'tagline'        => 'Run the whole tape.',
                 'features'       => [
                     'Unlimited focus tickers',
                     'Unlimited API calls',

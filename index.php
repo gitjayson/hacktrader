@@ -201,6 +201,33 @@
             text-transform: uppercase;
             color: rgba(229, 238, 251, 0.7);
         }
+        /* v0.12.0 — footer links to privacy / tos / disclaimer pages.
+           Co-Claude UI review flagged that these existed in the repo but
+           weren't reachable from the public landing page. */
+        footer.site-footer {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+        }
+        .footer-links {
+            display: flex;
+            gap: 14px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+        }
+        .footer-links a {
+            color: rgba(229, 238, 251, 0.78);
+            text-decoration: none;
+            transition: color 0.16s ease;
+        }
+        .footer-links a:hover {
+            color: var(--accent);
+        }
+        .footer-copy {
+            color: rgba(229, 238, 251, 0.52);
+        }
         @media (max-width: 880px) {
             body { overflow: auto; }
             .shell {
@@ -211,7 +238,7 @@
             .hero, .signin-container { min-height: auto; }
             .hero-metrics { grid-template-columns: 1fr; }
         }
-        /* v0.11.0 pricing section */
+        /* v0.12.0 pricing section */
         .pricing-section {
             margin-top: 48px;
             padding: 32px 24px 40px;
@@ -388,7 +415,7 @@
         </section>
 
         <?php
-            // v0.11.0 pricing block. Reads the entitlement matrix from
+            // v0.12.0 pricing block. Reads the entitlement matrix from
             // lib/plans.php so a price change in one place flows through.
             require_once __DIR__ . '/lib/plans.php';
             $allPlans = hacktrader_plans();
@@ -430,6 +457,15 @@
             </div>
         </section>
     </main>
-    <footer>HackTrader v0.11.0 · © 2026 Jayson Hawley · All rights reserved.</footer>
+    <footer class='site-footer'>
+        <nav class='footer-links' aria-label='Legal'>
+            <a href='privacy.html'>Privacy</a>
+            <span aria-hidden='true'>·</span>
+            <a href='tos.html'>Terms</a>
+            <span aria-hidden='true'>·</span>
+            <a href='disclaimer.php'>Disclaimer</a>
+        </nav>
+        <div class='footer-copy'>HackTrader v0.12.0 · © 2026 Jayson Hawley · All rights reserved.</div>
+    </footer>
 </body>
 </html>

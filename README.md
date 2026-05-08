@@ -1,10 +1,21 @@
 # HackTrader Dashboard
 
-- **Version:** v0.11.0
+- **Version:** v0.12.0
 - **Status:** Active
 - **Codebase:** HackTrader FUI dashboard
 
 HackTrader is a market structure visualization tool. It surfaces correlation geometry, support/resistance ladders, channel bands, and volume context for a focus ticker and its peers — a way to *see* the chart faster, not a forecast or signal service.
+
+## Highlights in v0.12.0
+
+- **Colorblind-safe direction encoding.** Indicator nodes (and the focus node) now display ▲/▼/▪ glyphs alongside the green/red fill. A deuteranopic user can read direction by shape alone if green and red collapse to a similar hue. Same data, two redundant channels.
+- **Persistent honesty stance in the UI.** A small "Describing current structure — not a forecast" tagline now sits below the focus narrative line. Always visible at low visual weight. Counters the user's prior expectation (set by every other trading product) that we're forecasting.
+- **Lite toggle relocated to the radar corner.** Moved out of the topbar and into the bottom-right of the radar card. Discovered through spatial proximity rather than label scanning. Frees a topbar slot.
+- **Pricing tagline rewrite to workflow language.** Free → "Enough to track one idea." Plus → "Cover a full watchlist." Pro → "Run the whole tape." Reframes abstract limits in trader vocabulary.
+- **Default ticker → SPY.** First-time users land on a populated radar (broad market index, universally recognized) instead of an empty input. Last-used ticker remembered in localStorage for return visits.
+- **Stripe subscription pipeline live.** `subscribe.php` / `billing.php` / `webhook.php` all activated against `stripe/stripe-php`. Hosted Checkout, Customer Portal, signature-verified webhooks, full DB write-back on every event. Test charge proven end-to-end.
+- **Host-aware redirect URLs.** `subscribe.php` and `billing.php` build success/cancel/return URLs from the request host, so the same code serves `dev.hacktrader.com` (sandbox keys) and `hacktrader.com` (live keys) without per-host config.
+- **Polish.** Bumped contrast on small uppercase labels (the `--muted` color was AA-passing but effortful at 10–11px). Added footer links to privacy/tos/disclaimer on the landing page.
 
 ## Highlights in v0.11.0
 
