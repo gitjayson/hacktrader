@@ -158,6 +158,17 @@ if (!isset($_GET['code'])) {
     $_SESSION['session_identity'] = 'session:' . $sessionUserName;
     $_SESSION['login_time'] = time();
 
+    // v0.13.0 — honor post_login_redirect for flows that bounced through
+    // OAuth from a destination page (e.g., subscribe.php?plan=starter
+    // clicked by an anonymous visitor from the landing page). Validate
+    // that the path is local (starts with /) to prevent open-redirect.
+    $postLogin = $_SESSION['post_login_redirect'] ?? null;
+    unset($_SESSION['post_login_redirect']);
+    if ($postLogin && is_string($postLogin) && strncmp($postLogin, '/', 1) === 0) {
+        header('Location: ' . $postLogin);
+        exit;
+    }
+
     header('Location: disclaimer.php');
     exit;
 }

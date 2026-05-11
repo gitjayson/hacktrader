@@ -19,13 +19,24 @@ declare(strict_types=1);
 session_start();
 require_once __DIR__ . '/lib/subscription.php';
 
+// v0.13.0 — if user isn't signed in, stash the desired post-login
+// destination in the session and bounce them through Google OAuth
+// instead of dropping them back to index.php with no explanation.
+// callback.php honors `post_login_redirect` after a successful login.
 if (empty($_SESSION['user_email'])) {
-    header('Location: index.php');
+    $plan = $_GET['plan'] ?? '';
+    if ($plan !== '') {
+        $_SESSION['post_login_redirect'] = '/subscribe.php?plan=' . urlencode($plan);
+    }
+    header('Location: callback.php');
     exit;
 }
 
 $user = current_user_record();
 if (!$user) {
+    // Session has an email but no DB row — unusual; clean session and start over.
+    error_log('subscribe.php: session has user_email but no DB user row for ' . ($_SESSION['user_email'] ?? '?'));
+    session_destroy();
     header('Location: index.php');
     exit;
 }
