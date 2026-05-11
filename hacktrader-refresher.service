@@ -43,10 +43,16 @@ Environment=PYTHONUNBUFFERED=1
 # Hardening — the daemon doesn't need elevated privileges or write
 # access outside of /var/www/html. These are recommended sandboxing
 # directives from systemd.exec(5).
+#
+# ProtectHome=true is intentionally omitted: Python's site.py
+# resolves the user-site path (~/.local/lib/python3/site-packages)
+# at startup to decide whether to add it to sys.path, and that
+# resolution raises EACCES under ProtectHome even with
+# PYTHONNOUSERSITE=1. The daemon doesn't actually need /home at
+# all, but making it invisible breaks startup.
 NoNewPrivileges=true
 ProtectSystem=strict
 ReadWritePaths=/var/www/html
-ProtectHome=true
 PrivateTmp=true
 PrivateDevices=true
 ProtectKernelTunables=true
