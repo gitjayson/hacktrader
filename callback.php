@@ -138,14 +138,20 @@ if (!isset($_GET['code'])) {
     // 7-day Plus trial; subsequent logins just refresh the row. The whole
     // require + call is try/wrapped so any DB / extension failure cannot
     // block login.
+    // v0.13.0 — verbose diagnostic logging. Once we confirm the upsert is
+    // healthy in production this can drop back to error-only.
+    error_log("callback.php upsert attempt: email='$email' googleSub='$googleSub' name='$displayName' libExists=" . (file_exists(__DIR__ . '/lib/subscription.php') ? '1' : '0'));
     try {
         $libPath = __DIR__ . '/lib/subscription.php';
         if (file_exists($libPath) && $email !== '' && $googleSub !== '') {
             require_once $libPath;
-            upsert_user_from_oauth($email, $googleSub, $displayName);
+            $upsertResult = upsert_user_from_oauth($email, $googleSub, $displayName);
+            error_log('callback.php upsert succeeded for ' . $email . ' user_id=' . ($upsertResult['id'] ?? '?'));
+        } else {
+            error_log("callback.php upsert SKIPPED: libExists=" . (file_exists($libPath) ? '1' : '0') . " email_empty=" . ($email === '' ? '1' : '0') . " sub_empty=" . ($googleSub === '' ? '1' : '0'));
         }
     } catch (Throwable $e) {
-        error_log('callback.php upsert failed (non-fatal): ' . $e->getMessage());
+        error_log('callback.php upsert FAILED: ' . get_class($e) . ': ' . $e->getMessage() . ' at ' . $e->getFile() . ':' . $e->getLine());
     }
 
     session_regenerate_id(true);
