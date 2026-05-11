@@ -223,13 +223,22 @@ def refresh_one(r: redis.Redis, subscription_key: str) -> None:
 
     start = time.time()
     try:
-        # fetch_massive returns the raw bars; compute_output runs the
-        # scoring pipeline. Both are pure functions in run-brk.py.
-        bars = run_brk.fetch_massive(ticker, interval, lookback)
-        if not bars:
-            log.warning("Empty bars from Massive for %s %s", ticker, period)
+        # fetch_massive returns a 3-tuple (values, source, error). When
+        # error is non-null or values is empty, the fetch failed and we
+        # skip caching this cycle.
+        result = run_brk.fetch_massive(ticker, interval, lookback)
+        if not result or len(result) != 3:
+            log.warning("Unexpected fetch_massive return for %s %s", ticker, period)
             return
-        scored = run_brk.compute_output(ticker, interval, display, str(lookback), bars, source="cache")
+        values, source_name, fetch_error = result
+        if fetch_error or not values:
+            log.warning("Fetch failed for %s %s: %s",
+                        ticker, period, fetch_error or "empty values")
+            return
+        scored = run_brk.compute_output(
+            ticker, interval, display, str(lookback), values,
+            source=source_name or "massive",
+        )
     except Exception as e:
         log.warning("Refresh failed for %s %s: %s", ticker, period, e)
         return
@@ -242,7 +251,7 @@ def refresh_one(r: redis.Redis, subscription_key: str) -> None:
     last_ref_key = f"{LAST_REFRESH_KEY_PREFIX}:{subscription_key}"
     try:
         pipe = r.pipeline()
-        pipe.setex(bars_key, DORMANT_SECONDS, json.dumps(bars))
+        pipe.setex(bars_key, DORMANT_SECONDS, json.dumps(values))
         pipe.setex(score_key, DORMANT_SECONDS, json.dumps(scored))
         pipe.setex(last_ref_key, DORMANT_SECONDS, str(int(time.time())))
         pipe.execute()
