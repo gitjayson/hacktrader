@@ -31,6 +31,15 @@ StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=hacktrader-refresher
 
+# PYTHONNOUSERSITE=1 — disable user-site packages lookup. Without
+# this, Python tries to stat /home/agent/.local/lib/python3.12/
+# site-packages at startup, which is blocked by ProtectHome=true
+# below and causes a hard import failure. Our dependencies (redis)
+# are installed via pip --break-system-packages in the system
+# dist-packages, not user-site, so user-site is irrelevant.
+Environment=PYTHONNOUSERSITE=1
+Environment=PYTHONUNBUFFERED=1
+
 # Hardening — the daemon doesn't need elevated privileges or write
 # access outside of /var/www/html. These are recommended sandboxing
 # directives from systemd.exec(5).
