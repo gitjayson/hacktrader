@@ -1,7 +1,7 @@
 <?php
 /**
  * correlate.php - Intelligent Market Correlation Endpoint
- * v0.13.0 - deterministic direct/sector/baseline fallback
+ * v0.13.2 - deterministic direct/sector/baseline fallback
  */
 
 $ticker = strtoupper(trim($_GET['ticker'] ?? 'TSLA'));
@@ -147,7 +147,7 @@ if (isset($data[$ticker]) && is_array($data[$ticker])) {
     }
 }
 
-// v0.13.0 — Baseline expanded from 12 to 16 unique tickers so the basket
+// v0.13.2 — Baseline expanded from 12 to 16 unique tickers so the basket
 // can still fill all 12 slots after the focus ticker is filtered out (and
 // after any duplicates collapse via push_unique_symbol). Added XLV
 // (healthcare) and XLE (energy) to the positive sector list, plus IEF
@@ -163,7 +163,7 @@ foreach ($baseline as $bucket) {
     append_symbol_list($result, $bucket['symbols'], $bucket['relation']);
 }
 
-// v0.13.0 — Filter out the focus ticker. A stock cannot correlate with
+// v0.13.2 — Filter out the focus ticker. A stock cannot correlate with
 // itself, and having it appear in its own basket is visually confusing
 // (the focus node is already in the center). Happens when the focus is
 // one of the general-baseline tickers (SPY, QQQ, etc.) that get appended.

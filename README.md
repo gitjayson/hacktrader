@@ -1,10 +1,22 @@
 # HackTrader Dashboard
 
-- **Version:** v0.13.0
+- **Version:** v0.13.2
 - **Status:** Active
 - **Codebase:** HackTrader FUI dashboard
 
 HackTrader is a market structure visualization tool. It surfaces correlation geometry, support/resistance ladders, channel bands, and volume context for a focus ticker and its peers — a way to *see* the chart faster, not a forecast or signal service.
+
+## Highlights in v0.13.2
+
+- **Webhook handler fails closed on errors.** `webhook.php` previously caught handler exceptions and returned 200, which told Stripe "received and processed" even when a downstream write (Stripe customer create, DB update, plan transition) had thrown. Stripe never retried, and the user's subscription state could silently desync from the truth at Stripe. The handler now logs the exception and returns **500**, which is Stripe's documented retry trigger. Idempotency keys on the Stripe side mean retries are safe even when the original handler partially succeeded.
+- **Host-header whitelist on Stripe return URLs.** `lib/subscription.php::hacktrader_app_url()` used to build success/cancel/return URLs from `$_SERVER['HTTP_HOST']` verbatim, which is attacker-controllable on the request line. A forged `Host:` header could route the Stripe Checkout return through an attacker's domain. The host is now compared against an allowlist (`hacktrader.com`, `dev.hacktrader.com`, `www.hacktrader.com`) and falls back to `hacktrader.com` if it doesn't match. Same code still serves dev and prod; the failure mode is closed.
+- **Cache stampede protection (singleflight).** When the Redis subscription cache misses for a ticker that 50 users want at the same moment (e.g., a popular ticker right at the open), `api.php` was shelling out to `run-brk.sh` per request and burning Massive API budget. New helpers in `lib/cache.php` (`ht_cache_acquire_singleflight`, `ht_cache_release_singleflight`, `ht_cache_wait_for_value`) use a Redis `SET NX EX` lock so only one process fetches and the rest wait for the cache to populate. Massive cost per stampede now scales with unique tickers, not unique requests.
+- **Redis-failure memoization within a request.** If the Redis box is down, `ht_cache_client()` used to attempt reconnection on every cache read inside a single PHP request — turning a Redis outage into a many-times-slower request rather than a one-time slow path. A static `$tried` flag now memoizes the failure so subsequent reads in the same request return null immediately. Each fresh request still gets a fresh attempt, so recovery is automatic when Redis comes back.
+
+## Highlights in v0.13.1
+
+- **Adaptive refresh intervals by market state.** The v0.13.0 refresher daemon refreshed all 40 warm tickers on a fixed schedule regardless of clock — which meant burning Massive API calls all weekend and overnight when the underlying prices weren't moving. The refresher now classifies US market state into *regular* (9:30am–4pm ET weekdays), *extended* (4am–9:30am and 4pm–8pm ET weekdays), and *closed* (everything else), and applies a multiplier per state: 1× during regular hours, 5× during extended (refresh five times less often), and 60× when closed (effectively dormant). Same freshness at the open; ~95% reduction in upstream calls outside trading hours.
+- **Force refresh on market open transitions.** When the daemon's classified state transitions from `closed` or `extended` into `regular`, it forces a one-shot refresh across all warm tickers before resuming the adaptive cadence. First-of-the-morning users see fresh data immediately at 9:30, not at the next scheduled tick.
 
 ## Highlights in v0.13.0
 

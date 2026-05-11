@@ -102,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accept'])) {
             line-height: 1.75;
             max-width: 48ch;
         }
-        /* v0.13.0 — radar thumbnail in the disclaimer's left rail. Fills
+        /* v0.13.2 — radar thumbnail in the disclaimer's left rail. Fills
            the empty middle space between the description and the callouts.
            Subtle border + shadow so it reads as a polished preview, not
            a placeholder. */
@@ -287,7 +287,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accept'])) {
                     HackTrader displays correlation structure, support/resistance levels, channel geometry, and recent volume context for a chosen ticker and its peers. It is a way to <em>see</em> the market faster — not a forecast, signal service, or recommendation system.
                 </p>
             </div>
-            <!-- v0.13.0 — small thumbnail of the live radar in the empty
+            <!-- v0.13.2 — small thumbnail of the live radar in the empty
                  middle area. Reinforces what the user is being asked to
                  accept the limits OF: a visualization tool, not a
                  prediction engine. The screenshot says it faster than
@@ -341,7 +341,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accept'])) {
         </section>
     </main>
     <footer>
-        HackTrader · disclaimer · v0.13.0 · © 2026 <a href='https://pngs.us' target='_blank' rel='noopener' class='footer-brand'>PENGUINS LLC</a> · All rights reserved.<br>
+        HackTrader · disclaimer · v0.13.2 · © 2026 <a href='https://pngs.us' target='_blank' rel='noopener' class='footer-brand'>PENGUINS LLC</a> · All rights reserved.<br>
         <a href='https://pngs.us' target='_blank' rel='noopener' class='footer-brand-link'>pngs.us</a>
     </footer>
 </body>
