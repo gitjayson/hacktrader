@@ -37,9 +37,19 @@ import os
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import redis  # pip install redis
+
+# Optional: zoneinfo for accurate ET market hours (handles DST correctly).
+# Falls back to a fixed UTC-5 offset if unavailable, which is slightly wrong
+# during DST but close enough that the multiplier logic still makes sense.
+try:
+    from zoneinfo import ZoneInfo
+    _ET = ZoneInfo("America/New_York")
+except ImportError:  # pragma: no cover — Python <3.9 fallback
+    _ET = timezone(timedelta(hours=-5))
 
 # Import the existing Massive fetcher + scorer from run-brk.py so we
 # don't duplicate provider logic. run-brk.py is structured with pure
@@ -125,6 +135,46 @@ REFRESH_INTERVAL_BY_PERIOD = {
     "1d": 3600,    # 1 hour — 24 refreshes per daily bar
 }
 DEFAULT_REFRESH_INTERVAL = 120
+
+# v0.13.1 — Adaptive refresh based on US market state. Outside the regular
+# session the upstream feed produces fewer (or no) new bars, so polling at
+# full speed wastes API calls fetching identical data.
+#
+#   regular  =  9:30 AM - 4:00 PM ET, weekdays           (multiplier 1.0)
+#   extended =  4:00 AM - 9:30 AM and 4:00 PM - 8:00 PM  (multiplier 5.0)
+#   closed   =  8:00 PM - 4:00 AM, plus weekends         (multiplier 60.0)
+#
+# For 5m bars: regular session refreshes every 120s, extended every 10
+# minutes, closed once per 2 hours. Closed-state refresh still happens
+# occasionally so any data revisions or corrections eventually flow
+# through, but the call volume drops by ~85% over a 24-hour cycle.
+#
+# This does NOT account for US market holidays. A holiday Monday will
+# poll at "regular" cadence for nothing until we add a holiday table.
+# Marginal additional waste; not worth the dependency for now.
+REFRESH_MULTIPLIER_BY_STATE = {
+    "regular":  1.0,
+    "extended": 5.0,
+    "closed":   60.0,
+}
+
+
+def market_state_now() -> str:
+    """Return 'regular', 'extended', or 'closed' for current US Eastern time.
+
+    Used by is_due_for_refresh() to scale the base interval per period.
+    """
+    now_et = datetime.now(_ET)
+    # Weekends: closed all day.
+    if now_et.weekday() >= 5:
+        return "closed"
+    # Convert to minutes-since-midnight for easy range comparison.
+    minutes = now_et.hour * 60 + now_et.minute
+    if 570 <= minutes < 960:        # 9:30 AM - 4:00 PM ET
+        return "regular"
+    if 240 <= minutes < 1200:       # 4:00 AM - 8:00 PM ET (pre + after)
+        return "extended"
+    return "closed"
 
 SUBSCRIPTION_KEY = "ht:subscriptions"
 BARS_KEY_PREFIX = "bars"
@@ -286,47 +336,94 @@ def refresh_one(r: redis.Redis, subscription_key: str) -> None:
 
 def is_due_for_refresh(r: redis.Redis, subscription_key: str) -> bool:
     """Has enough time elapsed since the last refresh of this
-    subscription? If we've never refreshed it, yes."""
+    subscription? If we've never refreshed it, yes.
+
+    v0.13.1 — interval is scaled by the current US market state:
+    regular session (1x), extended hours (5x), closed (60x). This
+    avoids burning API calls on overnight polls where the upstream
+    data doesn't change.
+    """
     parsed = parse_subscription_key(subscription_key)
     if parsed is None:
         return False
     _, period, _ = parsed
-    interval = REFRESH_INTERVAL_BY_PERIOD.get(period, DEFAULT_REFRESH_INTERVAL)
+    base_interval = REFRESH_INTERVAL_BY_PERIOD.get(period, DEFAULT_REFRESH_INTERVAL)
+    multiplier = REFRESH_MULTIPLIER_BY_STATE.get(market_state_now(), 1.0)
+    effective_interval = base_interval * multiplier
 
     last_ref_key = f"{LAST_REFRESH_KEY_PREFIX}:{subscription_key}"
     last = r.get(last_ref_key)
     if last is None:
         return True
     try:
-        return (time.time() - int(last)) >= interval
+        return (time.time() - int(last)) >= effective_interval
     except ValueError:
         return True
 
 
 # ---- Main loop -------------------------------------------------------------
 
+_last_market_state: str | None = None
+
+
+def force_refresh_all_subscriptions(r: redis.Redis) -> int:
+    """Drop the last-refresh timestamp for every active subscription so the
+    next sweep treats them all as due. Used on market-open state transitions
+    so users see fresh data the moment a session begins, rather than
+    yesterday's close until the natural refresh interval elapses.
+    """
+    active = list_active_subscriptions(r)
+    pipe = r.pipeline()
+    for key in active:
+        pipe.delete(f"{LAST_REFRESH_KEY_PREFIX}:{key}")
+    pipe.execute()
+    return len(active)
+
+
 def sweep_once(r: redis.Redis) -> None:
-    """One full pass: prune dormants, ensure prewarm, refresh due."""
+    """One full pass: prune dormants, ensure prewarm, detect market-state
+    transition, refresh due subscriptions."""
+    global _last_market_state
+
     dropped = drop_dormant_subscriptions(r)
     if dropped:
         log.info("Dropped %d dormant subscription(s)", dropped)
     ensure_prewarm_subscriptions(r)
+
+    # v0.13.1 — detect market state transitions. When the market opens
+    # (closed -> extended, or extended -> regular), force-refresh every
+    # active subscription so users see current data immediately rather
+    # than waiting for the natural refresh interval to elapse.
+    current_state = market_state_now()
+    if _last_market_state is not None and _last_market_state != current_state:
+        log.info("Market state: %s -> %s", _last_market_state, current_state)
+        opening_transitions = {("closed", "extended"), ("closed", "regular"),
+                                ("extended", "regular")}
+        if (_last_market_state, current_state) in opening_transitions:
+            forced = force_refresh_all_subscriptions(r)
+            log.info("Forced refresh on %d subscription(s) for market open", forced)
+    _last_market_state = current_state
 
     active = list_active_subscriptions(r)
     due = [k for k in active if is_due_for_refresh(r, k)]
     if not due:
         return
 
-    log.info("Refreshing %d of %d active subscriptions", len(due), len(active))
+    log.info("Refreshing %d of %d active subscriptions (market=%s)",
+             len(due), len(active), current_state)
     with ThreadPoolExecutor(max_workers=MAX_PARALLEL_FETCHES) as pool:
         list(pool.map(lambda k: refresh_one(r, k), due))
 
 
 def main() -> int:
+    initial_state = market_state_now()
+    initial_multiplier = REFRESH_MULTIPLIER_BY_STATE.get(initial_state, 1.0)
     log.info("HackTrader market data refresher starting")
     log.info("Redis: %s:%d  sweep=%ds  dormant=%ds  parallel=%d",
              REDIS_HOST, REDIS_PORT, SWEEP_INTERVAL_SECONDS,
              DORMANT_SECONDS, MAX_PARALLEL_FETCHES)
+    log.info("Market state at startup: %s (refresh multiplier %.1fx)",
+             initial_state, initial_multiplier)
 
     r = make_redis_client()
     log.info("Redis connected; entering sweep loop")
