@@ -31,9 +31,23 @@ if (!$user) {
 }
 
 $plan = $_GET['plan'] ?? '';
-if (!in_array($plan, ['plus', 'pro'], true)) {
+// v0.13.0 — accept starter (active), plus + pro (reserved for live data;
+// these get a friendly 503 below). Anything else is a 400.
+if (!in_array($plan, ['starter', 'plus', 'pro'], true)) {
     http_response_code(400);
     echo 'Unknown plan';
+    exit;
+}
+
+// v0.13.0 — block subscription attempts to plans that are still in
+// "coming soon" status. Defends against someone hitting subscribe.php
+// directly with ?plan=plus or ?plan=pro even though the pricing UI
+// grays those tiers out.
+require_once __DIR__ . '/lib/plans.php';
+$planRecord = hacktrader_plan($plan);
+if ($planRecord && ($planRecord['status'] ?? 'active') === 'coming_soon') {
+    http_response_code(503);
+    echo "The {$planRecord['display_name']} tier unlocks when our real-time market feed launches. In the meantime, try Starter ($9.99/mo) — same visualization, 15-minute delayed feed.";
     exit;
 }
 
@@ -44,7 +58,15 @@ if (!$config['secret_key']) {
     exit;
 }
 
-$priceId = $plan === 'plus' ? $config['price_plus'] : $config['price_pro'];
+// v0.13.0 — resolve the Stripe price ID for the active plan. Starter is
+// the current paid tier; plus/pro fall through here only if they've
+// been flipped to active status by a future release.
+$priceId = match ($plan) {
+    'starter' => $config['price_starter'] ?? null,
+    'plus'    => $config['price_plus']    ?? null,
+    'pro'     => $config['price_pro']     ?? null,
+    default   => null,
+};
 if (!$priceId) {
     http_response_code(503);
     echo "Plan price not configured for {$plan}.";

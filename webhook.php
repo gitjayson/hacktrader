@@ -113,8 +113,12 @@ function handle_subscription_changed(array $sub): void {
     // first item's price ID against the configured Plus/Pro IDs.
     $config = hacktrader_stripe_config();
     $priceId = $sub['items']['data'][0]['price']['id'] ?? null;
+    // v0.13.0 — map Stripe's price ID back to our plan slug. Starter is
+    // the active $9.99 tier; plus/pro remain in the map for when those
+    // tiers go live with the real-time feed.
     $plan = 'free';
-    if ($priceId === $config['price_plus']) $plan = 'plus';
+    if ($priceId === $config['price_starter']) $plan = 'starter';
+    elseif ($priceId === $config['price_plus']) $plan = 'plus';
     elseif ($priceId === $config['price_pro']) $plan = 'pro';
 
     $status = $sub['status'] ?? 'none';

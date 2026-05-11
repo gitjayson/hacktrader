@@ -451,6 +451,37 @@
             border-color: transparent;
         }
         .pricing-cta.primary:hover { background: rgba(94, 234, 212, 1); }
+        /* v0.13.0 — coming-soon tier styles. Card opacity reads as
+           "available later" without removing the info; CTA replaced
+           with a non-interactive label. */
+        .pricing-card.coming-soon {
+            opacity: 0.62;
+            filter: saturate(0.7);
+        }
+        .pricing-card.coming-soon:hover {
+            opacity: 0.78;
+            transition: opacity 0.18s ease, filter 0.18s ease;
+        }
+        .pricing-flag-soon {
+            background: rgba(251, 191, 36, 0.18);
+            color: #fbbf24;
+            border-color: rgba(251, 191, 36, 0.32);
+        }
+        .pricing-cta.disabled {
+            display: block;
+            text-align: center;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px dashed rgba(148, 163, 184, 0.32);
+            color: rgba(232, 241, 255, 0.55);
+            font-style: italic;
+            cursor: not-allowed;
+        }
+        .pricing-cta.disabled:hover {
+            background: transparent;
+        }
         .pricing-fineprint {
             margin-top: 24px;
             font-size: 11px;
@@ -531,17 +562,30 @@
             <h2 class='pricing-title'>Pick the plan that fits how you trade</h2>
             <div class='pricing-grid'>
                 <?php foreach ($allPlans as $slug => $plan): ?>
-                    <?php $isPro = $slug === 'plus'; ?>
-                    <article class='pricing-card<?= $isPro ? ' featured' : '' ?>'>
-                        <?php if ($isPro): ?><div class='pricing-flag'>Most popular</div><?php endif; ?>
+                    <?php
+                        // v0.13.0 — Starter is the featured (most popular) tier
+                        // during the delayed-feed phase. Plus/Pro are reserved
+                        // for live-data and render with a "Coming soon" flag
+                        // plus reduced opacity to read as forthcoming.
+                        $isFeatured  = $slug === 'starter';
+                        $isComingSoon = ($plan['status'] ?? 'active') === 'coming_soon';
+                        $priceDisplay = $plan['price_display'] ?? ('$' . (int) $plan['price_monthly']);
+                        $cadence      = $plan['cadence']       ?? '/ month';
+                    ?>
+                    <article class='pricing-card<?= $isFeatured ? ' featured' : '' ?><?= $isComingSoon ? ' coming-soon' : '' ?>'>
+                        <?php if ($isFeatured): ?>
+                            <div class='pricing-flag'>Most popular</div>
+                        <?php elseif ($isComingSoon): ?>
+                            <div class='pricing-flag pricing-flag-soon'>Live data — coming soon</div>
+                        <?php endif; ?>
                         <div class='pricing-name'><?= htmlspecialchars($plan['display_name'], ENT_QUOTES) ?></div>
                         <div class='pricing-price'>
                             <?php if ($plan['price_monthly'] === 0): ?>
                                 <span class='pricing-amount'>$0</span>
                                 <span class='pricing-cadence'>forever</span>
                             <?php else: ?>
-                                <span class='pricing-amount'>$<?= (int) $plan['price_monthly'] ?></span>
-                                <span class='pricing-cadence'>/ month</span>
+                                <span class='pricing-amount'><?= htmlspecialchars($priceDisplay, ENT_QUOTES) ?></span>
+                                <span class='pricing-cadence'><?= htmlspecialchars($cadence, ENT_QUOTES) ?></span>
                             <?php endif; ?>
                         </div>
                         <div class='pricing-tagline'><?= htmlspecialchars($plan['tagline'], ENT_QUOTES) ?></div>
@@ -550,16 +594,18 @@
                                 <li><?= htmlspecialchars($f, ENT_QUOTES) ?></li>
                             <?php endforeach; ?>
                         </ul>
-                        <?php if ($slug === 'free'): ?>
+                        <?php if ($isComingSoon): ?>
+                            <span class='pricing-cta disabled' aria-disabled='true'>Available with live data</span>
+                        <?php elseif ($slug === 'free'): ?>
                             <a href='callback.php' class='pricing-cta ghost'>Start free</a>
                         <?php else: ?>
-                            <a href='subscribe.php?plan=<?= htmlspecialchars($slug, ENT_QUOTES) ?>' class='pricing-cta<?= $isPro ? ' primary' : '' ?>'>Subscribe</a>
+                            <a href='subscribe.php?plan=<?= htmlspecialchars($slug, ENT_QUOTES) ?>' class='pricing-cta<?= $isFeatured ? ' primary' : '' ?>'>Subscribe</a>
                         <?php endif; ?>
                     </article>
                 <?php endforeach; ?>
             </div>
             <div class='pricing-fineprint'>
-                Cancel anytime from your billing portal. Prices in USD. New users start on a 7-day Plus trial — no card required.
+                Cancel anytime from your billing portal. Prices in USD. New users start with a 7-day trial of Starter — no card required. Plus and Pro tiers unlock when the real-time market feed launches.
             </div>
         </section>
     </main>

@@ -76,7 +76,8 @@ if (!in_array($email, TEST_LOGIN_ALLOWED_EMAILS, true)) {
 
 // ---- Optional plan / status overrides -------------------------------------
 $plan = strtolower(trim((string) ($_GET['plan'] ?? 'free')));
-if (!in_array($plan, ['free', 'plus', 'pro'], true)) {
+// v0.13.0 — starter joined the plan list as the active $9.99/mo tier.
+if (!in_array($plan, ['free', 'starter', 'plus', 'pro'], true)) {
     $plan = 'free';
 }
 $status = strtolower(trim((string) ($_GET['status'] ?? 'trialing')));

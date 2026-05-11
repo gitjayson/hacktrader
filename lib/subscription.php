@@ -42,15 +42,20 @@ if (!defined('HACKTRADER_SUBSCRIPTION_LOADED')) {
             return user_by_id((int) $row['id']);
         }
 
-        // First-time login → seed with a 7-day free trial of Plus so the user
-        // doesn't hit any gate during their first session. Trial end stamps
-        // current_period_end; webhook will replace this if they actually pay.
+        // v0.13.0 — First-time login → seed with a 7-day Starter trial so
+        // the user gets the actual paid-tier experience (25 tickers,
+        // 25k calls/mo) for their first session. After the trial expires,
+        // user_plan() falls back to 'free' automatically (via the
+        // user_has_active_subscription gate), no separate downgrade job.
+        // Trial end stamps current_period_end so the standard "is active"
+        // check works for the trial too; webhook overwrites this if/when
+        // the user actually subscribes.
         $trialEnd = $now + (7 * 86400);
         $insert = $db->prepare(
             'INSERT INTO users(email, google_sub, name, plan, subscription_status, current_period_end, trial_end, created_at, updated_at)
              VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)'
         );
-        $insert->execute([$email, $google_sub, $name, 'free', 'trialing', $trialEnd, $trialEnd, $now, $now]);
+        $insert->execute([$email, $google_sub, $name, 'starter', 'trialing', $trialEnd, $trialEnd, $now, $now]);
         $userId = (int) $db->lastInsertId();
         return user_by_id($userId);
     }
@@ -87,8 +92,22 @@ if (!defined('HACKTRADER_SUBSCRIPTION_LOADED')) {
         return user_by_email((string) $_SESSION['user_email']);
     }
 
-    /** 'free' | 'plus' | 'pro' — falls back to free if unknown. */
+    /**
+     * Returns the user's effective plan slug. Falls back to 'free' if:
+     *   - the slug is unknown (defensive), OR
+     *   - the user's subscription isn't currently active (expired trial,
+     *     cancelled subscription past period end, etc.).
+     *
+     * The 'plan' column in the users table is the *intended* tier (what
+     * Stripe is billing, or what the trial seeded). Combining it with
+     * user_has_active_subscription() gives us the *effective* tier — what
+     * the user actually gets to use right now. This is what the quota
+     * gates should consult.
+     */
     function user_plan(array $user): string {
+        if (!user_has_active_subscription($user)) {
+            return 'free';
+        }
         $slug = (string) ($user['plan'] ?? 'free');
         return hacktrader_plan($slug) ? $slug : 'free';
     }
@@ -224,6 +243,10 @@ if (!defined('HACKTRADER_SUBSCRIPTION_LOADED')) {
             'publishable_key' => $json['STRIPE_PUBLISHABLE_KEY'] ?? null,
             'secret_key' => $json['STRIPE_SECRET_KEY'] ?? null,
             'webhook_secret' => $json['STRIPE_WEBHOOK_SECRET'] ?? null,
+            // v0.13.0 — Starter is the active $9.99/mo tier for the
+            // delayed-feed phase. Plus and Pro remain in the config so
+            // the wiring is ready when those tiers go live.
+            'price_starter' => $json['STRIPE_PRICE_STARTER'] ?? null,
             'price_plus' => $json['STRIPE_PRICE_PLUS'] ?? null,
             'price_pro' => $json['STRIPE_PRICE_PRO'] ?? null,
         ];
