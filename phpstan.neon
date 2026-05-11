@@ -23,6 +23,8 @@ parameters:
         - billing.php
         - webhook.php
         - me.php
+        # v0.13.0 Redis subscription cache
+        - lib/cache.php
 
     excludePaths:
         - vendor/
@@ -39,6 +41,8 @@ parameters:
     ignoreErrors:
         - identifier: class.notFound
           message: '#Google\\#'
+        - identifier: class.notFound
+          message: '#Predis\\#'
 
     # We can paste in a baseline file later via:
     #   php bin/phpstan.phar analyse --generate-baseline

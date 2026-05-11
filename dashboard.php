@@ -21,7 +21,7 @@ $liteMode = isset($_GET['lite'])
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>HackTrader | v0.12.0</title>
+    <title>HackTrader | v0.13.0</title>
     <link rel='preconnect' href='https://fonts.googleapis.com'>
     <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
     <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap' rel='stylesheet'>
@@ -173,7 +173,7 @@ $liteMode = isset($_GET['lite'])
                repeat to 5 and tighten the input widths slightly to keep the
                whole strip on one line at common laptop viewports. */
             display: grid;
-            /* v0.12.0 — Lite toggle moved out of the topbar to the radar
+            /* v0.13.0 — Lite toggle moved out of the topbar to the radar
                corner, so the trailing repeat dropped from 5 to 4 (Scan,
                Reset, Logout, status pill). */
             grid-template-columns: minmax(120px, 1fr) minmax(72px, 84px) minmax(80px, 96px) minmax(200px, 0.9fr) repeat(4, minmax(0, max-content));
@@ -1257,7 +1257,7 @@ $liteMode = isset($_GET['lite'])
             padding: 4px 0 16px;
             line-height: 1.8;
         }
-        /* v0.12.0 — copyright now held by Penguins LLC. Footer brand links
+        /* v0.13.0 — copyright now held by Penguins LLC. Footer brand links
            inherit the muted footer color but lift on hover so they read as
            interactive without shouting. */
         .footer-brand,
@@ -1279,7 +1279,7 @@ $liteMode = isset($_GET['lite'])
                 grid-template-columns: 1fr;
                 align-items: stretch;
             }
-            /* v0.12.0 — keep 5 cols at this breakpoint. The 4-col attempt
+            /* v0.13.0 — keep 5 cols at this breakpoint. The 4-col attempt
                broke because the slider spans 2 cols, leaving 4 - 2 = 2 cols
                for the 4 inputs (ticker, period, lookback) on row 1, forcing
                another item to wrap. 5 cols cleanly accommodates row 1 =
@@ -1349,7 +1349,7 @@ $liteMode = isset($_GET['lite'])
             .indicator-node .mini-bias { font-size: 9px; }
         }
 
-        /* v0.12.0 — persistent "not a forecast" tagline in the focus
+        /* v0.13.0 — persistent "not a forecast" tagline in the focus
            header. Sits below the narrative line, low visual weight, but
            always visible so the honesty stance is communicated through
            the UI itself, not just the disclaimer gate. */
@@ -1362,7 +1362,7 @@ $liteMode = isset($_GET['lite'])
         }
         body.lite .focus-honesty-tagline { display: none; }
 
-        /* v0.12.0 — small-label contrast bump. Co-Claude flagged the
+        /* v0.13.0 — small-label contrast bump. Co-Claude flagged the
            uppercase 10–11px muted-color labels (.microchart-label,
            .focus-eyebrow, .panel-label, .slider-wrap label) as effortful
            to read at that size. Bumping their weight a touch and tightening
@@ -1377,7 +1377,7 @@ $liteMode = isset($_GET['lite'])
             color: #b6c5dd;
         }
 
-        /* v0.12.0 — Lite mode toggle relocated to bottom-right of the radar
+        /* v0.13.0 — Lite mode toggle relocated to bottom-right of the radar
            card. Discoverable via spatial proximity rather than topbar label
            scan. The topbar Lite button is hidden in favor of this. */
         .radar-lite-toggle {
@@ -1503,7 +1503,7 @@ $liteMode = isset($_GET['lite'])
                 <button class='primary-btn' onclick='updateDashboard()'>Scan</button>
                 <button class='ghost-btn' onclick='resetDashboard()'>Reset</button>
                 <!-- Lite toggle moved to the radar card bottom-right corner in
-                     v0.12.0 for spatial-proximity discoverability. -->
+                     v0.13.0 for spatial-proximity discoverability. -->
                 <button class='ghost-btn' onclick='window.location.href="logout.php"'>Logout</button>
                 <div id='topbarStatus' class='status-pill' aria-live='polite'>—</div>
             </div>
@@ -1536,7 +1536,7 @@ $liteMode = isset($_GET['lite'])
                             <span id='statusChip' class='bias-chip neutral'>—</span>
                         </div>
                         <p class='focus-narrative-line' id='focusNarrative'>—</p>
-                        <!-- v0.12.0 — persistent honesty stance. Counters the
+                        <!-- v0.13.0 — persistent honesty stance. Counters the
                              user's prior expectation (set by every other
                              trading product) that this is forecasting. Low
                              visual weight, always visible. -->
@@ -1570,7 +1570,7 @@ $liteMode = isset($_GET['lite'])
                         <span class='radar-legend-item'><span class='radar-legend-swatch neutral'></span> neutral</span>
                         <span class='radar-legend-item'><span class='radar-legend-swatch dot'></span> dashed border = inverse</span>
                     </div>
-                    <!-- v0.12.0 — Lite toggle in the corner of the radar card.
+                    <!-- v0.13.0 — Lite toggle in the corner of the radar card.
                          Relocated from the topbar so users discover it through
                          spatial adjacency to the thing it affects. -->
                     <button type='button' class='radar-lite-toggle' onclick='toggleLite()' title='Toggle Lite mode (radar-only view)' aria-label='Toggle Lite mode'>
@@ -1752,7 +1752,7 @@ $liteMode = isset($_GET['lite'])
             </section>
         </section>
         <footer>
-            HackTrader v0.12.0 · © 2026 <a href='https://pngs.us' target='_blank' rel='noopener' class='footer-brand'>PENGUINS LLC</a> · All rights reserved.<br>
+            HackTrader v0.13.0 · © 2026 <a href='https://pngs.us' target='_blank' rel='noopener' class='footer-brand'>PENGUINS LLC</a> · All rights reserved.<br>
             <a href='https://pngs.us' target='_blank' rel='noopener' class='footer-brand-link'>pngs.us</a>
         </footer>
     </main>
@@ -2072,7 +2072,7 @@ $liteMode = isset($_GET['lite'])
             // the system is about the future.
             if (alignment && bias !== 'neutral') parts.push(`${alignment} alignment`);
             parts.push(freshnessLabel);
-            // v0.12.0 — Massive provides 15-minute-delayed market data,
+            // v0.13.0 — Massive provides 15-minute-delayed market data,
             // so disclose that alongside the source name. Honesty stance
             // requires users see this every time they look at a price,
             // not just on the disclaimer gate.
@@ -2598,7 +2598,7 @@ $liteMode = isset($_GET['lite'])
             const focus = document.getElementById('focus');
             const probs = data?.probabilities || {};
             const bias = probs.bias || 'neutral';
-            // v0.12.0 — same colorblind-safe glyph set as indicator nodes.
+            // v0.13.0 — same colorblind-safe glyph set as indicator nodes.
             const directionGlyph = bias === 'up' ? '▲' : (bias === 'down' ? '▼' : '▪');
             // v0.10.0: this is the focus node's directional pressure score.
             // It's NOT a probability of breakout — backtests showed the
@@ -2756,7 +2756,7 @@ $liteMode = isset($_GET['lite'])
         async function updateDashboard(newTicker = null, options = {}) {
             const { preserveInput = false, silentFocus = false } = options;
             if (newTicker && !preserveInput) document.getElementById('ticker').value = newTicker;
-            // v0.12.0 — default ticker priority: explicit arg > input value >
+            // v0.13.0 — default ticker priority: explicit arg > input value >
             // last-used ticker from localStorage > SPY (universal first-run
             // default — broad market index, every user understands it).
             // Co-Claude UI review flagged TSLA as too brand-specific for a
@@ -2924,7 +2924,7 @@ $liteMode = isset($_GET['lite'])
                         el.style.left = `calc(50% + ${newX}px)`;
                         el.style.top  = `calc(50% + ${newY}px)`;
 
-                        // v0.12.0 — colorblind-safe direction glyph. Triangles
+                        // v0.13.0 — colorblind-safe direction glyph. Triangles
                         // ▲▼ are shape-distinct (a deuteranopic user can read
                         // direction even if green/red collapse to the same
                         // hue). Falls back to ▪ for neutral.

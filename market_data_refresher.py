@@ -83,26 +83,48 @@ MAX_PARALLEL_FETCHES = int(os.environ.get("HT_MAX_PARALLEL", "8"))
 # Tickers to always keep warm regardless of user activity. The most
 # popular focus tickers benefit from being pre-refreshed so the first
 # user of the morning doesn't see a cold-start latency.
+#
+# v0.13.0 — expanded from 22 → 40. Added the most commonly-queried
+# retail tickers: a couple more mega-caps, popular volatility names,
+# the bank bellwethers, semiconductors, and a few more macro ETFs.
+# Memory impact is trivial (40 cached scores at ~5KB each = ~200KB).
 PRE_WARM_TICKERS = [
-    "SPY", "QQQ", "IWM", "DIA",            # broad-market ETFs
-    "NVDA", "TSLA", "AAPL", "MSFT",        # mega-cap tech
-    "AMZN", "GOOGL", "META", "AVGO",       # mega-cap tech cont
-    "XLK", "XLF", "XLE", "XLV",            # sector ETFs
-    "XLY", "XLI", "XLP",                    # sector ETFs cont
-    "GLD", "TLT", "UUP",                    # macro
+    # Broad-market ETFs
+    "SPY", "QQQ", "IWM", "DIA", "VTI",
+    # Mega-cap tech (FAANG-era + recent additions)
+    "NVDA", "TSLA", "AAPL", "MSFT", "AMZN", "GOOGL", "META", "AVGO",
+    # Popular volatility / momentum names
+    "AMD", "NFLX", "SHOP", "COIN", "MSTR",
+    # Bank bellwethers
+    "JPM", "BAC", "WFC",
+    # Sector ETFs
+    "XLK", "XLF", "XLE", "XLV", "XLY", "XLI", "XLP", "XLC",
+    # Semiconductors (oversampled because the basket strongly correlates here)
+    "SMH", "SOXX",
+    # Macro / cross-asset
+    "GLD", "SLV", "TLT", "UUP", "HYG", "LQD", "IEF",
+    # International (low-cost defensive include — they show up in macro baskets)
+    "EEM", "FXI",
 ]
 PRE_WARM_PERIOD = "5m"  # 5m is the default dashboard period
 PRE_WARM_LOOKBACK = 100
 
 # Refresh-interval table — how often we recompute each period's cache.
 # These match lib/cache.php's ht_cache_refresh_interval_seconds().
+#
+# v0.13.0 — relaxed from initial values (15s/60s/300s/1800s) after
+# verifying the architecture works. The 15-minute upstream delay from
+# Massive means more-aggressive refresh isn't gaining the user
+# anything; doubling these intervals halves the Massive load with
+# zero perceptible impact. Tune further once we observe real usage
+# patterns. With a real-time data feed in the future, drop these.
 REFRESH_INTERVAL_BY_PERIOD = {
-    "1m": 15,
-    "5m": 60,
-    "1h": 300,
-    "1d": 1800,
+    "1m": 30,      # API endpoint still works even though UI no longer offers 1m
+    "5m": 120,     # 2 min — still 2.5 refreshes per 5-min bar cycle
+    "1h": 600,     # 10 min — 6 refreshes per 1-hour bar
+    "1d": 3600,    # 1 hour — 24 refreshes per daily bar
 }
-DEFAULT_REFRESH_INTERVAL = 60
+DEFAULT_REFRESH_INTERVAL = 120
 
 SUBSCRIPTION_KEY = "ht:subscriptions"
 BARS_KEY_PREFIX = "bars"

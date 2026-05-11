@@ -1,10 +1,19 @@
 # HackTrader Dashboard
 
-- **Version:** v0.12.0
+- **Version:** v0.13.0
 - **Status:** Active
 - **Codebase:** HackTrader FUI dashboard
 
 HackTrader is a market structure visualization tool. It surfaces correlation geometry, support/resistance ladders, channel bands, and volume context for a focus ticker and its peers — a way to *see* the chart faster, not a forecast or signal service.
+
+## Highlights in v0.13.0
+
+- **Redis subscription cache + market data refresher daemon.** The biggest architectural change since the v0.10.0 visualization pivot. Per-user API cost is now decoupled from user growth: a long-running daemon owns all upstream calls to Massive, refreshes ~40 popular tickers on a schedule, and serves every user request from Redis in microseconds. Adding 1000 users adds ~zero marginal Massive cost; the limit is the number of *unique* tickers actively queried, not the number of users querying them. Theoretical 10-100× scaling headroom on the existing GCE box.
+- **The cache architecture in three files:** `lib/cache.php` (PHP read-through + graceful degradation), `market_data_refresher.py` (long-running daemon, sole owner of Massive calls for the warm set), and `hacktrader-refresher.service` (systemd unit with sandboxing). `api.php` reads Redis first, falls back to the legacy file cache, then to a live Massive fetch on miss.
+- **40 pre-warmed tickers** keep the most-queried instruments permanently in cache: broad-market ETFs, mega-cap tech, popular volatility names, banks, semis, sector ETFs, and macro instruments. First-of-the-morning users hit instantly even for cold-start scenarios.
+- **Tunable refresh intervals per period:** 30s for 1m, 120s for 5m, 600s for 1h, 3600s for 1d. Bounded by the 15-min upstream delay; aggressive enough to keep data fresh, conservative enough to be cost-efficient.
+- **`docs/redis-deployment.md`** — full deployment runbook including Redis install, predis composer add, systemd service setup, verification commands, and troubleshooting. Reproducible if you ever stand up a second region or replace the box.
+- **`correlate.php`** — filters out the focus ticker from its own basket (a stock can't correlate with itself), and expanded the baseline candidate pool from 12 to 16 unique tickers so the basket can always fill 12 peer slots even when the focus is one of the baseline names.
 
 ## Highlights in v0.12.0
 

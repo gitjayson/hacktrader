@@ -148,11 +148,15 @@ function ht_cache_remember(string $cacheKey, string $subscriptionKey, int $ttlSe
  * When upgrading to a real-time feed, these intervals should tighten.
  */
 function ht_cache_refresh_interval_seconds(string $period): int {
+    // v0.13.0 — intervals doubled from initial (15/60/300/1800) since the
+    // 15-min upstream delay caps how fresh data can ever be anyway. Halves
+    // Massive load with no perceptible user-facing change. Keep in sync
+    // with market_data_refresher.py's REFRESH_INTERVAL_BY_PERIOD.
     switch ($period) {
-        case '1m':  return 15;
-        case '5m':  return 60;
-        case '1h':  return 300;   // 5 minutes
-        case '1d':  return 1800;  // 30 minutes
-        default:    return 60;
+        case '1m':  return 30;
+        case '5m':  return 120;   // 2 minutes
+        case '1h':  return 600;   // 10 minutes
+        case '1d':  return 3600;  // 1 hour
+        default:    return 120;
     }
 }

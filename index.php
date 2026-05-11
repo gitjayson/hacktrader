@@ -31,7 +31,7 @@
                 radial-gradient(circle at 80% 30%, rgba(94,234,212,0.14), transparent 28%),
                 linear-gradient(135deg, rgba(6,17,31,0.82), rgba(9,14,24,0.94)),
                 url('https://images.unsplash.com/photo-1449824913935-59a10b8d2000?q=80&w=2070&auto=format&fit=crop') center center / cover no-repeat fixed;
-            /* v0.12.0 — page is no longer a single-screen layout. Hero shot
+            /* v0.13.0 — page is no longer a single-screen layout. Hero shot
                + pricing grid push content past the viewport. Switch from
                grid-centered + overflow:hidden to a normal flow that scrolls.
                Top-padded so the hero isn't stuck to the very top edge. */
@@ -122,7 +122,7 @@
             font-size: 16px;
             line-height: 1.7;
         }
-        /* v0.12.0 — small italic note under the metrics row, low visual
+        /* v0.13.0 — small italic note under the metrics row, low visual
            weight so it doesn't fight the hero title but visible enough that
            a careful reader can't miss it before clicking sign-in. */
         .hero-note {
@@ -156,7 +156,7 @@
             margin-bottom: 8px;
         }
         .metric-value {
-            /* v0.12.0 — these are brand sentences (Visualization aid /
+            /* v0.13.0 — these are brand sentences (Visualization aid /
                Correlation radar / No signals, no advice), not data. Switch
                from JetBrains Mono 19px to inherited Inter at 15px so they
                read as prose AND fit inside the narrow grid cells without
@@ -169,7 +169,7 @@
             word-break: break-word;
             overflow-wrap: anywhere;
         }
-        /* v0.12.0 — hero screenshot section. Spans the full shell width
+        /* v0.13.0 — hero screenshot section. Spans the full shell width
            (escapes the 2-column hero/signin grid by being its own row).
            Glass border + faint outer glow so it reads as a polished
            product surface rather than a bare image. */
@@ -260,7 +260,7 @@
             color: var(--muted);
         }
         footer {
-            /* v0.12.0 — footer was position:fixed when the page was a
+            /* v0.13.0 — footer was position:fixed when the page was a
                single-screen layout. With scroll-flow it lives at the
                bottom of content like a normal block. */
             margin-top: 56px;
@@ -271,7 +271,7 @@
             text-transform: uppercase;
             color: rgba(229, 238, 251, 0.7);
         }
-        /* v0.12.0 — footer links to privacy / tos / disclaimer pages.
+        /* v0.13.0 — footer links to privacy / tos / disclaimer pages.
            Co-Claude UI review flagged that these existed in the repo but
            weren't reachable from the public landing page. */
         footer.site-footer {
@@ -323,7 +323,7 @@
             .hero, .signin-container { min-height: auto; }
             .hero-metrics { grid-template-columns: 1fr; }
         }
-        /* v0.12.0 pricing section */
+        /* v0.13.0 pricing section */
         .pricing-section {
             /* The .shell is a 2-col grid; without this the pricing card would
                render in col 1 only and look squashed. Span the full width. */
@@ -488,7 +488,7 @@
                     <div class='metric-value'>No signals, no advice</div>
                 </div>
             </div>
-            <!-- v0.12.0 — disclose 15-minute data delay up front. The platform
+            <!-- v0.13.0 — disclose 15-minute data delay up front. The platform
                  uses Massive's delayed feed (not real-time), and traders
                  deciding whether to authenticate with Google deserve to know
                  that before they hit the OAuth button. -->
@@ -507,7 +507,7 @@
             <div class='signin-note'>Free tier included. New users start with a 7-day Plus trial. No credit card required to try.</div>
         </section>
 
-        <!-- v0.12.0 — hero screenshot of the live radar. Co-Claude UI review
+        <!-- v0.13.0 — hero screenshot of the live radar. Co-Claude UI review
              flagged the absence of a product visual as the single biggest
              conversion leak on the page. Placed after the hero+signin row
              (full-width second row) so the visual lives between the pitch
@@ -521,7 +521,7 @@
         </section>
 
         <?php
-            // v0.12.0 pricing block. Reads the entitlement matrix from
+            // v0.13.0 pricing block. Reads the entitlement matrix from
             // lib/plans.php so a price change in one place flows through.
             require_once __DIR__ . '/lib/plans.php';
             $allPlans = hacktrader_plans();
@@ -572,7 +572,7 @@
             <a href='disclaimer.php'>Disclaimer</a>
         </nav>
         <div class='footer-copy'>
-            HackTrader v0.12.0 · © 2026 <a href='https://pngs.us' target='_blank' rel='noopener' class='footer-brand'>PENGUINS LLC</a> · All rights reserved.<br>
+            HackTrader v0.13.0 · © 2026 <a href='https://pngs.us' target='_blank' rel='noopener' class='footer-brand'>PENGUINS LLC</a> · All rights reserved.<br>
             <a href='https://pngs.us' target='_blank' rel='noopener' class='footer-brand-link'>pngs.us</a>
         </div>
     </footer>
