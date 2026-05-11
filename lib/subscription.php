@@ -258,13 +258,41 @@ if (!defined('HACKTRADER_SUBSCRIPTION_LOADED')) {
      * whatever environment is running — dev.hacktrader.com on the dev box,
      * hacktrader.com in production, etc. Same code, different deploy hosts.
      *
-     * Falls back to hacktrader.com if no Host header is available (e.g. CLI).
+     * Security review (v0.13.x) fix: whitelist allowed hosts so a forged
+     * Host header in a request can't make us hand attacker-controlled
+     * success/cancel URLs to Stripe. A user who paid for a subscription
+     * could otherwise be redirected to a phishing page after checkout.
+     * Any HTTP_HOST not in the whitelist falls back to the canonical
+     * production domain.
+     *
+     * Always falls back to https://hacktrader.com if no usable host
+     * information is available (e.g. CLI execution).
      */
     function hacktrader_app_url(string $path = ''): string {
+        $allowedHosts = [
+            'hacktrader.com',
+            'dev.hacktrader.com',
+            'www.hacktrader.com',
+        ];
+        $defaultHost = 'hacktrader.com';
+
+        $rawHost = (string) ($_SERVER['HTTP_HOST'] ?? '');
+        // Strip any port suffix before whitelist check.
+        $hostNoPort = preg_replace('/:\d+$/', '', $rawHost);
+        $host = in_array(strtolower($hostNoPort), $allowedHosts, true)
+            ? strtolower($hostNoPort)
+            : $defaultHost;
+
+        // Scheme: trust X-Forwarded-Proto only if the request came in on a
+        // recognized host (the whitelist above also gates this), and default
+        // to https in production-style contexts.
         $scheme = !empty($_SERVER['HTTP_X_FORWARDED_PROTO'])
-            ? $_SERVER['HTTP_X_FORWARDED_PROTO']
-            : ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http');
-        $host = $_SERVER['HTTP_HOST'] ?? 'hacktrader.com';
+            ? strtolower((string) $_SERVER['HTTP_X_FORWARDED_PROTO'])
+            : ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'https');
+        if (!in_array($scheme, ['http', 'https'], true)) {
+            $scheme = 'https';
+        }
+
         $path = $path === '' ? '' : '/' . ltrim($path, '/');
         return $scheme . '://' . $host . $path;
     }

@@ -34,8 +34,18 @@ const HT_CACHE_SUBSCRIPTION_KEY = 'ht:subscriptions';
 const HT_CACHE_DEFAULT_TTL = 3600; // 1 hour — matches refresher dormant cutoff
 
 function ht_cache_client(): ?\Predis\Client {
+    // v0.13.x security-review fix: memoize BOTH success and failure for
+    // the lifetime of the PHP request. Before this fix, $client stayed
+    // null after a failed connection, so each subsequent ht_cache_*
+    // call would retry the connection — touch, get, backfill set, and
+    // last-ref set could each attempt a fresh connect against a dead
+    // Redis, adding seconds of avoidable latency per request and
+    // flooding the error log. Now the first failure short-circuits all
+    // subsequent calls in the same request.
     static $client = null;
-    if ($client !== null) return $client;
+    static $tried = false;
+    if ($tried) return $client;
+    $tried = true;
 
     try {
         $client = new \Predis\Client([
@@ -147,6 +157,66 @@ function ht_cache_remember(string $cacheKey, string $subscriptionKey, int $ttlSe
  *
  * When upgrading to a real-time feed, these intervals should tighten.
  */
+/**
+ * Singleflight lock for cache misses. When Redis is cold (e.g., just
+ * restarted) and multiple concurrent requests miss the cache for the
+ * same key, they would all fall through to fetch from upstream — wasting
+ * API calls and undercutting the "one upstream call per ticker" goal.
+ *
+ * This function acquires a short-lived Redis lock for the given key. The
+ * caller treats it like a mutex around the expensive fetch path:
+ *
+ *   - If acquired: caller proceeds with the live fetch, then releases.
+ *   - If not acquired: another request is fetching right now. Sleep
+ *     briefly so the caller can re-check the cache (which the winner
+ *     should populate by then).
+ *
+ * Returns true if the caller "won" the lock and should proceed with
+ * the live fetch. Returns false if the caller should sleep + re-read.
+ *
+ * Lock auto-expires via TTL so a crashed winner doesn't permanently
+ * block others.
+ */
+function ht_cache_acquire_singleflight(string $lockKey, int $lockTtlSeconds = 5): bool {
+    $r = ht_cache_client();
+    if (!$r) return true; // No Redis: every caller fetches; protection isn't available.
+    try {
+        // SET key value NX EX ttl — atomic set-if-not-exists with expiry.
+        $result = $r->set('lock:' . $lockKey, (string) getmypid(), 'EX', $lockTtlSeconds, 'NX');
+        return $result === true || (is_object($result) && (string) $result === 'OK');
+    } catch (\Throwable $e) {
+        error_log('lib/cache.php: singleflight acquire failed for ' . $lockKey . ': ' . $e->getMessage());
+        return true; // Fail open — better to fetch twice than to deadlock.
+    }
+}
+
+function ht_cache_release_singleflight(string $lockKey): void {
+    $r = ht_cache_client();
+    if (!$r) return;
+    try {
+        $r->del('lock:' . $lockKey);
+    } catch (\Throwable $e) {
+        // Lock will TTL out anyway; nothing to do.
+    }
+}
+
+/**
+ * Wait briefly for another request to populate the cache for $cacheKey.
+ * Returns the cached value if it appears within the wait window, or null
+ * if the wait timed out (caller should fall through to its own fetch).
+ *
+ * Polls every 100ms up to $maxWaitMs total.
+ */
+function ht_cache_wait_for_value(string $cacheKey, int $maxWaitMs = 2000) {
+    $steps = max(1, intdiv($maxWaitMs, 100));
+    for ($i = 0; $i < $steps; $i++) {
+        usleep(100000); // 100ms
+        $val = ht_cache_get($cacheKey);
+        if ($val !== null) return $val;
+    }
+    return null;
+}
+
 function ht_cache_refresh_interval_seconds(string $period): int {
     // v0.13.0 — intervals doubled from initial (15/60/300/1800) since the
     // 15-min upstream delay caps how fresh data can ever be anyway. Halves

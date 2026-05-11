@@ -527,6 +527,38 @@ if ($freshCache !== null) {
     respond_json(with_usage_summary($freshCache, $requesterIdentity), 200);
 }
 
+// v0.13.x security-review fix: singleflight protection against cache
+// stampede. If Redis is cold (just restarted, evicted, or never warmed
+// for this ticker) and N concurrent requests miss the cache, all N
+// would otherwise fall through to spawn run-brk.sh and fetch Massive
+// in parallel — wasting N-1 API calls and Python subprocesses.
+//
+// Strategy: try to acquire a 5-second lock keyed by the subscription.
+// If we win, we do the fetch. If we lose, another request is already
+// fetching; wait up to 2 seconds polling the cache, and if a value
+// shows up, return that. Only fall through to our own fetch if the
+// winner's fetch failed (lock still held but no value appeared).
+$singleflightLockKey = $subscriptionKey;
+$gotLock = ht_cache_acquire_singleflight($singleflightLockKey, 5);
+if (!$gotLock) {
+    $waited = ht_cache_wait_for_value($redisScoreKey, 2000);
+    if (is_array($waited)) {
+        $lastRefRaw = ht_cache_get($redisLastRefKey);
+        $ageSeconds = is_numeric($lastRefRaw) ? max(0, time() - (int) $lastRefRaw) : null;
+        $waited['cache'] = [
+            'hit' => true,
+            'stale' => false,
+            'age_seconds' => $ageSeconds,
+            'source_tier' => 'redis_singleflight',
+        ];
+        $waited['live_status'] = 'cache_hit';
+        $waited['live_error_summary'] = null;
+        record_usage_event(__DIR__ . '/api_usage_tracker.json', $requesterIdentity, 'cache', $ticker, $period, $lookback, 'success', 'redis_singleflight');
+        respond_json(with_usage_summary($waited, $requesterIdentity), 200);
+    }
+    // Winner's fetch failed or timed out — proceed with our own.
+}
+
 $encodedRequesterIdentity = str_replace(["\n", "\r"], '', $requesterIdentity);
 putenv('HACKTRADER_SESSION_ID=' . $encodedRequesterIdentity);
 session_write_close();
@@ -542,6 +574,9 @@ $cmd = __DIR__ . '/run-brk.sh '
     . escapeshellarg($encodedRequesterIdentity);
 $output = shell_exec($cmd);
 putenv('HACKTRADER_SESSION_ID');
+// Always release the lock — whether we won or not — so the next
+// stampede can run unimpeded. Idempotent del.
+ht_cache_release_singleflight($singleflightLockKey);
 $decoded = is_string($output) ? json_decode($output, true) : null;
 
 $isValidJson = is_array($decoded);

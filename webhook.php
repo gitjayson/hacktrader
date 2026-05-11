@@ -84,9 +84,24 @@ try {
             break;
     }
 } catch (\Throwable $e) {
-    // Catch DB or handler errors so we still 200-ack to Stripe (a 500 would
-    // trigger their retry logic and re-fire the same event repeatedly).
-    error_log('webhook.php: handler error for ' . $eventType . ': ' . $e->getMessage());
+    // v0.13.x security review fix: fail closed. Earlier this catch
+    // returned 200 to avoid Stripe retries, but the cost was that
+    // genuinely failed state writes (DB locked, schema migration error,
+    // bug in a handler) silently dropped on the floor with users stuck
+    // in trial/free/canceled states they shouldn't be in. Stripe will
+    // retry on 5xx with exponential backoff (~3 days), which is exactly
+    // what we want for transient errors. The handlers are idempotent
+    // (all keyed by customer_id lookup), so re-running them is safe.
+    error_log('webhook.php: handler error for ' . $eventType . ': '
+        . get_class($e) . ': ' . $e->getMessage()
+        . ' at ' . $e->getFile() . ':' . $e->getLine());
+    http_response_code(500);
+    echo json_encode([
+        'received' => true,
+        'event_type' => $eventType,
+        'error' => 'handler_failed',
+    ]);
+    exit;
 }
 
 http_response_code(200);
