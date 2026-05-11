@@ -479,17 +479,51 @@ if ($sessionAuthorized && file_exists($libPath)) {
     }
 }
 
+// v0.13.0 — Redis subscription cache. Check before the file cache:
+// Redis is faster (microseconds vs milliseconds) and is kept warm by
+// market_data_refresher.py for tickers under active subscription. The
+// file cache is retained as a fallback for when Redis is down.
+//
+// Touching the subscription (whether hit or miss) signals to the
+// refresher daemon that this (ticker, period, lookback) is hot and
+// should be kept refreshed proactively.
+require_once __DIR__ . '/lib/cache.php';
+$subscriptionKey = $ticker . ':' . $period . ':' . ((int) $lookback);
+$redisScoreKey = 'score:' . $subscriptionKey;
+$redisLastRefKey = 'lastref:' . $subscriptionKey;
+ht_cache_touch_subscription($subscriptionKey);
+
+$redisCached = ht_cache_get($redisScoreKey);
+if ($redisCached !== null && is_array($redisCached)) {
+    $lastRefRaw = ht_cache_get($redisLastRefKey);
+    $ageSeconds = is_numeric($lastRefRaw) ? max(0, time() - (int) $lastRefRaw) : null;
+    $redisCached['cache'] = [
+        'hit' => true,
+        'stale' => false,
+        'age_seconds' => $ageSeconds,
+        'source_tier' => 'redis',
+    ];
+    $redisCached['live_status'] = 'cache_hit';
+    $redisCached['live_error_summary'] = null;
+    update_health_status(__DIR__ . '/state/health-status.json', $ticker, $period, 'cache_hit', $redisCached['source'] ?? 'cache', null, $ageSeconds);
+    record_usage_event(__DIR__ . '/api_usage_tracker.json', $requesterIdentity, 'cache', $ticker, $period, $lookback, 'success', 'redis');
+    respond_json(with_usage_summary($redisCached, $requesterIdentity), 200);
+}
+
 $freshCache = read_cached_payload($pipeline, $maxCacheAgeSeconds);
 if ($freshCache !== null) {
     $freshCache['cache'] = [
         'hit' => true,
         'stale' => false,
         'age_seconds' => time() - filemtime($pipeline),
+        'source_tier' => 'file',
     ];
     $freshCache['live_status'] = 'cache_hit';
     $freshCache['live_error_summary'] = null;
     update_health_status(__DIR__ . '/state/health-status.json', $ticker, $period, 'cache_hit', $freshCache['source'] ?? 'cache', null, $freshCache['cache']['age_seconds'] ?? null);
-    record_usage_event(__DIR__ . '/api_usage_tracker.json', $requesterIdentity, 'cache', $ticker, $period, $lookback, 'success', 'cache');
+    record_usage_event(__DIR__ . '/api_usage_tracker.json', $requesterIdentity, 'cache', $ticker, $period, $lookback, 'success', 'file');
+    // Backfill Redis from the file cache so the next user gets the fast path.
+    ht_cache_set($redisScoreKey, $freshCache);
     respond_json(with_usage_summary($freshCache, $requesterIdentity), 200);
 }
 
@@ -515,6 +549,12 @@ $hasError = $isValidJson && isset($decoded['error']);
 
 if ($isValidJson && !$hasError) {
     file_put_contents($pipeline, json_encode($decoded, JSON_PRETTY_PRINT));
+    // v0.13.0 — also write to Redis so the next user (or the next
+    // refresher cycle) gets the fast path. We write under both the
+    // score key and the last-refreshed timestamp so age_seconds is
+    // accurate on subsequent cache reads.
+    ht_cache_set($redisScoreKey, $decoded);
+    ht_cache_set($redisLastRefKey, time());
     remember_focus_symbol($ticker, $focusUniverseFile, $marketWatchlistFile, $correlationGenerator);
     $decoded['cache'] = [
         'hit' => false,
