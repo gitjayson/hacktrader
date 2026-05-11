@@ -1,0 +1,48 @@
+# hacktrader-refresher.service — systemd unit for the market-data refresher.
+#
+# Installs to /etc/systemd/system/hacktrader-refresher.service on the dev box.
+# Enable + start with:
+#
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable hacktrader-refresher
+#   sudo systemctl start hacktrader-refresher
+#
+# Logs go to journald — view with:
+#   sudo journalctl -u hacktrader-refresher -f
+#
+# The service is restarted automatically on failure with a 5-second
+# backoff so a transient Massive API error or Redis blip doesn't take
+# the cache layer offline.
+
+[Unit]
+Description=HackTrader market data refresher (Redis subscription cache)
+After=network.target redis-server.service
+Wants=redis-server.service
+
+[Service]
+Type=simple
+User=agent
+Group=www-data
+WorkingDirectory=/var/www/html
+ExecStart=/usr/bin/python3 /var/www/html/market_data_refresher.py
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=hacktrader-refresher
+
+# Hardening — the daemon doesn't need elevated privileges or write
+# access outside of /var/www/html. These are recommended sandboxing
+# directives from systemd.exec(5).
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/var/www/html
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+
+[Install]
+WantedBy=multi-user.target
