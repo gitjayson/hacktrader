@@ -88,7 +88,7 @@ function save_json_file($path, $payload) {
 
 function update_health_status($path, $ticker, $period, $liveStatus, $provider = null, $errorSummary = null, $cacheAgeSeconds = null) {
     $state = load_json_file($path, [
-        'meta' => ['updated_at' => null, 'version' => 'v0.13.6'],
+        'meta' => ['updated_at' => null, 'version' => 'v0.13.7'],
         'counters' => [
             'total_requests' => 0,
             'live_successes' => 0,
@@ -165,7 +165,7 @@ function update_health_status($path, $ticker, $period, $liveStatus, $provider = 
     ];
     $state['recent_events'] = array_slice($state['recent_events'], -100);
     $state['meta']['updated_at'] = $timestamp;
-    $state['meta']['version'] = 'v0.13.6';
+    $state['meta']['version'] = 'v0.13.7';
 
     save_json_file($path, $state);
 }
@@ -193,7 +193,7 @@ function summarize_live_error($details): ?string {
 
 function record_usage_event($trackerPath, $sessionId, $provider, $ticker, $interval, $periods, $outcome, $cacheState = null) {
     $tracker = load_json_file($trackerPath, [
-        'meta' => ['updated_at' => null, 'version' => 'v0.13.6'],
+        'meta' => ['updated_at' => null, 'version' => 'v0.13.7'],
         'sessions' => [],
         'recent_events' => [],
     ]);
@@ -273,7 +273,7 @@ function record_usage_event($trackerPath, $sessionId, $provider, $ticker, $inter
     ];
     $tracker['recent_events'] = array_slice($tracker['recent_events'], -200);
     $tracker['meta']['updated_at'] = $timestamp;
-    $tracker['meta']['version'] = 'v0.13.6';
+    $tracker['meta']['version'] = 'v0.13.7';
 
     save_json_file($trackerPath, $tracker);
 }
@@ -558,26 +558,57 @@ if ($freshCache !== null) {
 //     still-valid lock.
 //   - Release is now guarded by $gotLock — non-owners skip it
 //     entirely, belt-and-suspenders on top of the token check.
+//
+// v0.13.7 — retry-acquire after wait timeout.
+// Previously, waiters that hit the 12s wait timeout fell straight
+// through to an uncoordinated fetch, stampeding the upstream call if
+// the original owner was still running (e.g., Massive itself slow
+// for that ticker). Now we retry acquiring the lock after each wait
+// timeout. Since the lock TTL is 15s and we wait 12s, the lock has
+// either:
+//   (a) expired by the time we retry — we take over as new owner;
+//   (b) been released by a finished owner — we'd have seen the cache
+//       populated during the wait, so this branch shouldn't fire;
+//   (c) still valid because the owner is genuinely slow — we wait
+//       another cycle. After 2 cycles (~24s total) we fall through
+//       uncoordinated, which is the same worst-case as before but
+//       only after we've given coordinated waiting two real chances.
 $singleflightLockKey = $subscriptionKey;
 $singleflightToken = ht_cache_acquire_singleflight($singleflightLockKey, 15);
 $gotLock = $singleflightToken !== null;
+
 if (!$gotLock) {
-    $waited = ht_cache_wait_for_value($redisScoreKey, 12000);
-    if (is_array($waited)) {
-        $lastRefRaw = ht_cache_get($redisLastRefKey);
-        $ageSeconds = is_numeric($lastRefRaw) ? max(0, time() - (int) $lastRefRaw) : null;
-        $waited['cache'] = [
-            'hit' => true,
-            'stale' => false,
-            'age_seconds' => $ageSeconds,
-            'source_tier' => 'redis_singleflight',
-        ];
-        $waited['live_status'] = 'cache_hit';
-        $waited['live_error_summary'] = null;
-        record_usage_event(__DIR__ . '/api_usage_tracker.json', $requesterIdentity, 'cache', $ticker, $period, $lookback, 'success', 'redis_singleflight');
-        respond_json(with_usage_summary($waited, $requesterIdentity), 200);
+    $maxCycles = 2;
+    for ($cycle = 0; $cycle < $maxCycles; $cycle++) {
+        $waited = ht_cache_wait_for_value($redisScoreKey, 12000);
+        if (is_array($waited)) {
+            $lastRefRaw = ht_cache_get($redisLastRefKey);
+            $ageSeconds = is_numeric($lastRefRaw) ? max(0, time() - (int) $lastRefRaw) : null;
+            $waited['cache'] = [
+                'hit' => true,
+                'stale' => false,
+                'age_seconds' => $ageSeconds,
+                'source_tier' => 'redis_singleflight',
+            ];
+            $waited['live_status'] = 'cache_hit';
+            $waited['live_error_summary'] = null;
+            record_usage_event(__DIR__ . '/api_usage_tracker.json', $requesterIdentity, 'cache', $ticker, $period, $lookback, 'success', 'redis_singleflight');
+            respond_json(with_usage_summary($waited, $requesterIdentity), 200);
+        }
+        // Wait timed out. Try to acquire the lock — if the original
+        // owner died (or the TTL expired), we take over as new owner
+        // and proceed to fetch with our own token. If still locked,
+        // someone else is genuinely slow; loop and wait again.
+        $singleflightToken = ht_cache_acquire_singleflight($singleflightLockKey, 15);
+        if ($singleflightToken !== null) {
+            $gotLock = true;
+            break;
+        }
     }
-    // Winner's fetch failed or timed out — proceed with our own.
+    // After $maxCycles without acquiring and without seeing a value,
+    // fall through to an uncoordinated fetch. At this point we've been
+    // blocked ~24s and the system is in genuinely bad shape — better
+    // to attempt our own fetch than to block the user further.
 }
 
 $encodedRequesterIdentity = str_replace(["\n", "\r"], '', $requesterIdentity);

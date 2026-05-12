@@ -1,10 +1,15 @@
 # HackTrader Dashboard
 
-- **Version:** v0.13.6
+- **Version:** v0.13.7
 - **Status:** Active
 - **Codebase:** HackTrader FUI dashboard
 
 HackTrader is a market structure visualization tool. It surfaces correlation geometry, support/resistance ladders, channel bands, and volume context for a focus ticker and its peers — a way to *see* the chart faster, not a forecast or signal service.
+
+## Highlights in v0.13.7
+
+- **Singleflight: retry-acquire after wait timeout (stop the slow-fetch stampede).** v0.13.4's `try/finally` fixed the release-before-cache-write window, but waiters that hit the 12s wait timeout still fell straight through and stampeded the upstream call when the original owner was genuinely slow (e.g., Massive itself slow for that ticker). `api.php` now retries acquiring the lock after each wait timeout. Since the lock TTL is 15s and the wait window is 12s, after a wait timeout the lock has typically either expired (we take over) or been released (we'd have seen the value during the wait). Bounded at 2 cycles (~24s total) before falling through uncoordinated — same worst-case as before, but coordinated waiting gets two real attempts first.
+- **/healthz.php malformed-state response now includes config.** v0.13.6 attached the `$configBlock` (quota mode, forwarded-proto trust) to the normal and starting responses, but the malformed-state error branch returned without it. Tiny ops polish: ops can now read quota/proxy config off `/healthz.php` regardless of state-file state.
 
 ## Highlights in v0.13.6
 

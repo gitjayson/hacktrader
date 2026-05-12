@@ -37,10 +37,13 @@ if (!file_exists($statePath)) {
 
 $state = json_decode(file_get_contents($statePath), true);
 if (!is_array($state)) {
+    // v0.13.7 — include $configBlock here too so ops can always read
+    // quota/proxy config off /healthz.php regardless of state-file state.
     respond_json([
         'status' => 'error',
         'app' => 'hacktrader',
         'reason' => 'Health state is malformed.',
+        'config' => $configBlock,
     ], 500);
 }
 
