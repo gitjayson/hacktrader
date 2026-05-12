@@ -1,10 +1,14 @@
 # HackTrader Dashboard
 
-- **Version:** v0.13.7
+- **Version:** v0.13.8
 - **Status:** Active
 - **Codebase:** HackTrader FUI dashboard
 
 HackTrader is a market structure visualization tool. It surfaces correlation geometry, support/resistance ladders, channel bands, and volume context for a focus ticker and its peers — a way to *see* the chart faster, not a forecast or signal service.
+
+## Highlights in v0.13.8
+
+- **Singleflight final-cycle stampede closed: stale-fallback on contention.** v0.13.7 added the retry-acquire loop, but at the end of the loop only *one* waiter wins the acquire race; the rest fell through to an uncoordinated fetch and stampeded Massive anyway. `api.php` now distinguishes two failure modes after retries exhaust: (a) Redis is down → fail-open already set `$gotLock = true` upstream, we never reach this branch; (b) Redis is up but another waiter just won → return the file-cache stale data if present with a `singleflight_contention` reason, or HTTP 503 with the same reason if no stale data exists. The acquire-race winner will populate Redis within a couple of seconds; a client retry hits the warm cache and gets fresh data. Net: no more than one upstream fetch in flight per ticker, full stop, even under aggressive concurrent demand.
 
 ## Highlights in v0.13.7
 

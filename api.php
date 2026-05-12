@@ -88,7 +88,7 @@ function save_json_file($path, $payload) {
 
 function update_health_status($path, $ticker, $period, $liveStatus, $provider = null, $errorSummary = null, $cacheAgeSeconds = null) {
     $state = load_json_file($path, [
-        'meta' => ['updated_at' => null, 'version' => 'v0.13.7'],
+        'meta' => ['updated_at' => null, 'version' => 'v0.13.8'],
         'counters' => [
             'total_requests' => 0,
             'live_successes' => 0,
@@ -165,7 +165,7 @@ function update_health_status($path, $ticker, $period, $liveStatus, $provider = 
     ];
     $state['recent_events'] = array_slice($state['recent_events'], -100);
     $state['meta']['updated_at'] = $timestamp;
-    $state['meta']['version'] = 'v0.13.7';
+    $state['meta']['version'] = 'v0.13.8';
 
     save_json_file($path, $state);
 }
@@ -193,7 +193,7 @@ function summarize_live_error($details): ?string {
 
 function record_usage_event($trackerPath, $sessionId, $provider, $ticker, $interval, $periods, $outcome, $cacheState = null) {
     $tracker = load_json_file($trackerPath, [
-        'meta' => ['updated_at' => null, 'version' => 'v0.13.7'],
+        'meta' => ['updated_at' => null, 'version' => 'v0.13.8'],
         'sessions' => [],
         'recent_events' => [],
     ]);
@@ -273,7 +273,7 @@ function record_usage_event($trackerPath, $sessionId, $provider, $ticker, $inter
     ];
     $tracker['recent_events'] = array_slice($tracker['recent_events'], -200);
     $tracker['meta']['updated_at'] = $timestamp;
-    $tracker['meta']['version'] = 'v0.13.7';
+    $tracker['meta']['version'] = 'v0.13.8';
 
     save_json_file($trackerPath, $tracker);
 }
@@ -605,10 +605,60 @@ if (!$gotLock) {
             break;
         }
     }
-    // After $maxCycles without acquiring and without seeing a value,
-    // fall through to an uncoordinated fetch. At this point we've been
-    // blocked ~24s and the system is in genuinely bad shape — better
-    // to attempt our own fetch than to block the user further.
+
+    // v0.13.8 — final-cycle stampede fix.
+    // If we still don't own the lock after $maxCycles, another waiter
+    // just won the acquire race within the same 100ms window. The old
+    // code fell through to an uncoordinated fetch here, which meant
+    // every loser of that final race still stampeded Massive.
+    //
+    // Now: only fall through to fetch when Redis is genuinely
+    // unavailable (in which case singleflight is fail-open mode and
+    // $gotLock would already be true — so we'd never reach this
+    // branch). Otherwise return the file-cache stale data if present,
+    // or 503 if not. The winner of the final acquire race will
+    // populate Redis; if the user retries within a few seconds they
+    // get the fresh data.
+    if (!$gotLock) {
+        $staleCache = read_cached_payload($pipeline);
+        if ($staleCache !== null) {
+            $staleCache['cache'] = [
+                'hit' => true,
+                'stale' => true,
+                'age_seconds' => time() - filemtime($pipeline),
+            ];
+            $staleCache['warning'] = 'Another request is fetching this ticker; serving cached data.';
+            $staleCache['live_status'] = 'stale_fallback';
+            $staleCache['live_error_summary'] = 'Singleflight contention: another request currently holds the upstream-fetch lock.';
+
+            update_health_status(__DIR__ . '/state/health-status.json', $ticker, $period, 'stale_fallback', $staleCache['source'] ?? 'cache', $staleCache['live_error_summary'], $staleCache['cache']['age_seconds'] ?? null);
+            record_usage_event(__DIR__ . '/api_usage_tracker.json', $requesterIdentity, $staleCache['source'] ?? 'cache', $ticker, $period, $lookback, 'stale_fallback', 'singleflight_contention');
+            $status = 'Served stale cache: singleflight contention';
+            $logEntry = '[' . date('Y-m-d H:i:s') . "] Requester: $usageActor, Ticker: $ticker, Period: $period, Lookback: $lookback. Status: $status\n";
+            file_put_contents('api.log', $logEntry, FILE_APPEND);
+            respond_json(with_usage_summary($staleCache, $requesterIdentity), 200);
+        }
+
+        // No stale cache to fall back to. Return 503 rather than
+        // stampede — the winner of the acquire race is fetching now;
+        // a retry in a couple of seconds should hit Redis.
+        $errorPayload = [
+            'error' => 'Singleflight contention; please retry shortly',
+            'ticker' => $ticker,
+            'period' => $period,
+            'lookback' => (int) $lookback,
+            'details' => ['reason' => 'singleflight_contention'],
+            'live_status' => 'error',
+            'live_error_summary' => 'Singleflight contention: another request holds the upstream-fetch lock and no cached data exists yet.',
+        ];
+
+        update_health_status(__DIR__ . '/state/health-status.json', $ticker, $period, 'error', 'singleflight_contention', $errorPayload['live_error_summary'], null);
+        record_usage_event(__DIR__ . '/api_usage_tracker.json', $requesterIdentity, 'singleflight_contention', $ticker, $period, $lookback, 'error', 'singleflight_contention');
+        $status = 'Error: singleflight contention with no stale fallback';
+        $logEntry = '[' . date('Y-m-d H:i:s') . "] Requester: $usageActor, Ticker: $ticker, Period: $period, Lookback: $lookback. Status: $status\n";
+        file_put_contents('api.log', $logEntry, FILE_APPEND);
+        respond_json(with_usage_summary($errorPayload, $requesterIdentity), 503);
+    }
 }
 
 $encodedRequesterIdentity = str_replace(["\n", "\r"], '', $requesterIdentity);
