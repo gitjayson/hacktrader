@@ -98,9 +98,15 @@ $client = new Google\Client();
 $client->setClientId($secrets['GOOGLE_CLIENT_ID']);
 $client->setClientSecret($secrets['GOOGLE_CLIENT_SECRET']);
 
-$scheme = (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) ? $_SERVER['HTTP_X_FORWARDED_PROTO'] : ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http'));
-$host = $_SERVER['HTTP_HOST'] ?? 'hacktrader.com';
-$client->setRedirectUri($scheme . '://' . $host . '/callback.php');
+// v0.13.4 — use the shared whitelisted URL builder so the OAuth
+// redirect URI uses the same host/scheme trust boundary as the
+// Stripe success/cancel URLs. Previously this file built the URI from
+// raw HTTP_HOST + HTTP_X_FORWARDED_PROTO, which a forged Host header
+// could subvert. (Google will usually reject unregistered redirect
+// URIs in practice, but the trust boundary should still be
+// consistent across the app.)
+require_once __DIR__ . '/lib/app_url.php';
+$client->setRedirectUri(hacktrader_app_url('/callback.php'));
 $client->addScope('email');
 $client->addScope('profile');
 

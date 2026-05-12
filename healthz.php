@@ -53,6 +53,15 @@ if (($counters['consecutive_failures'] ?? 0) >= 3 || $errorRatio >= 0.5) {
     $reason = 'Recent stale fallback rate exceeds threshold.';
 }
 
+// v0.13.4 — surface the quota-enforcement state so ops can verify
+// at a glance whether the box is counting-only ("soft") or enforcing
+// ("hard"). Driven by the HACKTRADER_QUOTA_HARD_GATE env var that
+// api.php reads on each request.
+$quotaHardGate = filter_var(
+    getenv('HACKTRADER_QUOTA_HARD_GATE') ?: '0',
+    FILTER_VALIDATE_BOOLEAN
+);
+
 respond_json([
     'status' => $status,
     'app' => 'hacktrader',
@@ -66,5 +75,9 @@ respond_json([
         'error_count' => $errorCount,
         'stale_ratio' => $staleRatio,
         'error_ratio' => $errorRatio,
+    ],
+    'config' => [
+        'quota_hard_gate' => $quotaHardGate,
+        'quota_mode' => $quotaHardGate ? 'hard' : 'soft',
     ],
 ], $http);

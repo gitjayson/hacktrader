@@ -88,7 +88,7 @@ function save_json_file($path, $payload) {
 
 function update_health_status($path, $ticker, $period, $liveStatus, $provider = null, $errorSummary = null, $cacheAgeSeconds = null) {
     $state = load_json_file($path, [
-        'meta' => ['updated_at' => null, 'version' => 'v0.13.3'],
+        'meta' => ['updated_at' => null, 'version' => 'v0.13.4'],
         'counters' => [
             'total_requests' => 0,
             'live_successes' => 0,
@@ -165,7 +165,7 @@ function update_health_status($path, $ticker, $period, $liveStatus, $provider = 
     ];
     $state['recent_events'] = array_slice($state['recent_events'], -100);
     $state['meta']['updated_at'] = $timestamp;
-    $state['meta']['version'] = 'v0.13.3';
+    $state['meta']['version'] = 'v0.13.4';
 
     save_json_file($path, $state);
 }
@@ -193,7 +193,7 @@ function summarize_live_error($details): ?string {
 
 function record_usage_event($trackerPath, $sessionId, $provider, $ticker, $interval, $periods, $outcome, $cacheState = null) {
     $tracker = load_json_file($trackerPath, [
-        'meta' => ['updated_at' => null, 'version' => 'v0.13.3'],
+        'meta' => ['updated_at' => null, 'version' => 'v0.13.4'],
         'sessions' => [],
         'recent_events' => [],
     ]);
@@ -273,7 +273,7 @@ function record_usage_event($trackerPath, $sessionId, $provider, $ticker, $inter
     ];
     $tracker['recent_events'] = array_slice($tracker['recent_events'], -200);
     $tracker['meta']['updated_at'] = $timestamp;
-    $tracker['meta']['version'] = 'v0.13.3';
+    $tracker['meta']['version'] = 'v0.13.4';
 
     save_json_file($trackerPath, $tracker);
 }
@@ -440,14 +440,27 @@ if (function_exists('log_api_usage')) {
 }
 
 // v0.13.2 — subscription gate.
-// Soft mode for now: resolve the user, count the call, log when over-quota,
-// but DON'T block the response. Once Stripe is wired and the trial flow is
-// validated end-to-end, flip $hardGate to true to enforce.
+// Resolve the user, count the call, log when over-quota, and optionally
+// block. EVERYTHING in this block is wrapped in try/catch so that any
+// failure (missing PDO_SQLITE extension, unwritable directory, schema
+// migration hiccup, etc.) cannot break api.php's main response. The
+// gate is best-effort.
 //
-// EVERYTHING in this block is wrapped in try/catch so that any failure
-// (missing PDO_SQLITE extension, unwritable directory, schema migration
-// hiccup, etc.) cannot break api.php's main response. The gate is best-effort.
-$hardGate = false;  // flip to true after Stripe go-live + trial test
+// v0.13.4 — quota enforcement is now driven by the HACKTRADER_QUOTA_HARD_GATE
+// environment variable instead of a hard-coded flag. The previous default
+// of $hardGate=false left Free/expired users effectively unmetered now
+// that Starter is live. Set HACKTRADER_QUOTA_HARD_GATE=1 in the systemd
+// drop-in (or wherever the FPM env comes from) to switch on enforcement;
+// leave unset for soft-launch counting-only mode. The active state is
+// surfaced in /healthz.php so ops can verify which mode prod is in.
+//
+// One operational note: if hard-gate is on, set this env to "0" on the
+// dev box during E2E tests against the live trial flow so quota-exceeded
+// users still get data and the tests don't false-fail.
+$hardGate = filter_var(
+    getenv('HACKTRADER_QUOTA_HARD_GATE') ?: '0',
+    FILTER_VALIDATE_BOOLEAN
+);
 $libPath = __DIR__ . '/lib/subscription.php';
 if ($sessionAuthorized && file_exists($libPath)) {
     try {
@@ -582,79 +595,93 @@ $cmd = __DIR__ . '/run-brk.sh '
     . escapeshellarg($encodedRequesterIdentity);
 $output = shell_exec($cmd);
 putenv('HACKTRADER_SESSION_ID');
-// v0.13.3 — only release if we actually acquired. Late waiters that
-// timed out fall through here without owning the lock; if they called
-// release blindly they could delete the original owner's still-valid
-// lock. The token-based compare-and-delete inside release() would
-// catch that too, but skipping the call entirely is cleaner.
-if ($gotLock) {
-    ht_cache_release_singleflight($singleflightLockKey, $singleflightToken);
-}
-$decoded = is_string($output) ? json_decode($output, true) : null;
 
-$isValidJson = is_array($decoded);
-$hasError = $isValidJson && isset($decoded['error']);
+// v0.13.4 — singleflight release moved into a `finally` block so the
+// lock is held through the Redis/file cache writes on the success
+// path. Previously release happened right after shell_exec, BEFORE
+// the ht_cache_set() calls — a small window where a follow-up request
+// could win a new lock and kick off a duplicate upstream fetch even
+// though the cache was about to be populated. PHP's try/finally
+// semantics guarantee the finally block runs even when respond_json()
+// calls exit(), so all three response paths (success / stale / error)
+// release the lock cleanly. (Token-based compare-and-delete inside
+// release() and the $gotLock guard remain belt-and-suspenders.)
+try {
+    $decoded = is_string($output) ? json_decode($output, true) : null;
 
-if ($isValidJson && !$hasError) {
-    file_put_contents($pipeline, json_encode($decoded, JSON_PRETTY_PRINT));
-    // v0.13.2 — also write to Redis so the next user (or the next
-    // refresher cycle) gets the fast path. We write under both the
-    // score key and the last-refreshed timestamp so age_seconds is
-    // accurate on subsequent cache reads.
-    ht_cache_set($redisScoreKey, $decoded);
-    ht_cache_set($redisLastRefKey, time());
-    remember_focus_symbol($ticker, $focusUniverseFile, $marketWatchlistFile, $correlationGenerator);
-    $decoded['cache'] = [
-        'hit' => false,
-        'stale' => false,
-        'age_seconds' => 0,
-    ];
-    $decoded['live_status'] = 'live';
-    $decoded['live_error_summary'] = null;
+    $isValidJson = is_array($decoded);
+    $hasError = $isValidJson && isset($decoded['error']);
 
-    update_health_status(__DIR__ . '/state/health-status.json', $ticker, $period, 'live', $decoded['source'] ?? 'unknown', null, 0);
-    record_usage_event(__DIR__ . '/api_usage_tracker.json', $requesterIdentity, $decoded['source'] ?? 'unknown', $ticker, $period, $lookback, 'success', 'live');
-    $status = 'Success via ' . ($decoded['source'] ?? 'unknown');
-    $logEntry = '[' . date('Y-m-d H:i:s') . "] Requester: $usageActor, Ticker: $ticker, Period: $period, Lookback: $lookback. Status: $status\n";
-    file_put_contents('api.log', $logEntry, FILE_APPEND);
-    respond_json(with_usage_summary($decoded, $requesterIdentity), 200);
-}
+    if ($isValidJson && !$hasError) {
+        file_put_contents($pipeline, json_encode($decoded, JSON_PRETTY_PRINT));
+        // v0.13.2 — also write to Redis so the next user (or the next
+        // refresher cycle) gets the fast path. We write under both the
+        // score key and the last-refreshed timestamp so age_seconds is
+        // accurate on subsequent cache reads.
+        ht_cache_set($redisScoreKey, $decoded);
+        ht_cache_set($redisLastRefKey, time());
+        remember_focus_symbol($ticker, $focusUniverseFile, $marketWatchlistFile, $correlationGenerator);
+        $decoded['cache'] = [
+            'hit' => false,
+            'stale' => false,
+            'age_seconds' => 0,
+        ];
+        $decoded['live_status'] = 'live';
+        $decoded['live_error_summary'] = null;
 
-$staleCache = read_cached_payload($pipeline);
-if ($staleCache !== null) {
-    $staleCache['cache'] = [
-        'hit' => true,
-        'stale' => true,
-        'age_seconds' => time() - filemtime($pipeline),
-    ];
-    $staleCache['warning'] = 'Live fetch failed; serving cached data.';
-    if ($hasError) {
-        $staleCache['live_error'] = $decoded;
+        update_health_status(__DIR__ . '/state/health-status.json', $ticker, $period, 'live', $decoded['source'] ?? 'unknown', null, 0);
+        record_usage_event(__DIR__ . '/api_usage_tracker.json', $requesterIdentity, $decoded['source'] ?? 'unknown', $ticker, $period, $lookback, 'success', 'live');
+        $status = 'Success via ' . ($decoded['source'] ?? 'unknown');
+        $logEntry = '[' . date('Y-m-d H:i:s') . "] Requester: $usageActor, Ticker: $ticker, Period: $period, Lookback: $lookback. Status: $status\n";
+        file_put_contents('api.log', $logEntry, FILE_APPEND);
+        respond_json(with_usage_summary($decoded, $requesterIdentity), 200);
     }
-    $staleCache['live_status'] = 'stale_fallback';
-    $staleCache['live_error_summary'] = summarize_live_error($decoded ?: null) ?? 'Live fetch failed; serving cached data.';
 
-    update_health_status(__DIR__ . '/state/health-status.json', $ticker, $period, 'stale_fallback', $staleCache['source'] ?? 'cache', $staleCache['live_error_summary'], $staleCache['cache']['age_seconds'] ?? null);
-    record_usage_event(__DIR__ . '/api_usage_tracker.json', $requesterIdentity, $staleCache['source'] ?? 'cache', $ticker, $period, $lookback, 'stale_fallback', 'stale');
-    $status = 'Served stale cache after fetch failure';
+    $staleCache = read_cached_payload($pipeline);
+    if ($staleCache !== null) {
+        $staleCache['cache'] = [
+            'hit' => true,
+            'stale' => true,
+            'age_seconds' => time() - filemtime($pipeline),
+        ];
+        $staleCache['warning'] = 'Live fetch failed; serving cached data.';
+        if ($hasError) {
+            $staleCache['live_error'] = $decoded;
+        }
+        $staleCache['live_status'] = 'stale_fallback';
+        $staleCache['live_error_summary'] = summarize_live_error($decoded ?: null) ?? 'Live fetch failed; serving cached data.';
+
+        update_health_status(__DIR__ . '/state/health-status.json', $ticker, $period, 'stale_fallback', $staleCache['source'] ?? 'cache', $staleCache['live_error_summary'], $staleCache['cache']['age_seconds'] ?? null);
+        record_usage_event(__DIR__ . '/api_usage_tracker.json', $requesterIdentity, $staleCache['source'] ?? 'cache', $ticker, $period, $lookback, 'stale_fallback', 'stale');
+        $status = 'Served stale cache after fetch failure';
+        $logEntry = '[' . date('Y-m-d H:i:s') . "] Requester: $usageActor, Ticker: $ticker, Period: $period, Lookback: $lookback. Status: $status\n";
+        file_put_contents('api.log', $logEntry, FILE_APPEND);
+        respond_json(with_usage_summary($staleCache, $requesterIdentity), 200);
+    }
+
+    $errorPayload = [
+        'error' => 'Market data unavailable',
+        'ticker' => $ticker,
+        'period' => $period,
+        'lookback' => (int) $lookback,
+        'details' => $decoded ?: ['raw_output' => trim((string) $output)],
+        'live_status' => 'error',
+        'live_error_summary' => summarize_live_error($decoded ?: ['raw_output' => trim((string) $output)]) ?? 'Market data unavailable',
+    ];
+
+    update_health_status(__DIR__ . '/state/health-status.json', $ticker, $period, 'error', 'unavailable', $errorPayload['live_error_summary'] ?? null, null);
+    record_usage_event(__DIR__ . '/api_usage_tracker.json', $requesterIdentity, 'unavailable', $ticker, $period, $lookback, 'error', 'live');
+    $status = 'Error: ' . json_encode($errorPayload);
     $logEntry = '[' . date('Y-m-d H:i:s') . "] Requester: $usageActor, Ticker: $ticker, Period: $period, Lookback: $lookback. Status: $status\n";
     file_put_contents('api.log', $logEntry, FILE_APPEND);
-    respond_json(with_usage_summary($staleCache, $requesterIdentity), 200);
+    respond_json(with_usage_summary($errorPayload, $requesterIdentity), 503);
+} finally {
+    // Hold the lock until the cache write is done on success, and
+    // release after the response is composed on stale/error paths so
+    // the next request gets a clear slot. Only release if WE acquired
+    // it — late waiters that fell through still pass through this
+    // block without owning anything.
+    if ($gotLock) {
+        ht_cache_release_singleflight($singleflightLockKey, $singleflightToken);
+    }
 }
-
-$errorPayload = [
-    'error' => 'Market data unavailable',
-    'ticker' => $ticker,
-    'period' => $period,
-    'lookback' => (int) $lookback,
-    'details' => $decoded ?: ['raw_output' => trim((string) $output)],
-    'live_status' => 'error',
-    'live_error_summary' => summarize_live_error($decoded ?: ['raw_output' => trim((string) $output)]) ?? 'Market data unavailable',
-];
-
-update_health_status(__DIR__ . '/state/health-status.json', $ticker, $period, 'error', 'unavailable', $errorPayload['live_error_summary'] ?? null, null);
-record_usage_event(__DIR__ . '/api_usage_tracker.json', $requesterIdentity, 'unavailable', $ticker, $period, $lookback, 'error', 'live');
-$status = 'Error: ' . json_encode($errorPayload);
-$logEntry = '[' . date('Y-m-d H:i:s') . "] Requester: $usageActor, Ticker: $ticker, Period: $period, Lookback: $lookback. Status: $status\n";
-file_put_contents('api.log', $logEntry, FILE_APPEND);
-respond_json(with_usage_summary($errorPayload, $requesterIdentity), 503);

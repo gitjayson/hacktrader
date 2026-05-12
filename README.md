@@ -1,10 +1,16 @@
 # HackTrader Dashboard
 
-- **Version:** v0.13.3
+- **Version:** v0.13.4
 - **Status:** Active
 - **Codebase:** HackTrader FUI dashboard
 
 HackTrader is a market structure visualization tool. It surfaces correlation geometry, support/resistance ladders, channel bands, and volume context for a focus ticker and its peers — a way to *see* the chart faster, not a forecast or signal service.
+
+## Highlights in v0.13.4
+
+- **Quota enforcement is now wired and switchable.** `api.php` previously set `$hardGate = false` as a hard-coded constant, leaving Free and expired users effectively unmetered now that Starter is live as a paid tier. The gate is now driven by the `HACKTRADER_QUOTA_HARD_GATE` environment variable — leave unset for soft mode (count + log, default), set to `1` for hard mode (HTTP 402 with `quota_exceeded` payload). The active mode is exposed at `/healthz.php` under `config.quota_mode` so ops can verify which side a box is on. Documented in `docs/ops-env.md`.
+- **OAuth redirect URI uses the whitelisted URL builder.** `callback.php` was still building the Google OAuth `redirect_uri` from raw `HTTP_HOST` + `HTTP_X_FORWARDED_PROTO` — the same host-header trust boundary that was fixed for Stripe URLs in v0.13.2/v0.13.3. Now centralized in `lib/app_url.php`, called from both callback.php and (via the require chain) from subscribe.php / billing.php. Single source of truth for "absolute URL back into this app, for whichever host the request actually came in on, with a fallback to the canonical production domain."
+- **Singleflight lock now held through the cache write.** The v0.13.3 release call sat between `shell_exec()` and the `ht_cache_set()` writes, opening a small window where a follow-up request could win a *new* lock and start a duplicate upstream fetch even though the cache was about to be populated. The release is now inside a `try/finally` wrapping the entire post-fetch block, so the lock is held through the JSON decode and Redis/file cache writes on the success path, and only released after the response is composed on the stale/error paths. Combined with v0.13.3's ownership-token compare-and-delete, the lock now does what its name promises across the full lifecycle.
 
 ## Highlights in v0.13.3
 
