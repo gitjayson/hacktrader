@@ -25,6 +25,8 @@ parameters:
         - me.php
         # v0.13.0 Redis subscription cache
         - lib/cache.php
+        # v0.13.4 centralized URL builder
+        - lib/app_url.php
 
     excludePaths:
         - vendor/

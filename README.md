@@ -1,10 +1,14 @@
 # HackTrader Dashboard
 
-- **Version:** v0.13.4
+- **Version:** v0.13.5
 - **Status:** Active
 - **Codebase:** HackTrader FUI dashboard
 
 HackTrader is a market structure visualization tool. It surfaces correlation geometry, support/resistance ladders, channel bands, and volume context for a focus ticker and its peers — a way to *see* the chart faster, not a forecast or signal service.
+
+## Highlights in v0.13.5
+
+- **phpstan happy with the new URL helper.** v0.13.4 introduced `lib/app_url.php` with `hacktrader_app_url()` wrapped in `if (!function_exists(...))`. phpstan static-analysis treats conditionally-defined functions as "may not exist," so every caller (billing.php, subscribe.php, callback.php) flagged "Function hacktrader_app_url not found." Dropped the guard (require_once is already idempotent — the guard was load-bearing only when the function lived inside subscription.php's `if (!defined(...))` block) and added `lib/app_url.php` to phpstan.neon's path list. Lint clean again. No behavior change at runtime.
 
 ## Highlights in v0.13.4
 
