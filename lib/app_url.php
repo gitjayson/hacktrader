@@ -47,23 +47,33 @@ function hacktrader_app_url(string $path = ''): string {
     $hostAllowed = in_array($hostNoPort, $allowedHosts, true);
     $host = $hostAllowed ? $hostNoPort : $defaultHost;
 
-    // Rules:
-    //   - Host not on whitelist → force https on the default host.
-    //     (We don't know the deploy environment, so don't honor any
-    //     forwarded-proto hint from an unrecognized caller.)
-    //   - Host on whitelist + HTTP_X_FORWARDED_PROTO set → honor it
-    //     (the dev box does serve plain http on the host, the
-    //     production proxy terminates TLS and forwards "https").
-    //   - Host on whitelist + no forwarded header → fall back to
-    //     SERVER['HTTPS'] direct check, defaulting to https.
-    if (!$hostAllowed) {
-        $scheme = 'https';
-    } elseif (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+    // v0.13.6 — scheme is now https by default. HTTP_X_FORWARDED_PROTO is
+    // only honored when HACKTRADER_TRUST_FORWARDED_PROTO=1 in the
+    // environment, i.e., ops has explicitly said "the proxy in front of
+    // this PHP-FPM strips client-supplied X-Forwarded-Proto and sets its
+    // own based on what TLS terminated." Without that flag we treat the
+    // header as client-controlled and ignore it.
+    //
+    // Why the v0.13.4 rule (honor it when host is whitelisted) wasn't
+    // enough: HTTP_HOST is also client-controlled unless nginx
+    // normalizes it via server_name and `proxy_set_header Host $host;`
+    // boundaries. A whitelist match doesn't prove the proxy is in front;
+    // it just proves the client typed (or forged) a recognized hostname.
+    //
+    // Operational note: prod nginx terminates TLS and sets
+    // X-Forwarded-Proto: https from $scheme, which is the proxy's view,
+    // not the client's — so setting the env flag is correct there. If
+    // the dev box serves plain http directly without a proxy, leave the
+    // env flag unset and Stripe/OAuth URLs will still come out https
+    // (which is what those services require anyway).
+    $trustForwardedProto = filter_var(
+        getenv('HACKTRADER_TRUST_FORWARDED_PROTO') ?: '0',
+        FILTER_VALIDATE_BOOLEAN
+    );
+    if ($trustForwardedProto && !empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
         $scheme = strtolower((string) $_SERVER['HTTP_X_FORWARDED_PROTO']);
     } else {
-        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
-            ? 'https'
-            : 'https'; // Default-deny http on the whitelisted hosts.
+        $scheme = 'https';
     }
     if (!in_array($scheme, ['http', 'https'], true)) {
         $scheme = 'https';

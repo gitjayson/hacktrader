@@ -40,11 +40,16 @@ parameters:
 
     # Ignore errors phpstan raises only because vendor/ isn't installed
     # locally. The classes exist at runtime on the server (per composer.json).
+    # v0.13.6 — Stripe\ added alongside Google\ and Predis\ so lint passes
+    # without `composer install` first. Used by subscribe.php / billing.php
+    # / webhook.php.
     ignoreErrors:
         - identifier: class.notFound
           message: '#Google\\#'
         - identifier: class.notFound
           message: '#Predis\\#'
+        - identifier: class.notFound
+          message: '#Stripe\\#'
 
     # We can paste in a baseline file later via:
     #   php bin/phpstan.phar analyse --generate-baseline

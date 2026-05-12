@@ -6,12 +6,32 @@ function respond_json($payload, int $statusCode = 200): void {
     exit;
 }
 
+// v0.13.6 — compute config block up front so it appears in every
+// response path, including the "starting" early return below.
+// Ops is most likely to check /healthz.php right after a deploy,
+// before any user traffic has populated health-status.json — that's
+// exactly when knowing quota_mode matters.
+$quotaHardGate = filter_var(
+    getenv('HACKTRADER_QUOTA_HARD_GATE') ?: '0',
+    FILTER_VALIDATE_BOOLEAN
+);
+$trustForwardedProto = filter_var(
+    getenv('HACKTRADER_TRUST_FORWARDED_PROTO') ?: '0',
+    FILTER_VALIDATE_BOOLEAN
+);
+$configBlock = [
+    'quota_hard_gate' => $quotaHardGate,
+    'quota_mode' => $quotaHardGate ? 'hard' : 'soft',
+    'trust_forwarded_proto' => $trustForwardedProto,
+];
+
 $statePath = __DIR__ . '/state/health-status.json';
 if (!file_exists($statePath)) {
     respond_json([
         'status' => 'starting',
         'app' => 'hacktrader',
         'reason' => 'Health state not initialized yet.',
+        'config' => $configBlock,
     ], 200);
 }
 
@@ -55,13 +75,8 @@ if (($counters['consecutive_failures'] ?? 0) >= 3 || $errorRatio >= 0.5) {
 
 // v0.13.4 — surface the quota-enforcement state so ops can verify
 // at a glance whether the box is counting-only ("soft") or enforcing
-// ("hard"). Driven by the HACKTRADER_QUOTA_HARD_GATE env var that
-// api.php reads on each request.
-$quotaHardGate = filter_var(
-    getenv('HACKTRADER_QUOTA_HARD_GATE') ?: '0',
-    FILTER_VALIDATE_BOOLEAN
-);
-
+// ("hard"). v0.13.6 — same $configBlock used in the "starting" early
+// return above; we just attach it here too for the populated path.
 respond_json([
     'status' => $status,
     'app' => 'hacktrader',
@@ -76,8 +91,5 @@ respond_json([
         'stale_ratio' => $staleRatio,
         'error_ratio' => $errorRatio,
     ],
-    'config' => [
-        'quota_hard_gate' => $quotaHardGate,
-        'quota_mode' => $quotaHardGate ? 'hard' : 'soft',
-    ],
+    'config' => $configBlock,
 ], $http);

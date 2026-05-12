@@ -1,10 +1,16 @@
 # HackTrader Dashboard
 
-- **Version:** v0.13.5
+- **Version:** v0.13.6
 - **Status:** Active
 - **Codebase:** HackTrader FUI dashboard
 
 HackTrader is a market structure visualization tool. It surfaces correlation geometry, support/resistance ladders, channel bands, and volume context for a focus ticker and its peers — a way to *see* the chart faster, not a forecast or signal service.
+
+## Highlights in v0.13.6
+
+- **Forwarded-proto behind an explicit trust contract.** v0.13.4 honored `HTTP_X_FORWARDED_PROTO` whenever the host was on the whitelist, but `Host:` is also client-controlled unless nginx normalizes it via `server_name` boundaries — so a whitelist match doesn't actually prove the request came through the trusted proxy. `lib/app_url.php` now defaults to `https` for every callback URL it builds. The forwarded-proto header is honored only when `HACKTRADER_TRUST_FORWARDED_PROTO=1` is set in the environment — i.e., ops has explicitly committed that the proxy strips/overrides any client-supplied `X-Forwarded-Proto`. State is exposed at `/healthz.php` under `config.trust_forwarded_proto`. Documented in `docs/ops-env.md`.
+- **phpstan now lints clean without `composer install`.** The `Google\` and `Predis\` class-not-found ignores were already in place; added `Stripe\` for parity, since `subscribe.php`, `billing.php`, and `webhook.php` all reach into the Stripe SDK classes. CI and fresh-clone lint runs now report `[OK] No errors` without needing the vendor tree present.
+- **/healthz.php starting response includes the config block.** Previously the early-return path (when `state/health-status.json` doesn't exist yet, i.e. fresh box right after deploy) dropped the new `config.quota_mode` field — which is exactly when ops most wants to verify it. Both `config.quota_mode` and the new `config.trust_forwarded_proto` are now in the starting response too.
 
 ## Highlights in v0.13.5
 
