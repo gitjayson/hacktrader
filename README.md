@@ -1,10 +1,16 @@
 # HackTrader Dashboard
 
-- **Version:** v0.13.2
+- **Version:** v0.13.3
 - **Status:** Active
 - **Codebase:** HackTrader FUI dashboard
 
 HackTrader is a market structure visualization tool. It surfaces correlation geometry, support/resistance ladders, channel bands, and volume context for a focus ticker and its peers — a way to *see* the chart faster, not a forecast or signal service.
+
+## Highlights in v0.13.3
+
+- **Singleflight lock is now correct under slow fetches.** The v0.13.2 stampede protection had a race: the lock TTL was 5 seconds, but waiters gave up after 2. A `run-brk.sh` call slower than 2s would hand control to a waiter, which then deleted the original owner's still-valid lock when it finished. With many concurrent waiters this devolved back into a stampede. Three changes close it: (1) `ht_cache_acquire_singleflight` now returns a unique ownership token instead of a bool; (2) `ht_cache_release_singleflight` does a Lua compare-and-delete so it only deletes the lock if we still own it; (3) TTL bumped to 15s and wait window to 12s, so a normal Massive fetch finishes well inside both. Late waiters that time out fall through to their own fetch but no longer torch the original lock on the way past.
+- **Stripe URLs no longer downgradable via forwarded-proto.** `lib/subscription.php::hacktrader_app_url()` used to honor `HTTP_X_FORWARDED_PROTO` unconditionally. Even after the host whitelist was added in v0.13.2, a forged or oddly-configured proxy header could still produce `http://hacktrader.com/...` for Stripe success/cancel/return URLs. The header is now only trusted when the request host is already on the whitelist; otherwise scheme is forced to https. Not an attacker-controlled redirect (host is locked), but it closes the matching downgrade vector on the same code path.
+- **Defensive `.gitignore` entry for a stray nested clone.** A code reviewer flagged that a nested `hacktrader/` directory had appeared in the working tree with its own `.git`, ~6.9MB. Added a `/hacktrader/` ignore rule so a future `git add .` can't accidentally stage it as a nested-repo entry.
 
 ## Highlights in v0.13.2
 

@@ -78,3 +78,10 @@ state/health-status.json
 
 # --- Nginx default landing page on Ubuntu, irrelevant to the repo ---
 index.nginx-debian.html
+
+# --- Defensive: a nested clone of this repo (e.g. accidental
+#     `git clone https://github.com/...hacktrader.git` from inside the
+#     working tree) showed up in a code review as ~6.9MB of untracked
+#     phantom content. Block it from ever being staged. Remove the
+#     directory manually if it exists. ---
+/hacktrader/

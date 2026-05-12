@@ -21,7 +21,7 @@ $liteMode = isset($_GET['lite'])
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>HackTrader | v0.13.2</title>
+    <title>HackTrader | v0.13.3</title>
     <link rel='preconnect' href='https://fonts.googleapis.com'>
     <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
     <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap' rel='stylesheet'>
@@ -1752,7 +1752,7 @@ $liteMode = isset($_GET['lite'])
             </section>
         </section>
         <footer>
-            HackTrader v0.13.2 · © 2026 <a href='https://pngs.us' target='_blank' rel='noopener' class='footer-brand'>PENGUINS LLC</a> · All rights reserved.<br>
+            HackTrader v0.13.3 · © 2026 <a href='https://pngs.us' target='_blank' rel='noopener' class='footer-brand'>PENGUINS LLC</a> · All rights reserved.<br>
             <a href='https://pngs.us' target='_blank' rel='noopener' class='footer-brand-link'>pngs.us</a>
         </footer>
     </main>

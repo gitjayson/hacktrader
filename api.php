@@ -88,7 +88,7 @@ function save_json_file($path, $payload) {
 
 function update_health_status($path, $ticker, $period, $liveStatus, $provider = null, $errorSummary = null, $cacheAgeSeconds = null) {
     $state = load_json_file($path, [
-        'meta' => ['updated_at' => null, 'version' => 'v0.13.2'],
+        'meta' => ['updated_at' => null, 'version' => 'v0.13.3'],
         'counters' => [
             'total_requests' => 0,
             'live_successes' => 0,
@@ -165,7 +165,7 @@ function update_health_status($path, $ticker, $period, $liveStatus, $provider = 
     ];
     $state['recent_events'] = array_slice($state['recent_events'], -100);
     $state['meta']['updated_at'] = $timestamp;
-    $state['meta']['version'] = 'v0.13.2';
+    $state['meta']['version'] = 'v0.13.3';
 
     save_json_file($path, $state);
 }
@@ -193,7 +193,7 @@ function summarize_live_error($details): ?string {
 
 function record_usage_event($trackerPath, $sessionId, $provider, $ticker, $interval, $periods, $outcome, $cacheState = null) {
     $tracker = load_json_file($trackerPath, [
-        'meta' => ['updated_at' => null, 'version' => 'v0.13.2'],
+        'meta' => ['updated_at' => null, 'version' => 'v0.13.3'],
         'sessions' => [],
         'recent_events' => [],
     ]);
@@ -273,7 +273,7 @@ function record_usage_event($trackerPath, $sessionId, $provider, $ticker, $inter
     ];
     $tracker['recent_events'] = array_slice($tracker['recent_events'], -200);
     $tracker['meta']['updated_at'] = $timestamp;
-    $tracker['meta']['version'] = 'v0.13.2';
+    $tracker['meta']['version'] = 'v0.13.3';
 
     save_json_file($trackerPath, $tracker);
 }
@@ -533,15 +533,23 @@ if ($freshCache !== null) {
 // would otherwise fall through to spawn run-brk.sh and fetch Massive
 // in parallel — wasting N-1 API calls and Python subprocesses.
 //
-// Strategy: try to acquire a 5-second lock keyed by the subscription.
-// If we win, we do the fetch. If we lose, another request is already
-// fetching; wait up to 2 seconds polling the cache, and if a value
-// shows up, return that. Only fall through to our own fetch if the
-// winner's fetch failed (lock still held but no value appeared).
+// v0.13.3 hardening:
+//   - Lock TTL bumped 5s → 15s so it comfortably exceeds a normal
+//     run-brk.sh runtime. Previously a fetch slower than 5s would
+//     hand the lock to a waiter, defeating the purpose.
+//   - Wait window bumped 2s → 12s, just inside the TTL, so waiters
+//     give the original owner time to finish before falling through.
+//   - acquire returns an ownership token (or null); release uses that
+//     token for compare-and-delete, so a late waiter that timed out
+//     and fell through can no longer delete the original owner's
+//     still-valid lock.
+//   - Release is now guarded by $gotLock — non-owners skip it
+//     entirely, belt-and-suspenders on top of the token check.
 $singleflightLockKey = $subscriptionKey;
-$gotLock = ht_cache_acquire_singleflight($singleflightLockKey, 5);
+$singleflightToken = ht_cache_acquire_singleflight($singleflightLockKey, 15);
+$gotLock = $singleflightToken !== null;
 if (!$gotLock) {
-    $waited = ht_cache_wait_for_value($redisScoreKey, 2000);
+    $waited = ht_cache_wait_for_value($redisScoreKey, 12000);
     if (is_array($waited)) {
         $lastRefRaw = ht_cache_get($redisLastRefKey);
         $ageSeconds = is_numeric($lastRefRaw) ? max(0, time() - (int) $lastRefRaw) : null;
@@ -574,9 +582,14 @@ $cmd = __DIR__ . '/run-brk.sh '
     . escapeshellarg($encodedRequesterIdentity);
 $output = shell_exec($cmd);
 putenv('HACKTRADER_SESSION_ID');
-// Always release the lock — whether we won or not — so the next
-// stampede can run unimpeded. Idempotent del.
-ht_cache_release_singleflight($singleflightLockKey);
+// v0.13.3 — only release if we actually acquired. Late waiters that
+// timed out fall through here without owning the lock; if they called
+// release blindly they could delete the original owner's still-valid
+// lock. The token-based compare-and-delete inside release() would
+// catch that too, but skipping the call entirely is cleaner.
+if ($gotLock) {
+    ht_cache_release_singleflight($singleflightLockKey, $singleflightToken);
+}
 $decoded = is_string($output) ? json_decode($output, true) : null;
 
 $isValidJson = is_array($decoded);

@@ -278,17 +278,36 @@ if (!defined('HACKTRADER_SUBSCRIPTION_LOADED')) {
 
         $rawHost = (string) ($_SERVER['HTTP_HOST'] ?? '');
         // Strip any port suffix before whitelist check.
-        $hostNoPort = preg_replace('/:\d+$/', '', $rawHost);
-        $host = in_array(strtolower($hostNoPort), $allowedHosts, true)
-            ? strtolower($hostNoPort)
-            : $defaultHost;
+        $hostNoPort = strtolower((string) preg_replace('/:\d+$/', '', $rawHost));
+        $hostAllowed = in_array($hostNoPort, $allowedHosts, true);
+        $host = $hostAllowed ? $hostNoPort : $defaultHost;
 
-        // Scheme: trust X-Forwarded-Proto only if the request came in on a
-        // recognized host (the whitelist above also gates this), and default
-        // to https in production-style contexts.
-        $scheme = !empty($_SERVER['HTTP_X_FORWARDED_PROTO'])
-            ? strtolower((string) $_SERVER['HTTP_X_FORWARDED_PROTO'])
-            : ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'https');
+        // v0.13.3 — Only trust the forwarded-proto header when the request
+        // came in on a whitelisted host. The previous version trusted
+        // HTTP_X_FORWARDED_PROTO unconditionally, so a forged or oddly
+        // configured proxy header could downgrade Stripe return URLs to
+        // http://hacktrader.com/... even after the host fell back to the
+        // default. That's not an attacker-controlled redirect (host is
+        // already locked), but it is a stripe-flow downgrade vector.
+        //
+        // Rules:
+        //   - Host not on whitelist → force https on the default host.
+        //     (We don't know the deploy environment, so don't honor any
+        //     forwarded-proto hint from an unrecognized caller.)
+        //   - Host on whitelist + HTTP_X_FORWARDED_PROTO set → honor it
+        //     (the dev box does serve plain http on the host, the
+        //     production proxy terminates TLS and forwards "https").
+        //   - Host on whitelist + no forwarded header → fall back to
+        //     SERVER['HTTPS'] direct check, defaulting to https.
+        if (!$hostAllowed) {
+            $scheme = 'https';
+        } elseif (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+            $scheme = strtolower((string) $_SERVER['HTTP_X_FORWARDED_PROTO']);
+        } else {
+            $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+                ? 'https'
+                : 'https'; // Default-deny http on the whitelisted hosts.
+        }
         if (!in_array($scheme, ['http', 'https'], true)) {
             $scheme = 'https';
         }

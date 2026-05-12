@@ -166,35 +166,67 @@ function ht_cache_remember(string $cacheKey, string $subscriptionKey, int $ttlSe
  * This function acquires a short-lived Redis lock for the given key. The
  * caller treats it like a mutex around the expensive fetch path:
  *
- *   - If acquired: caller proceeds with the live fetch, then releases.
- *   - If not acquired: another request is fetching right now. Sleep
- *     briefly so the caller can re-check the cache (which the winner
- *     should populate by then).
- *
- * Returns true if the caller "won" the lock and should proceed with
- * the live fetch. Returns false if the caller should sleep + re-read.
+ *   - If acquired: returns a unique ownership token. Caller proceeds
+ *     with the live fetch, then releases by passing the token back.
+ *   - If not acquired: returns null. Another request owns the lock;
+ *     caller should wait on the cache instead.
  *
  * Lock auto-expires via TTL so a crashed winner doesn't permanently
  * block others.
+ *
+ * v0.13.3 — Switched return type from bool to ?string (ownership
+ * token) so release can verify ownership before deleting. The old
+ * blind-delete contract had a race: if the wait timeout was shorter
+ * than the TTL, a waiter could give up, fall through to its own fetch,
+ * then on the way out call release() and delete the *original*
+ * owner's still-valid lock. With token-based compare-and-delete the
+ * release is a no-op unless we still own it.
+ *
+ * Failure-mode sentinels:
+ *   - Redis unavailable → return '' (empty string). Treat empty token
+ *     as "no-coordination mode, proceed but don't release" — that
+ *     way the caller still gets through cleanly without us pretending
+ *     it owns a lock that doesn't exist.
+ *   - Redis threw on the SET → also return '', same fail-open story.
+ *   - Acquired → return random hex token (must be passed to release).
+ *   - Did not acquire (someone else holds the lock) → return null.
  */
-function ht_cache_acquire_singleflight(string $lockKey, int $lockTtlSeconds = 5): bool {
+function ht_cache_acquire_singleflight(string $lockKey, int $lockTtlSeconds = 15): ?string {
     $r = ht_cache_client();
-    if (!$r) return true; // No Redis: every caller fetches; protection isn't available.
+    if (!$r) return ''; // No Redis: fail-open sentinel.
     try {
+        $token = bin2hex(random_bytes(16));
         // SET key value NX EX ttl — atomic set-if-not-exists with expiry.
-        $result = $r->set('lock:' . $lockKey, (string) getmypid(), 'EX', $lockTtlSeconds, 'NX');
-        return $result === true || (is_object($result) && (string) $result === 'OK');
+        $result = $r->set('lock:' . $lockKey, $token, 'EX', $lockTtlSeconds, 'NX');
+        $acquired = $result === true || (is_object($result) && (string) $result === 'OK');
+        return $acquired ? $token : null;
     } catch (\Throwable $e) {
         error_log('lib/cache.php: singleflight acquire failed for ' . $lockKey . ': ' . $e->getMessage());
-        return true; // Fail open — better to fetch twice than to deadlock.
+        return ''; // Fail-open — caller proceeds with fetch, but won't release.
     }
 }
 
-function ht_cache_release_singleflight(string $lockKey): void {
+/**
+ * Release a singleflight lock if (and only if) we still own it.
+ *
+ * The compare-and-delete is done atomically server-side via a Lua
+ * script so a slow original owner doesn't get its lock yanked by an
+ * unrelated request that timed out waiting and is now cleaning up.
+ *
+ * Pass the token returned by ht_cache_acquire_singleflight. An empty
+ * token means "no lock to release" (fail-open path); we no-op so the
+ * caller doesn't accidentally blast someone else's lock.
+ */
+function ht_cache_release_singleflight(string $lockKey, string $token): void {
+    if ($token === '') return; // Fail-open sentinel — nothing to release.
     $r = ht_cache_client();
     if (!$r) return;
     try {
-        $r->del('lock:' . $lockKey);
+        // Compare-and-delete via Lua. KEYS[1] = lock name, ARGV[1] = our token.
+        // If the lock still holds our token, delete it. Otherwise leave it alone
+        // so the legitimate owner (or its TTL) can deal with it.
+        $script = "if redis.call('GET', KEYS[1]) == ARGV[1] then return redis.call('DEL', KEYS[1]) else return 0 end";
+        $r->eval($script, 1, 'lock:' . $lockKey, $token);
     } catch (\Throwable $e) {
         // Lock will TTL out anyway; nothing to do.
     }
