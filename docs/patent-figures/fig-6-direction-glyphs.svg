@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" font-family="Helvetica, Arial, sans-serif">
+  <style>
+    .stroke { fill: none; stroke: #000; stroke-width: 1.6; }
+    .stroke-thin { fill: none; stroke: #000; stroke-width: 0.8; }
+    .lead { fill: none; stroke: #000; stroke-width: 0.5; }
+    .num { font-size: 14px; fill: #000; }
+    .desc { font-size: 12px; fill: #000; text-anchor: middle; }
+    .label { font-size: 13px; fill: #000; text-anchor: middle; font-weight: 700; }
+    .ticker { font-size: 14px; fill: #000; font-weight: 700; text-anchor: middle; }
+    .figlabel { font-size: 16px; fill: #000; font-weight: 700; text-anchor: middle; }
+    .glyph-label { font-size: 36px; fill: #000; font-weight: 700; text-anchor: middle; }
+  </style>
+
+  <defs>
+    <pattern id="hatch6-up" patternUnits="userSpaceOnUse" width="5" height="5" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="5" stroke="#000" stroke-width="0.8"/>
+    </pattern>
+    <pattern id="hatch6-down" patternUnits="userSpaceOnUse" width="5" height="5" patternTransform="rotate(135)">
+      <line x1="0" y1="0" x2="0" y2="5" stroke="#000" stroke-width="0.8"/>
+    </pattern>
+  </defs>
+
+  <!-- Title -->
+  <text x="400" y="100" class="figlabel">Direction Glyph Encoding</text>
+  <text x="400" y="125" class="desc">Three peer indicator nodes shown side-by-side, each illustrating one of</text>
+  <text x="400" y="142" class="desc">the three geometric-shape glyphs encoding directional bias.</text>
+
+  <!-- Three peer nodes at y=370, x=180, 400, 620 -->
+
+  <!-- ===== Up-leaning peer: ▲ ===== -->
+  <circle cx="180" cy="370" r="80" class="stroke" fill="url(#hatch6-up)"/>
+  <circle cx="180" cy="370" r="80" fill="white" fill-opacity="0.4" stroke="none"/>
+  <text x="180" y="320" class="ticker">SMH</text>
+  <!-- Big upward triangle glyph -->
+  <polygon points="150,400 210,400 180,355" fill="#000" transform="translate(0, 20)"/>
+  <text x="180" y="500" class="label">Up-leaning bias</text>
+  <text x="180" y="520" class="desc">glyph: ▲ (upward triangle)</text>
+
+  <!-- ===== Down-leaning peer: ▼ ===== -->
+  <circle cx="400" cy="370" r="80" class="stroke" fill="url(#hatch6-down)"/>
+  <circle cx="400" cy="370" r="80" fill="white" fill-opacity="0.4" stroke="none"/>
+  <text x="400" y="320" class="ticker">TLT</text>
+  <!-- Big downward triangle glyph -->
+  <polygon points="370,355 430,355 400,400" fill="#000" transform="translate(0, 20)"/>
+  <text x="400" y="500" class="label">Down-leaning bias</text>
+  <text x="400" y="520" class="desc">glyph: ▼ (downward triangle)</text>
+
+  <!-- ===== Neutral peer: ▪ ===== -->
+  <circle cx="620" cy="370" r="80" class="stroke" fill="white"/>
+  <text x="620" y="320" class="ticker">IEF</text>
+  <!-- Filled square glyph -->
+  <rect x="603" y="378" width="34" height="34" fill="#000"/>
+  <text x="620" y="500" class="label">Neutral bias</text>
+  <text x="620" y="520" class="desc">glyph: ▪ (filled square)</text>
+
+  <!-- ===== Callouts ===== -->
+
+  <!-- 208: direction glyph -->
+  <line x1="180" y1="395" x2="80" y2="500" class="lead"/>
+  <text x="20" y="515" class="num">208 (direction glyph)</text>
+
+  <!-- 200: peer indicator node -->
+  <line x1="250" y1="320" x2="320" y2="245" class="lead"/>
+  <text x="240" y="235" class="num">200 (peer indicator node)</text>
+
+  <!-- 202: graded fill (hatching) -->
+  <line x1="135" y1="345" x2="40" y2="290" class="lead"/>
+  <text x="20" y="280" class="num">202 (graded fill)</text>
+
+  <!-- Note about accessibility -->
+  <text x="400" y="660" class="desc">Because the glyph's geometric shape itself unambiguously encodes</text>
+  <text x="400" y="678" class="desc">the directional bias, the encoding remains readable to users</text>
+  <text x="400" y="696" class="desc">with red-green color vision deficiency — providing a redundant</text>
+  <text x="400" y="714" class="desc">accessibility channel alongside fill hue and border style.</text>
+
+  <!-- Encoding summary table -->
+  <line x1="160" y1="760" x2="640" y2="760" class="stroke-thin"/>
+  <text x="200" y="780" class="label">Glyph</text>
+  <text x="400" y="780" class="label">Directional bias</text>
+  <text x="600" y="780" class="label">Color-independent?</text>
+  <line x1="160" y1="790" x2="640" y2="790" class="stroke-thin"/>
+
+  <polygon points="190,810 210,810 200,798" fill="#000"/>
+  <text x="400" y="813" class="desc">Up-leaning</text>
+  <text x="600" y="813" class="desc">Yes (shape only)</text>
+
+  <polygon points="190,838 210,838 200,850" fill="#000"/>
+  <text x="400" y="843" class="desc">Down-leaning</text>
+  <text x="600" y="843" class="desc">Yes (shape only)</text>
+
+  <rect x="192" y="868" width="16" height="16" fill="#000"/>
+  <text x="400" y="881" class="desc">Neutral</text>
+  <text x="600" y="881" class="desc">Yes (shape only)</text>
+
+  <line x1="160" y1="895" x2="640" y2="895" class="stroke-thin"/>
+
+  <!-- ===== Figure label ===== -->
+  <text x="400" y="950" class="figlabel">FIG. 6</text>
+</svg>

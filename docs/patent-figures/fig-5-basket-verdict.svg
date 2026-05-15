@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" font-family="Helvetica, Arial, sans-serif">
+  <style>
+    .stroke { fill: none; stroke: #000; stroke-width: 1.6; }
+    .stroke-thin { fill: none; stroke: #000; stroke-width: 0.8; }
+    .lead { fill: none; stroke: #000; stroke-width: 0.5; }
+    .num { font-size: 14px; fill: #000; }
+    .desc { font-size: 12px; fill: #000; }
+    .ticker { font-size: 36px; fill: #000; font-weight: 700; text-anchor: middle; letter-spacing: 1px; }
+    .verdict { font-size: 56px; fill: #000; font-weight: 700; text-anchor: middle; letter-spacing: 2px; }
+    .figlabel { font-size: 16px; fill: #000; font-weight: 700; text-anchor: middle; }
+  </style>
+
+  <defs>
+    <pattern id="hatch5" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="6" stroke="#000" stroke-width="0.8"/>
+    </pattern>
+    <marker id="arr5" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#000"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="400" y="100" class="figlabel">Basket Verdict Display</text>
+
+  <!-- Enlarged focus node at center -->
+  <circle cx="400" cy="500" r="200" class="stroke" fill="url(#hatch5)"/>
+  <circle cx="400" cy="500" r="200" fill="white" fill-opacity="0.4" stroke="none"/>
+
+  <!-- Ticker label -->
+  <text x="400" y="450" class="ticker">NVDA</text>
+
+  <!-- Basket verdict: N/M ↑ -->
+  <text x="400" y="535" class="verdict">9/12</text>
+
+  <!-- Direction glyph (upward triangle) below verdict -->
+  <polygon points="386,580 414,580 400,556" fill="#000"/>
+
+  <!-- ===== Callouts to verdict components ===== -->
+
+  <!-- Callout: focus node 110 -->
+  <line x1="555" y1="380" x2="685" y2="320" class="lead"/>
+  <text x="630" y="310" class="num">110 (focus node)</text>
+
+  <!-- Callout: ticker identifier 112 -->
+  <line x1="445" y1="446" x2="620" y2="430" class="lead"/>
+  <text x="625" y="434" class="num">112 (focus identifier)</text>
+
+  <!-- Callout: N (confirming count) — point at the "9" -->
+  <line x1="365" y1="530" x2="180" y2="500" class="lead"/>
+  <text x="20" y="490" class="num">120a: N — count of peers</text>
+  <text x="20" y="506" class="num">confirming the focus instrument's</text>
+  <text x="20" y="522" class="num">directional bias (positive-corr peer</text>
+  <text x="20" y="538" class="num">leaning same direction OR inverse-corr</text>
+  <text x="20" y="554" class="num">peer leaning opposite direction)</text>
+
+  <!-- Callout: M (total) — point at the "12" -->
+  <line x1="430" y1="530" x2="620" y2="540" class="lead"/>
+  <text x="625" y="544" class="num">120b: M — total number of</text>
+  <text x="625" y="560" class="num">peer indicator nodes</text>
+
+  <!-- Callout: direction arrow — point at the triangle -->
+  <line x1="400" y1="585" x2="200" y2="680" class="lead"/>
+  <text x="20" y="700" class="num">116: focus direction glyph</text>
+  <text x="20" y="716" class="desc">— ▲ if focus is up-leaning</text>
+  <text x="20" y="732" class="desc">— ▼ if focus is down-leaning</text>
+  <text x="20" y="748" class="desc">— ▪ if neutral</text>
+
+  <!-- Reading hint at the bottom -->
+  <text x="400" y="800" class="desc" text-anchor="middle">Reading: "Nine of twelve peers are confirming an up-leaning NVDA."</text>
+  <text x="400" y="820" class="desc" text-anchor="middle">The basket verdict provides at-a-glance summary of basket alignment with the focus.</text>
+
+  <!-- ===== Figure label ===== -->
+  <text x="400" y="950" class="figlabel">FIG. 5</text>
+</svg>

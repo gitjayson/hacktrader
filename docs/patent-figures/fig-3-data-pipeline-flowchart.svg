@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" font-family="Helvetica, Arial, sans-serif">
+  <style>
+    .stroke { fill: none; stroke: #000; stroke-width: 1.4; }
+    .stroke-thin { fill: none; stroke: #000; stroke-width: 0.8; }
+    .lead { fill: none; stroke: #000; stroke-width: 0.5; }
+    .num { font-size: 13px; fill: #000; }
+    .step { font-size: 13px; fill: #000; text-anchor: middle; }
+    .stepnum { font-size: 11px; fill: #000; text-anchor: middle; }
+    .figlabel { font-size: 16px; fill: #000; font-weight: 700; text-anchor: middle; }
+  </style>
+
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#000"/>
+    </marker>
+  </defs>
+
+  <!-- Step 1: Retrieve price bars (input box, oval) -->
+  <ellipse cx="400" cy="120" rx="180" ry="32" class="stroke"/>
+  <text x="400" y="116" class="step">Market data source</text>
+  <text x="400" y="134" class="step">(price bars for focus + peers)</text>
+  <line x1="80" y1="120" x2="218" y2="120" class="lead"/>
+  <text x="20" y="124" class="num">700</text>
+
+  <!-- Arrow 1→2 -->
+  <line x1="400" y1="152" x2="400" y2="195" class="stroke-thin" marker-end="url(#arr)"/>
+
+  <!-- Step 2: Compute directional bias (rectangle) -->
+  <rect x="220" y="200" width="360" height="60" class="stroke"/>
+  <text x="400" y="225" class="step">Compute directional bias score</text>
+  <text x="400" y="245" class="step">for focus and each peer instrument</text>
+  <line x1="80" y1="230" x2="220" y2="230" class="lead"/>
+  <text x="20" y="234" class="num">710</text>
+
+  <!-- Arrow 2→3 -->
+  <line x1="400" y1="260" x2="400" y2="303" class="stroke-thin" marker-end="url(#arr)"/>
+
+  <!-- Step 3: Compute correlation coefficients -->
+  <rect x="220" y="308" width="360" height="60" class="stroke"/>
+  <text x="400" y="333" class="step">Compute live Pearson correlation</text>
+  <text x="400" y="353" class="step">coefficient: peer ↔ focus, recent window</text>
+  <line x1="80" y1="338" x2="220" y2="338" class="lead"/>
+  <text x="20" y="342" class="num">720</text>
+
+  <!-- Arrow 3→4 -->
+  <line x1="400" y1="368" x2="400" y2="411" class="stroke-thin" marker-end="url(#arr)"/>
+
+  <!-- Step 4: Determine correlation sign -->
+  <rect x="220" y="416" width="360" height="60" class="stroke"/>
+  <text x="400" y="441" class="step">Determine correlation sign</text>
+  <text x="400" y="461" class="step">(positive / inverse) for each peer</text>
+  <line x1="80" y1="446" x2="220" y2="446" class="lead"/>
+  <text x="20" y="450" class="num">730</text>
+
+  <!-- Arrow 4→5 -->
+  <line x1="400" y1="476" x2="400" y2="519" class="stroke-thin" marker-end="url(#arr)"/>
+
+  <!-- Step 5: Assemble payload -->
+  <rect x="220" y="524" width="360" height="60" class="stroke"/>
+  <text x="400" y="549" class="step">Assemble structured data payload</text>
+  <text x="400" y="569" class="step">(identifiers, scores, correlations, signs)</text>
+  <line x1="80" y1="554" x2="220" y2="554" class="lead"/>
+  <text x="20" y="558" class="num">740</text>
+
+  <!-- Arrow 5→6 -->
+  <line x1="400" y1="584" x2="400" y2="627" class="stroke-thin" marker-end="url(#arr)"/>
+
+  <!-- Step 6: Render -->
+  <rect x="220" y="632" width="360" height="60" class="stroke"/>
+  <text x="400" y="657" class="step">Render visualization per</text>
+  <text x="400" y="677" class="step">encoding rules of FIG. 2</text>
+  <line x1="80" y1="662" x2="220" y2="662" class="lead"/>
+  <text x="20" y="666" class="num">750</text>
+
+  <!-- Output: display device (oval) -->
+  <line x1="400" y1="692" x2="400" y2="735" class="stroke-thin" marker-end="url(#arr)"/>
+  <ellipse cx="400" cy="770" rx="180" ry="32" class="stroke"/>
+  <text x="400" y="766" class="step">Rendered display</text>
+  <text x="400" y="784" class="step">(focus + peer indicator nodes)</text>
+  <line x1="80" y1="770" x2="218" y2="770" class="lead"/>
+  <text x="20" y="774" class="num">760</text>
+
+  <!-- Refresh loop arrow: 770 -->
+  <path d="M 580 770 Q 700 770 700 400 Q 700 120 580 120" class="stroke-thin" fill="none" marker-end="url(#arr)"/>
+  <text x="715" y="445" class="num">770</text>
+  <text x="715" y="460" class="num">(refresh</text>
+  <text x="715" y="475" class="num">loop, e.g.</text>
+  <text x="715" y="490" class="num">30s–5min</text>
+  <text x="715" y="505" class="num">period)</text>
+
+  <!-- ===== Figure label ===== -->
+  <text x="400" y="950" class="figlabel">FIG. 3</text>
+</svg>

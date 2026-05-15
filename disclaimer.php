@@ -46,7 +46,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accept'])) {
             display: grid;
             place-items: center;
             padding: 24px;
-            overflow: hidden;
+            /* v0.13.9 — removed `overflow: hidden`. Combined with the fixed
+               viewport-centering above, it locked the page to the visible
+               height and broke scrolling on shorter windows / the mobile
+               viewport. The hero column is min-height: 560px and the right
+               column can be taller, so the page legitimately needs to scroll
+               on small screens. */
         }
         body::before {
             content: '';
