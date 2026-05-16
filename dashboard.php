@@ -2473,6 +2473,18 @@ $liteMode = isset($_GET['lite'])
         }
 
 
+        // v0.14.2 — keep the most recent channel-chart data around so the
+        // window-resize handler can re-render at the new container width
+        // without re-fetching from the API.
+        let lastChannelStackData = null;
+        let channelStackResizeTimer = null;
+        window.addEventListener('resize', () => {
+            if (channelStackResizeTimer) clearTimeout(channelStackResizeTimer);
+            channelStackResizeTimer = setTimeout(() => {
+                if (lastChannelStackData) renderChannelStack(lastChannelStackData);
+            }, 120);
+        });
+
         // v0.14.0 — Channel structure chart renderer.
         //
         // Renders the focus instrument's last ~15 minutes of price inside
@@ -2497,6 +2509,9 @@ $liteMode = isset($_GET['lite'])
             const container = document.getElementById('channelStackContainer');
             const metaEl = document.getElementById('channelStackMeta');
             if (!container) return;
+            // v0.14.2 — remember the most recent payload so the window-resize
+            // listener above can re-render at the new container width.
+            if (data) lastChannelStackData = data;
 
             const channels = Array.isArray(data?.channels) ? data.channels : [];
             const current = channels.find(c => c?.name === 'current');
@@ -2520,9 +2535,14 @@ $liteMode = isset($_GET['lite'])
             const cutoffMs = lastBarMs - FIFTEEN_MIN_MS;
             const recentBars = history.filter(r => Date.parse(r.time) >= cutoffMs);
 
-            // SVG geometry. 800x320 viewBox with a 60px right-side gutter for
-            // channel labels (UPPER/CURRENT/LOWER and price bounds).
-            const W = 800, H = 320;
+            // SVG geometry. v0.14.2 — viewBox width is now sized to the
+            // container's actual rendered width rather than a fixed 800,
+            // so the chart fills full section width on wide layouts instead
+            // of letterboxing. Height stays at 320 to keep band proportions
+            // consistent. preserveAspectRatio='none' is intentionally avoided
+            // because it would horizontally stretch text labels.
+            const containerWidth = Math.max(600, Math.round(container.clientWidth || 800));
+            const W = containerWidth, H = 320;
             const PAD_X_LEFT = 12;
             const PAD_X_RIGHT = 88;
             const PAD_Y_TOP = 14;
