@@ -618,7 +618,7 @@
             <a href='disclaimer.php'>Disclaimer</a>
         </nav>
         <div class='footer-copy'>
-            HackTrader v0.13.8 · © 2026 <a href='https://pngs.us' target='_blank' rel='noopener' class='footer-brand'>PENGUINS LLC</a> · All rights reserved.<br>
+            HackTrader v0.14.0 · © 2026 <a href='https://pngs.us' target='_blank' rel='noopener' class='footer-brand'>PENGUINS LLC</a> · All rights reserved.<br>
             <a href='https://pngs.us' target='_blank' rel='noopener' class='footer-brand-link'>pngs.us</a>
         </div>
     </footer>

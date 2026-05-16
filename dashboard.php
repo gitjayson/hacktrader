@@ -21,7 +21,7 @@ $liteMode = isset($_GET['lite'])
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>HackTrader | v0.13.8</title>
+    <title>HackTrader | v0.14.0</title>
     <link rel='preconnect' href='https://fonts.googleapis.com'>
     <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
     <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap' rel='stylesheet'>
@@ -668,6 +668,74 @@ $liteMode = isset($_GET['lite'])
             font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 0.14em;
+        }
+        /* v0.14.0 — Channel structure chart styles.
+           Three stacked horizontal bands rendered as SVG <rect>s, with a
+           price polyline that lives inside the current (middle) band. The
+           current band uses cyan accents to match the focus-node identity
+           in the rest of the dashboard; the upper/lower bands use a low-
+           saturation green/red to encode "breakout direction" without
+           competing for visual weight. */
+        .channel-stack-svg {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        .channel-band {
+            fill: rgba(148, 163, 184, 0.04);
+            stroke: rgba(148, 163, 184, 0.18);
+            stroke-width: 1;
+        }
+        .channel-band.current {
+            fill: rgba(94, 234, 212, 0.06);
+            stroke: rgba(94, 234, 212, 0.32);
+            stroke-width: 1.4;
+        }
+        .channel-band.above {
+            fill: rgba(74, 222, 128, 0.05);
+            stroke: rgba(74, 222, 128, 0.22);
+        }
+        .channel-band.below {
+            fill: rgba(248, 113, 113, 0.05);
+            stroke: rgba(248, 113, 113, 0.22);
+        }
+        .channel-label {
+            fill: rgba(156, 176, 202, 0.72);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+        }
+        .channel-price {
+            fill: rgba(232, 241, 255, 0.78);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 500;
+        }
+        .channel-price-line {
+            fill: none;
+            stroke: rgba(94, 234, 212, 0.95);
+            stroke-width: 1.6;
+            stroke-linejoin: round;
+            stroke-linecap: round;
+        }
+        .channel-price-dot {
+            fill: rgba(94, 234, 212, 1);
+            stroke: rgba(6, 17, 29, 0.95);
+            stroke-width: 2;
+        }
+        .channel-time-axis {
+            fill: rgba(156, 176, 202, 0.55);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 0.14em;
+        }
+        .channel-empty {
+            color: var(--muted);
+            text-align: center;
+            padding: 80px 0;
+            font-size: 13px;
         }
         .radar-stage {
             position: relative;
@@ -1604,6 +1672,24 @@ $liteMode = isset($_GET['lite'])
                     </div>
                 </section>
 
+                <!-- v0.14.0 — Channel structure chart.
+                     Last 15 minutes of price rendered inside three stacked
+                     horizontal bands: the upper breakout channel at top, the
+                     current channel in the middle (price line wobbles inside
+                     it), the lower breakout channel at bottom. Re-centers on
+                     breakout: when price exits the current channel, the whole
+                     chart shunts so the breakout channel becomes the new
+                     "current" (Phase 2 — animation added in a follow-up). The
+                     window matches Massive's 15-min delay envelope so the chart
+                     shows exactly the data the trader can actually act on. -->
+                <section class='stack-card glass' style='padding-top: 16px; padding-bottom: 16px;'>
+                    <div class='section-title'>
+                        <h2>Channel structure</h2>
+                        <span id='channelStackMeta'>Last 15 min · current channel + adjacent breakout bands</span>
+                    </div>
+                    <div id='channelStackContainer' style='width: 100%; height: 320px; margin-top: 10px;'></div>
+                </section>
+
                 <!-- Price action chart -->
                 <section class='stack-card glass' style='padding-top: 16px; padding-bottom: 8px;'>
                     <div class='section-title'>
@@ -1752,7 +1838,7 @@ $liteMode = isset($_GET['lite'])
             </section>
         </section>
         <footer>
-            HackTrader v0.13.8 · © 2026 <a href='https://pngs.us' target='_blank' rel='noopener' class='footer-brand'>PENGUINS LLC</a> · All rights reserved.<br>
+            HackTrader v0.14.0 · © 2026 <a href='https://pngs.us' target='_blank' rel='noopener' class='footer-brand'>PENGUINS LLC</a> · All rights reserved.<br>
             <a href='https://pngs.us' target='_blank' rel='noopener' class='footer-brand-link'>pngs.us</a>
         </footer>
     </main>
@@ -2386,7 +2472,173 @@ $liteMode = isset($_GET['lite'])
             if (narrative) narrative.textContent = parts.join(' · ');
         }
 
-        
+
+        // v0.14.0 — Channel structure chart renderer.
+        //
+        // Renders the focus instrument's last ~15 minutes of price inside
+        // three stacked horizontal channel bands: upper-breakout, current,
+        // lower-breakout. The bands themselves come from run-brk.py's
+        // build_channels() — they're defined by support_1/support_2 and
+        // resistance_1/resistance_2, not by smoothed bands or Bollinger-style
+        // overlays. Re-centering on breakout (the "shunt" mechanic) is Phase
+        // 2; Phase 1 ships the static view.
+        //
+        // Visual encoding (consistent with the rest of the dashboard):
+        //   - Upper channel: faint green tint (where price goes if it breaks up)
+        //   - Current channel: cyan tint (the active regime)
+        //   - Lower channel: faint red tint (where price goes if it breaks down)
+        //   - Price line: cyan polyline rendered inside the current band,
+        //     proportional Y-mapping so a bar that closed at exactly the
+        //     channel mid-point renders at the vertical center of the band.
+        //   - Current price dot: filled cyan circle at T=0 (right edge).
+        //     If price is currently outside the current channel, the dot
+        //     floats above or below into the corresponding breakout band.
+        function renderChannelStack(data) {
+            const container = document.getElementById('channelStackContainer');
+            const metaEl = document.getElementById('channelStackMeta');
+            if (!container) return;
+
+            const channels = Array.isArray(data?.channels) ? data.channels : [];
+            const current = channels.find(c => c?.name === 'current');
+            const above = channels.find(c => c?.name === 'above_resistance');
+            const below = channels.find(c => c?.name === 'below_support');
+            const history = Array.isArray(data?.history) ? data.history : [];
+            const currentPrice = Number(data?.current_price || data?.focus_price || 0);
+
+            if (!current || !Number.isFinite(Number(current.upper)) || !Number.isFinite(Number(current.lower))) {
+                container.innerHTML = '<div class="channel-empty">No channel structure available — waiting for fresh market data</div>';
+                if (metaEl) metaEl.textContent = '—';
+                return;
+            }
+
+            // Last 15 minutes of bars. We trim by parsing the bar timestamps
+            // and keeping anything within FIFTEEN_MIN_MS of the most recent
+            // bar. The "most recent bar" is whatever Massive last gave us, so
+            // for a 15-min-delayed tier this is wall-clock-now minus 15 minutes.
+            const FIFTEEN_MIN_MS = 15 * 60 * 1000;
+            const lastBarMs = history.length ? Date.parse(history[history.length - 1].time) : Date.now();
+            const cutoffMs = lastBarMs - FIFTEEN_MIN_MS;
+            const recentBars = history.filter(r => Date.parse(r.time) >= cutoffMs);
+
+            // SVG geometry. 800x320 viewBox with a 60px right-side gutter for
+            // channel labels (UPPER/CURRENT/LOWER and price bounds).
+            const W = 800, H = 320;
+            const PAD_X_LEFT = 12;
+            const PAD_X_RIGHT = 88;
+            const PAD_Y_TOP = 14;
+            const PAD_Y_BOTTOM = 22;
+            const GAP = 8;
+            const bandH = (H - PAD_Y_TOP - PAD_Y_BOTTOM - 2 * GAP) / 3;
+            const bandX = PAD_X_LEFT;
+            const bandW = W - PAD_X_LEFT - PAD_X_RIGHT;
+            const yAbove = PAD_Y_TOP;
+            const yCurrent = PAD_Y_TOP + bandH + GAP;
+            const yBelow = PAD_Y_TOP + 2 * (bandH + GAP);
+
+            // Map a price (within a [lo, hi] channel) to a Y coordinate inside
+            // a band whose top is at `bandTopY`. Higher price → smaller Y
+            // (closer to the top of the band).
+            function priceToY(p, lo, hi, bandTopY) {
+                if (!Number.isFinite(p) || !Number.isFinite(lo) || !Number.isFinite(hi) || hi === lo) {
+                    return bandTopY + bandH / 2;
+                }
+                const t = (p - lo) / (hi - lo);
+                return bandTopY + bandH * (1 - Math.max(0, Math.min(1, t)));
+            }
+
+            // Build the price polyline inside the current channel. If the
+            // bar's close is outside [current.lower, current.upper] we still
+            // clamp it to the band so the line stays inside — the dot below
+            // is the canonical "where price actually is" indicator.
+            const pricePoints = [];
+            if (recentBars.length) {
+                const t0 = cutoffMs;
+                const t1 = lastBarMs;
+                const dt = Math.max(1, t1 - t0);
+                const currentLower = Number(current.lower);
+                const currentUpper = Number(current.upper);
+                for (const bar of recentBars) {
+                    const tMs = Date.parse(bar.time);
+                    if (!Number.isFinite(tMs)) continue;
+                    const x = bandX + bandW * ((tMs - t0) / dt);
+                    const closePrice = Number(bar.close);
+                    if (!Number.isFinite(closePrice)) continue;
+                    const y = priceToY(closePrice, currentLower, currentUpper, yCurrent);
+                    pricePoints.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+                }
+            }
+            const polylinePoints = pricePoints.join(' ');
+
+            // Current price dot — positioned at the right edge (T=0).
+            // If price is above the current channel's upper boundary, the dot
+            // floats up into the upper band; if below the lower boundary, it
+            // floats down into the lower band. This gives the trader an
+            // immediate visual cue that a breakout is in progress (and is
+            // the seed of the Phase-2 shunt animation).
+            const dotX = bandX + bandW;
+            let dotY;
+            let dotBand = 'current';
+            if (currentPrice > Number(current.upper) && above) {
+                dotY = priceToY(currentPrice, Number(above.lower), Number(above.upper), yAbove);
+                dotBand = 'above';
+            } else if (currentPrice < Number(current.lower) && below) {
+                dotY = priceToY(currentPrice, Number(below.lower), Number(below.upper), yBelow);
+                dotBand = 'below';
+            } else {
+                dotY = priceToY(currentPrice, Number(current.lower), Number(current.upper), yCurrent);
+            }
+
+            // Format helpers.
+            const fmt = (n) => Number.isFinite(Number(n)) ? Number(n).toFixed(2) : '—';
+
+            const parts = [
+                `<svg class='channel-stack-svg' viewBox='0 0 ${W} ${H}' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='xMidYMid meet'>`,
+            ];
+
+            // Upper band
+            if (above) {
+                parts.push(`<rect class='channel-band above' x='${bandX}' y='${yAbove}' width='${bandW}' height='${bandH}' rx='5'/>`);
+                parts.push(`<text class='channel-label' x='${bandX + bandW + 8}' y='${yAbove + 13}'>UPPER</text>`);
+                parts.push(`<text class='channel-price' x='${bandX + bandW + 8}' y='${yAbove + 28}'>$${fmt(above.upper)}</text>`);
+                parts.push(`<text class='channel-price' x='${bandX + bandW + 8}' y='${yAbove + bandH - 4}'>$${fmt(above.lower)}</text>`);
+            }
+            // Current band
+            parts.push(`<rect class='channel-band current' x='${bandX}' y='${yCurrent}' width='${bandW}' height='${bandH}' rx='5'/>`);
+            parts.push(`<text class='channel-label' x='${bandX + bandW + 8}' y='${yCurrent + 13}'>CURRENT</text>`);
+            parts.push(`<text class='channel-price' x='${bandX + bandW + 8}' y='${yCurrent + 28}'>$${fmt(current.upper)}</text>`);
+            parts.push(`<text class='channel-price' x='${bandX + bandW + 8}' y='${yCurrent + bandH - 4}'>$${fmt(current.lower)}</text>`);
+            // Lower band
+            if (below) {
+                parts.push(`<rect class='channel-band below' x='${bandX}' y='${yBelow}' width='${bandW}' height='${bandH}' rx='5'/>`);
+                parts.push(`<text class='channel-label' x='${bandX + bandW + 8}' y='${yBelow + 13}'>LOWER</text>`);
+                parts.push(`<text class='channel-price' x='${bandX + bandW + 8}' y='${yBelow + 28}'>$${fmt(below.upper)}</text>`);
+                parts.push(`<text class='channel-price' x='${bandX + bandW + 8}' y='${yBelow + bandH - 4}'>$${fmt(below.lower)}</text>`);
+            }
+            // Price polyline (inside the current channel)
+            if (polylinePoints) {
+                parts.push(`<polyline class='channel-price-line' points='${polylinePoints}'/>`);
+            }
+            // Current price dot
+            parts.push(`<circle class='channel-price-dot' cx='${dotX.toFixed(1)}' cy='${dotY.toFixed(1)}' r='5'/>`);
+            // Time axis labels
+            parts.push(`<text class='channel-time-axis' x='${bandX}' y='${H - 4}'>T-15M</text>`);
+            parts.push(`<text class='channel-time-axis' x='${bandX + bandW}' y='${H - 4}' text-anchor='end'>T=0</text>`);
+            parts.push(`</svg>`);
+
+            container.innerHTML = parts.join('\n');
+
+            // Meta text in the section title — gives the user a numeric anchor
+            // for the chart at a glance: current band width, breakout-side
+            // signal, and where the price dot is currently sitting.
+            if (metaEl) {
+                const widthTxt = Number.isFinite(Number(current.width)) ? `width $${fmt(current.width)}` : '';
+                const dotTxt = dotBand === 'above' ? '· price above current band' :
+                               dotBand === 'below' ? '· price below current band' :
+                               '· price inside current band';
+                metaEl.textContent = `Current $${fmt(current.lower)} – $${fmt(current.upper)} · ${widthTxt} ${dotTxt}`.replace(/\s+/g, ' ').trim();
+            }
+        }
+
         let tvChartInstance = null;
         let candlestickSeries = null;
         let r1Line = null;
@@ -2790,6 +3042,12 @@ $liteMode = isset($_GET['lite'])
                 if (requestId !== dashboardRequestSeq) return;
                 setFocusNode(ticker, currentFocus, tolerance);
                 updateFocusPanel(currentFocus, null, ticker);
+                // v0.14.0 — render the new channel-structure chart first so
+                // it appears in the trader's eye before the longer-history
+                // candlestick chart below it. Both are kept in this release;
+                // a future cleanup may retire the TradingView chart if the
+                // channel chart proves to be the primary read.
+                renderChannelStack(currentFocus);
                 renderTradingChart(currentFocus, ticker);
                 // v0.11.x — drop the showBanner(formatSourceMeta(...)) call.
                 // The "Source MASSIVE · Status LIVE" line is now rendered by

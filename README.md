@@ -1,10 +1,20 @@
 # HackTrader Dashboard
 
-- **Version:** v0.13.8
+- **Version:** v0.14.0
 - **Status:** Active
 - **Codebase:** HackTrader FUI dashboard
 
 HackTrader is a market structure visualization tool. It surfaces correlation geometry, support/resistance ladders, channel bands, and volume context for a focus ticker and its peers — a way to *see* the chart faster, not a forecast or signal service.
+
+## Highlights in v0.14.0
+
+- **Channel structure chart (Phase 1).** New centerpiece visualization below the correlation radar. The last 15 minutes of focus-ticker price renders inside three vertically stacked horizontal bands: the upper breakout channel at top, the current channel in the middle (with the price line wobbling inside it), the lower breakout channel at bottom. The bands themselves come from `run-brk.py::build_channels()` — they're the actual S/R-defined channels the dashboard already computes for the levels ladder and microchart, now promoted to first-class visual objects. The 15-minute window matches Massive's 15-min delay envelope, so the chart shows exactly the data a trader can act on. Current price renders as a cyan dot at the right edge (T=0); if price is currently outside the current channel, the dot floats into the upper or lower band as a visual cue that a breakout is in progress. Same brand register as the rest of the product — describes the channel structure price is operating inside, not a prediction of where it goes next.
+- **Disclaimer page scrolling regression fixed (v0.13.9 hotfix).** `disclaimer.php` had a stray `overflow: hidden` on `body` that locked the page to the viewport height. Combined with `display: grid; place-items: center` it broke scrolling on shorter windows and the mobile viewport. Removed; other glass pages already use the same `body { padding: 24px; }` pattern without overflow:hidden so disclaimer.php is now consistent.
+
+### Coming in v0.14.1+
+
+- **Phase 2 — channel shunt animation.** When price closes outside the current channel for K consecutive bars (default K=2), the whole chart animate-translates up or down so the previous breakout channel becomes the new "current," a new breakout channel appears beyond it, and the previous current becomes the new opposite-side breakout. Always re-centers on the channel price is actually operating in.
+- **Phase 3 — infinite-stack hint.** Faint hint of additional channels above and below the visible three, so the viewer reads the chart as a slice of a continuous vertical stack rather than a closed box.
 
 ## Highlights in v0.13.8
 

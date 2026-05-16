@@ -88,7 +88,7 @@ function save_json_file($path, $payload) {
 
 function update_health_status($path, $ticker, $period, $liveStatus, $provider = null, $errorSummary = null, $cacheAgeSeconds = null) {
     $state = load_json_file($path, [
-        'meta' => ['updated_at' => null, 'version' => 'v0.13.8'],
+        'meta' => ['updated_at' => null, 'version' => 'v0.14.0'],
         'counters' => [
             'total_requests' => 0,
             'live_successes' => 0,
@@ -165,7 +165,7 @@ function update_health_status($path, $ticker, $period, $liveStatus, $provider = 
     ];
     $state['recent_events'] = array_slice($state['recent_events'], -100);
     $state['meta']['updated_at'] = $timestamp;
-    $state['meta']['version'] = 'v0.13.8';
+    $state['meta']['version'] = 'v0.14.0';
 
     save_json_file($path, $state);
 }
@@ -193,7 +193,7 @@ function summarize_live_error($details): ?string {
 
 function record_usage_event($trackerPath, $sessionId, $provider, $ticker, $interval, $periods, $outcome, $cacheState = null) {
     $tracker = load_json_file($trackerPath, [
-        'meta' => ['updated_at' => null, 'version' => 'v0.13.8'],
+        'meta' => ['updated_at' => null, 'version' => 'v0.14.0'],
         'sessions' => [],
         'recent_events' => [],
     ]);
@@ -273,7 +273,7 @@ function record_usage_event($trackerPath, $sessionId, $provider, $ticker, $inter
     ];
     $tracker['recent_events'] = array_slice($tracker['recent_events'], -200);
     $tracker['meta']['updated_at'] = $timestamp;
-    $tracker['meta']['version'] = 'v0.13.8';
+    $tracker['meta']['version'] = 'v0.14.0';
 
     save_json_file($trackerPath, $tracker);
 }
