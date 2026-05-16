@@ -2496,17 +2496,53 @@ $liteMode = isset($_GET['lite'])
 
         // Pick the three logical channels out of a payload, with a fallback
         // to channels[0] if the run-brk.py output doesn't include a named
-        // "current" entry. Returns {current, above, below} where any of the
-        // three can be undefined. Mirrors the fallback already used by the
-        // "Next channel band" microchart so both chart and microchart agree
-        // on what "current" means.
+        // "current" entry. Returns {current, above, below}.
+        //
+        // v0.14.4 — also synthesizes a missing above_resistance or
+        // below_support band by mirroring the current channel's width above
+        // and below the current bounds. `build_channels()` upstream only
+        // emits the breakout bands when both support_1 + support_2 (or
+        // resistance_1 + resistance_2) exist, so a sparse levels feed can
+        // leave the chart with no bottom (or top) band. The synthetic band
+        // gives the viewer a "if it breaks, this much room is open" cue even
+        // when the upstream couldn't confirm a second level. Marked with
+        // `synthetic: true` so callers can downstream-style differently
+        // if desired.
         function pickChannelStructure(data) {
             const channels = Array.isArray(data?.channels) ? data.channels : [];
-            return {
-                current: channels.find(c => c?.name === 'current') || channels[0],
-                above: channels.find(c => c?.name === 'above_resistance'),
-                below: channels.find(c => c?.name === 'below_support'),
-            };
+            let current = channels.find(c => c?.name === 'current') || channels[0];
+            let above = channels.find(c => c?.name === 'above_resistance');
+            let below = channels.find(c => c?.name === 'below_support');
+
+            if (current
+                && Number.isFinite(Number(current.upper))
+                && Number.isFinite(Number(current.lower))) {
+                const cu = Number(current.upper);
+                const cl = Number(current.lower);
+                const cw = cu - cl;
+                if (!above || !Number.isFinite(Number(above.upper)) || !Number.isFinite(Number(above.lower))) {
+                    above = {
+                        name: 'above_resistance',
+                        lower: cu,
+                        upper: cu + cw,
+                        width: cw,
+                        location: 'potential_upside_channel',
+                        synthetic: true,
+                    };
+                }
+                if (!below || !Number.isFinite(Number(below.upper)) || !Number.isFinite(Number(below.lower))) {
+                    below = {
+                        name: 'below_support',
+                        lower: cl - cw,
+                        upper: cl,
+                        width: cw,
+                        location: 'potential_downside_channel',
+                        synthetic: true,
+                    };
+                }
+            }
+
+            return { current, above, below };
         }
 
         function channelStructureUsable(data) {
