@@ -2593,11 +2593,28 @@ $liteMode = isset($_GET['lite'])
 
             const parts = [
                 `<svg class='channel-stack-svg' viewBox='0 0 ${W} ${H}' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='xMidYMid meet'>`,
+                // v0.14.1 — graded fills on the upper/lower channels.
+                // Upper: green darkest at the top (where price would land if
+                // the breakout extends further up), fading to nearly
+                // transparent at the bottom (the boundary it just crossed).
+                // Lower: mirror — red lightest at top, darkest at bottom.
+                // Reinforces direction visually: "the deeper you go into the
+                // breakout band, the more committed the move."
+                `<defs>`,
+                `  <linearGradient id='channel-grad-above' x1='0' y1='0' x2='0' y2='1'>`,
+                `    <stop offset='0%' stop-color='#4ade80' stop-opacity='0.42'/>`,
+                `    <stop offset='100%' stop-color='#4ade80' stop-opacity='0.04'/>`,
+                `  </linearGradient>`,
+                `  <linearGradient id='channel-grad-below' x1='0' y1='0' x2='0' y2='1'>`,
+                `    <stop offset='0%' stop-color='#f87171' stop-opacity='0.04'/>`,
+                `    <stop offset='100%' stop-color='#f87171' stop-opacity='0.42'/>`,
+                `  </linearGradient>`,
+                `</defs>`,
             ];
 
             // Upper band
             if (above) {
-                parts.push(`<rect class='channel-band above' x='${bandX}' y='${yAbove}' width='${bandW}' height='${bandH}' rx='5'/>`);
+                parts.push(`<rect class='channel-band above' x='${bandX}' y='${yAbove}' width='${bandW}' height='${bandH}' rx='5' fill='url(#channel-grad-above)'/>`);
                 parts.push(`<text class='channel-label' x='${bandX + bandW + 8}' y='${yAbove + 13}'>UPPER</text>`);
                 parts.push(`<text class='channel-price' x='${bandX + bandW + 8}' y='${yAbove + 28}'>$${fmt(above.upper)}</text>`);
                 parts.push(`<text class='channel-price' x='${bandX + bandW + 8}' y='${yAbove + bandH - 4}'>$${fmt(above.lower)}</text>`);
@@ -2609,7 +2626,7 @@ $liteMode = isset($_GET['lite'])
             parts.push(`<text class='channel-price' x='${bandX + bandW + 8}' y='${yCurrent + bandH - 4}'>$${fmt(current.lower)}</text>`);
             // Lower band
             if (below) {
-                parts.push(`<rect class='channel-band below' x='${bandX}' y='${yBelow}' width='${bandW}' height='${bandH}' rx='5'/>`);
+                parts.push(`<rect class='channel-band below' x='${bandX}' y='${yBelow}' width='${bandW}' height='${bandH}' rx='5' fill='url(#channel-grad-below)'/>`);
                 parts.push(`<text class='channel-label' x='${bandX + bandW + 8}' y='${yBelow + 13}'>LOWER</text>`);
                 parts.push(`<text class='channel-price' x='${bandX + bandW + 8}' y='${yBelow + 28}'>$${fmt(below.upper)}</text>`);
                 parts.push(`<text class='channel-price' x='${bandX + bandW + 8}' y='${yBelow + bandH - 4}'>$${fmt(below.lower)}</text>`);
