@@ -2476,7 +2476,16 @@ $liteMode = isset($_GET['lite'])
         // v0.14.2 — keep the most recent channel-chart data around so the
         // window-resize handler can re-render at the new container width
         // without re-fetching from the API.
+        //
+        // v0.14.3 — split into "last good" (the most recent payload with
+        // usable channel structure) and a stale-fallback flag. When the
+        // upstream refresher returns a payload without channels (market
+        // closed, Massive hiccup, cache cold), the chart now re-renders
+        // the last good snapshot with a "(last known)" annotation instead
+        // of showing the empty state. Same chart, clear staleness signal.
         let lastChannelStackData = null;
+        let lastGoodChannelStackData = null;
+        let lastGoodChannelStackAt = null;
         let channelStackResizeTimer = null;
         window.addEventListener('resize', () => {
             if (channelStackResizeTimer) clearTimeout(channelStackResizeTimer);
@@ -2484,6 +2493,28 @@ $liteMode = isset($_GET['lite'])
                 if (lastChannelStackData) renderChannelStack(lastChannelStackData);
             }, 120);
         });
+
+        // Pick the three logical channels out of a payload, with a fallback
+        // to channels[0] if the run-brk.py output doesn't include a named
+        // "current" entry. Returns {current, above, below} where any of the
+        // three can be undefined. Mirrors the fallback already used by the
+        // "Next channel band" microchart so both chart and microchart agree
+        // on what "current" means.
+        function pickChannelStructure(data) {
+            const channels = Array.isArray(data?.channels) ? data.channels : [];
+            return {
+                current: channels.find(c => c?.name === 'current') || channels[0],
+                above: channels.find(c => c?.name === 'above_resistance'),
+                below: channels.find(c => c?.name === 'below_support'),
+            };
+        }
+
+        function channelStructureUsable(data) {
+            const s = pickChannelStructure(data);
+            return !!(s.current
+                && Number.isFinite(Number(s.current.upper))
+                && Number.isFinite(Number(s.current.lower)));
+        }
 
         // v0.14.0 — Channel structure chart renderer.
         //
@@ -2513,18 +2544,33 @@ $liteMode = isset($_GET['lite'])
             // listener above can re-render at the new container width.
             if (data) lastChannelStackData = data;
 
-            const channels = Array.isArray(data?.channels) ? data.channels : [];
-            const current = channels.find(c => c?.name === 'current');
-            const above = channels.find(c => c?.name === 'above_resistance');
-            const below = channels.find(c => c?.name === 'below_support');
-            const history = Array.isArray(data?.history) ? data.history : [];
-            const currentPrice = Number(data?.current_price || data?.focus_price || 0);
-
-            if (!current || !Number.isFinite(Number(current.upper)) || !Number.isFinite(Number(current.lower))) {
-                container.innerHTML = '<div class="channel-empty">No channel structure available — waiting for fresh market data</div>';
-                if (metaEl) metaEl.textContent = '—';
-                return;
+            // v0.14.3 — stale-fallback. If the incoming payload doesn't have
+            // usable channel structure (e.g., market closed, Massive returned
+            // a sparse response, cache cold on first load), reach for the
+            // last-good snapshot we successfully rendered. That keeps the
+            // chart on screen as a stable reference instead of flicking to
+            // an empty state every time a refresh cycle is unlucky. Also
+            // falls back to channels[0] when the named "current" entry is
+            // missing, mirroring the existing microchart fallback.
+            let stale = false;
+            let effective = data;
+            if (!channelStructureUsable(effective)) {
+                if (channelStructureUsable(lastGoodChannelStackData)) {
+                    effective = lastGoodChannelStackData;
+                    stale = true;
+                } else {
+                    container.innerHTML = '<div class="channel-empty">No channel structure available — waiting for fresh market data</div>';
+                    if (metaEl) metaEl.textContent = '—';
+                    return;
+                }
+            } else {
+                lastGoodChannelStackData = data;
+                lastGoodChannelStackAt = new Date();
             }
+
+            const { current, above, below } = pickChannelStructure(effective);
+            const history = Array.isArray(effective?.history) ? effective.history : [];
+            const currentPrice = Number(effective?.current_price || effective?.focus_price || 0);
 
             // Last 15 minutes of bars. We trim by parsing the bar timestamps
             // and keeping anything within FIFTEEN_MIN_MS of the most recent
@@ -2666,13 +2712,24 @@ $liteMode = isset($_GET['lite'])
 
             // Meta text in the section title — gives the user a numeric anchor
             // for the chart at a glance: current band width, breakout-side
-            // signal, and where the price dot is currently sitting.
+            // signal, and where the price dot is currently sitting. v0.14.3
+            // also surfaces a "(last known HH:MM:SS)" tail when we're showing
+            // a cached snapshot rather than fresh data, so the trader knows
+            // the chart is the most recent valid structure rather than live.
             if (metaEl) {
                 const widthTxt = Number.isFinite(Number(current.width)) ? `width $${fmt(current.width)}` : '';
                 const dotTxt = dotBand === 'above' ? '· price above current band' :
                                dotBand === 'below' ? '· price below current band' :
                                '· price inside current band';
-                metaEl.textContent = `Current $${fmt(current.lower)} – $${fmt(current.upper)} · ${widthTxt} ${dotTxt}`.replace(/\s+/g, ' ').trim();
+                let metaText = `Current $${fmt(current.lower)} – $${fmt(current.upper)} · ${widthTxt} ${dotTxt}`.replace(/\s+/g, ' ').trim();
+                if (stale && lastGoodChannelStackAt) {
+                    const t = lastGoodChannelStackAt;
+                    const hh = String(t.getHours()).padStart(2, '0');
+                    const mm = String(t.getMinutes()).padStart(2, '0');
+                    const ss = String(t.getSeconds()).padStart(2, '0');
+                    metaText += ` · last known ${hh}:${mm}:${ss}`;
+                }
+                metaEl.textContent = metaText;
             }
         }
 
